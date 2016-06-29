@@ -77,10 +77,29 @@ module UrlParser {
                             break;
                         case "value":
                             var params = url.params();
-                            params[c.parentElement["param-name"]] = c.value;
+                            params[c.parentElement["param-name"]] = c.nextElementSibling["checked"] ? encodeURIComponent(c.value) : c.value;
                             url.params(params);
 
                             populateBasicFields(url);
+                            break;
+                    }
+                }
+            });
+
+            ge("params").addEventListener("click", evt => {
+                var elem = <HTMLElement>evt.target;
+                if (elem.tagName == "INPUT") {
+                    var inputElem = <HTMLInputElement>elem;
+                    switch (inputElem.type) {
+                        case "checkbox":
+                            var valElem = <HTMLInputElement>inputElem.previousElementSibling;
+
+                            if (inputElem["checked"]) {
+                                valElem.value = decodeURIComponent(valElem.value);
+                            }
+                            else {
+                                valElem.value = encodeURIComponent(valElem.value);
+                            }
                             break;
                     }
                 }

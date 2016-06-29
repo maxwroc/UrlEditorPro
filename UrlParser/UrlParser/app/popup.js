@@ -58,9 +58,26 @@ var UrlParser;
                             break;
                         case "value":
                             var params = url.params();
-                            params[c.parentElement["param-name"]] = c.value;
+                            params[c.parentElement["param-name"]] = c.nextElementSibling["checked"] ? encodeURIComponent(c.value) : c.value;
                             url.params(params);
                             populateBasicFields(url);
+                            break;
+                    }
+                }
+            });
+            ge("params").addEventListener("click", function (evt) {
+                var elem = evt.target;
+                if (elem.tagName == "INPUT") {
+                    var inputElem = elem;
+                    switch (inputElem.type) {
+                        case "checkbox":
+                            var valElem = inputElem.previousElementSibling;
+                            if (inputElem["checked"]) {
+                                valElem.value = decodeURIComponent(valElem.value);
+                            }
+                            else {
+                                valElem.value = encodeURIComponent(valElem.value);
+                            }
                             break;
                     }
                 }
