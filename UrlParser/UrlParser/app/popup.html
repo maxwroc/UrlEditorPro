@@ -1,0 +1,69 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Getting Started Extension's Popup</title>
+    <style>
+      body {
+        min-width: 400px;
+        overflow-x: hidden;
+      }
+
+        .container > * {
+            flex: 1 100%;
+        }
+
+      .container,
+      .param {
+          display: flex;
+      }
+      .value,
+      .container > * {
+          flex: 1;
+      }
+      .param input[type=text] {
+          width: 150px;
+      }
+      .param input:first-child {
+          width: 60px;
+      }
+
+      .param input[type=button],
+      .param input[type=checkbox] {
+          width: 22px;
+          flex: none;
+      }
+      
+      .container {
+          margin-bottom: 15px;
+      }
+      .container.last {
+          margin: 15px 0 0 0;
+      }
+
+    </style>
+
+    <!--
+      - JavaScript and HTML must be in separate files: see our Content Security
+      - Policy documentation[1] for details and explanation.
+      -
+      - [1]: http://developer.chrome.com/extensions/contentSecurityPolicy.html
+     -->
+    <script src="popup.js"></script>
+    <script src="modules/url_parser.js"></script>
+  </head>
+  <body>
+      <div class="container">
+          <textarea id="full_url" rows="7"></textarea>
+      </div>
+      <div class="container">
+          <input id="hostname" type="text" />
+          <input id="path" type="text" />
+      </div>
+      <div id="params">
+      </div>
+      <div class="container last">
+          <input type="button" value="Go" id="go" />
+      </div>
+  </body>
+</html>
+
