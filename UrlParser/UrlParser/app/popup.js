@@ -45,14 +45,21 @@ var UrlParser;
                 if (c.tagName == "INPUT" && c.type == "text" && c.parentElement["param-name"]) {
                     switch (c.className) {
                         case "name":
+                            var origName = c.parentElement["param-name"];
+                            var params = url.params();
+                            var value = params[origName];
+                            // remove parameter from the list
+                            delete params[origName];
+                            // readding it with new name
+                            params[c.value] = value;
+                            url.params(params);
+                            c.parentElement["param-name"] = c.value;
+                            populateBasicFields(url);
                             break;
                         case "value":
                             var params = url.params();
-                            console.log("before", params);
                             params[c.parentElement["param-name"]] = c.value;
-                            console.log("after", params);
                             url.params(params);
-                            console.log("later", url.params());
                             populateBasicFields(url);
                             break;
                     }
@@ -62,6 +69,5 @@ var UrlParser;
         });
     }
     ;
-    // Run our kitten generation script as soon as the document's DOM is ready.
     document.addEventListener('DOMContentLoaded', function () { return initialize(); });
 })(UrlParser || (UrlParser = {}));
