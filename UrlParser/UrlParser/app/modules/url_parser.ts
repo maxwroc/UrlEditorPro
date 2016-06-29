@@ -95,6 +95,7 @@ module UrlParser {
             else {
                 var search = "";
                 for (var name in value) {
+                    search += search ? "&" : "";
                     search += name + "=" + value[name];
                 }
 
