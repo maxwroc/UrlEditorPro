@@ -4,17 +4,38 @@
     <title>Getting Started Extension's Popup</title>
     <style>
       body {
-        min-width: 357px;
+        min-width: 400px;
         overflow-x: hidden;
       }
 
-      img {
-        margin: 5px;
-        border: 2px solid black;
-        vertical-align: middle;
-        width: 75px;
-        height: 75px;
+      .container,
+      .param {
+          display: flex;
       }
+      .value,
+      .container > * {
+          flex: 1;
+      }
+      .param input[type=text] {
+          width: 150px;
+      }
+      .param input:first-child {
+          width: 60px;
+      }
+
+      .param input[type=button],
+      .param input[type=checkbox] {
+          width: 22px;
+          flex: none;
+      }
+      
+      .container {
+          margin-bottom: 15px;
+      }
+      .container.last {
+          margin: 15px 0 0 0;
+      }
+
     </style>
 
     <!--
@@ -27,8 +48,17 @@
     <script src="modules/url_parser.js"></script>
   </head>
   <body>
-      <textarea id="full_url" rows="7"></textarea>
-      <div id="params"></div>
+      <div class="container">
+          <textarea id="full_url" rows="7"></textarea>
+      </div>
+      <div class="container">
+          <input id="path" type="text" />
+      </div>
+      <div id="params">
+      </div>
+      <div class="container last">
+          <input type="button" value="Go" />
+      </div>
   </body>
 </html>
 
