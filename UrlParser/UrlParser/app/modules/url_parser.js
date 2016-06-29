@@ -84,8 +84,11 @@ var UrlParser;
                 }
             }
         };
-        Uri.prototype.url = function () {
-            return this.anchor.href;
+        Uri.prototype.url = function (url) {
+            if (url == undefined) {
+                return this.anchor.href;
+            }
+            this.anchor.href = url;
         };
         return Uri;
     })();

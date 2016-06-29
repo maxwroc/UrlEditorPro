@@ -8,6 +8,10 @@
         overflow-x: hidden;
       }
 
+        .container > * {
+            flex: 1 100%;
+        }
+
       .container,
       .param {
           display: flex;
@@ -52,12 +56,13 @@
           <textarea id="full_url" rows="7"></textarea>
       </div>
       <div class="container">
+          <input id="hostname" type="text" />
           <input id="path" type="text" />
       </div>
       <div id="params">
       </div>
       <div class="container last">
-          <input type="button" value="Go" />
+          <input type="button" value="Go" id="go" />
       </div>
   </body>
 </html>

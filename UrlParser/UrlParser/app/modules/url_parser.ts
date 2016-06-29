@@ -51,11 +51,11 @@ module UrlParser {
             return this.getSet(value, "protocol");
         }
 
-        hostname(value: string): string {
+        hostname(value?: string): string {
             return this.getSet(value, "hostname");
         }
 
-        port(value: number): number {
+        port(value?: number): number {
             var result = this.getSet(value, "port");
             return result ? parseInt(result) : undefined;
         }
@@ -105,8 +105,12 @@ module UrlParser {
             }
         }
 
-        url(): string {
-            return this.anchor.href;
+        url(url?: string): string {
+            if (url == undefined) {
+                return this.anchor.href;
+            }
+
+            this.anchor.href = url;
         }
     }
 }
