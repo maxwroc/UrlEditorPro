@@ -79,6 +79,17 @@ var UrlParser;
                                 valElem.value = encodeURIComponent(valElem.value);
                             }
                             break;
+                        case "button":
+                            var paramName = elem.parentElement["param-name"];
+                            // remove param
+                            if (paramName) {
+                                var params = url.params();
+                                delete params[paramName];
+                                url.params(params);
+                                populateBasicFields(url);
+                                populateParams(url);
+                            }
+                            break;
                     }
                 }
             });
