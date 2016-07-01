@@ -16,7 +16,7 @@ module UrlParser {
         var param = <HTMLDivElement>document.createElement("div");
         param.className = "param";
         param["param-name"] = name || "--";
-        param.innerHTML = '<input type="text" class="name" /> <input type="text" class="value" /> <input type="checkbox" /> <input type="button" value="x" />';
+        param.innerHTML = '<input type="text" class="name" /> <input type="text" class="value" /> <input type="checkbox" title="Encode / decode" /> <input type="button" value="x" />';
         return param;
     }
 

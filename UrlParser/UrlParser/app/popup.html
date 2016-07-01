@@ -6,11 +6,23 @@
       body {
         min-width: 400px;
         overflow-x: hidden;
+        background-color: #f6f6f6;
       }
 
-        .container > * {
-            flex: 1 100%;
-        }
+      input[type=text],
+      textarea {
+          background-color: #edf3ff;
+          border: 1px solid #dcdcdc;
+      }
+
+      input[type=text]:focus,
+      textarea:focus {
+          background-color: #c9ecfa;
+      }
+
+      .container > * {
+          flex: 1 100%;
+      }
 
       .container,
       .param {
