@@ -116,6 +116,20 @@ var UrlParser;
             ge("add_param").addEventListener("click", function () {
                 ge("params").appendChild(createNewParamsFields());
             });
+            ge("hostname").parentElement.addEventListener("keyup", function (evt) {
+                var input = evt.target;
+                if (input.tagName == "INPUT") {
+                    switch (input.id) {
+                        case "hostname":
+                            url.hostname(input.value);
+                            break;
+                        case "path":
+                            url.pathname(input.value);
+                            break;
+                    }
+                    populateBasicFields(url);
+                }
+            });
             ge("go").addEventListener("click", function () { return submit(); });
         });
     }
