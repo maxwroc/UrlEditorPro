@@ -8,20 +8,32 @@ var UrlParser;
         ge("hostname").value = url.hostname();
         ge("path").value = url.pathname();
     }
+    function createNewParamsFields(name) {
+        var param = document.createElement("div");
+        param.className = "param";
+        param["param-name"] = name || "--";
+        param.innerHTML = '<input type="text" class="name" /> <input type="text" class="value" /> <input type="checkbox" /> <input type="button" value="x" />';
+        return param;
+    }
     function populateParams(url) {
         var params = document.getElementById("params");
         params.innerHTML = "";
         var urlParams = url.params();
         for (var name in urlParams) {
-            var param = document.createElement("div");
-            param.className = "param";
-            param["param-name"] = name;
-            param.innerHTML = '<input type="text" class="name" /> <input type="text" class="value" /> <input type="checkbox" /> <input type="button" value="x" />';
+            var param = createNewParamsFields(name);
             var paramNameElem = param.firstElementChild;
             paramNameElem.value = name;
             var paramValue = paramNameElem.nextElementSibling;
             paramValue.value = urlParams[name];
             params.appendChild(param);
+        }
+    }
+    function deleteParam(url, name) {
+        // remove param
+        if (name) {
+            var params = url.params();
+            delete params[name];
+            url.params(params);
         }
     }
     function initialize() {
@@ -46,17 +58,30 @@ var UrlParser;
                     switch (c.className) {
                         case "name":
                             var origName = c.parentElement["param-name"];
-                            var params = url.params();
-                            var value = params[origName];
-                            // remove parameter from the list
-                            delete params[origName];
-                            // readding it with new name
-                            params[c.value] = value;
-                            url.params(params);
-                            c.parentElement["param-name"] = c.value;
+                            // if name is empty string we need to remove param
+                            if (c.value == "") {
+                                deleteParam(url, origName);
+                            }
+                            else {
+                                var params = url.params();
+                                // it is impossible to raneme property so we need to delete old one and add new one
+                                if (params[origName] != undefined) {
+                                    // remove parameter from the list
+                                    delete params[origName];
+                                }
+                                // readding it with new name
+                                params[c.value] = c.nextElementSibling.value;
+                                url.params(params);
+                                c.parentElement["param-name"] = c.value;
+                            }
                             populateBasicFields(url);
                             break;
                         case "value":
+                            // check if it's a temporary param name
+                            if (c.parentElement["param-name"] == "--") {
+                                // do nothing - we cannot set param without its name
+                                return;
+                            }
                             var params = url.params();
                             params[c.parentElement["param-name"]] = c.nextElementSibling["checked"] ? encodeURIComponent(c.value) : c.value;
                             url.params(params);
@@ -81,17 +106,15 @@ var UrlParser;
                             break;
                         case "button":
                             var paramName = elem.parentElement["param-name"];
-                            // remove param
-                            if (paramName) {
-                                var params = url.params();
-                                delete params[paramName];
-                                url.params(params);
-                                populateBasicFields(url);
-                                populateParams(url);
-                            }
+                            deleteParam(url, paramName);
+                            populateBasicFields(url);
+                            populateParams(url);
                             break;
                     }
                 }
+            });
+            ge("add_param").addEventListener("click", function () {
+                ge("params").appendChild(createNewParamsFields());
             });
             ge("go").addEventListener("click", function () { return submit(); });
         });
