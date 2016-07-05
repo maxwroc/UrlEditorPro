@@ -11,16 +11,51 @@ var UrlParser;
             };
             this.url = url;
             this.doc = doc;
-            doc.body.addEventListener("keyup", function (evt) { return _this.eventDispatcher(evt); });
+            // bind event handlers
+            doc.body.addEventListener("keyup", function (evt) { return _this.keyboardEventDispatcher(evt); });
+            doc.body.addEventListener("click", function (evt) { return _this.clickEventDispatcher(evt); });
             this.populateFieldsExceptActiveOne();
         }
-        ViewModel.prototype.eventDispatcher = function (evt) {
+        ViewModel.prototype.clickEventDispatcher = function (evt) {
+            var elem = evt.target;
+            if (elem.tagName == "INPUT") {
+                var inputElem = elem;
+                switch (inputElem.type) {
+                    case "checkbox":
+                        var valElem = inputElem.previousElementSibling;
+                        if (inputElem["checked"]) {
+                            valElem.value = decodeURIComponent(valElem.value);
+                        }
+                        else {
+                            valElem.value = encodeURIComponent(valElem.value);
+                        }
+                        break;
+                    case "button":
+                        var paramName = elem.parentElement["param-name"];
+                        this.deleteParam(paramName);
+                        this.populateFieldsExceptActiveOne();
+                        break;
+                }
+            }
+        };
+        ViewModel.prototype.keyboardEventDispatcher = function (evt) {
             // casting to the INPUT elem but it can be a TEXTAREA as well
             var elem = evt.target;
-            if (this.formTextElements.indexOf(elem.tagName) != -1) {
+            if (this.isTextFieldActive()) {
                 // check if element has a special property
                 if (elem.id && typeof this.mapIdToFunction[elem.id]) {
                     this.url[this.mapIdToFunction[elem.id]](elem.value);
+                    this.populateFieldsExceptActiveOne();
+                }
+                else if (elem.parentElement["param-name"]) {
+                    switch (elem.className) {
+                        case "name":
+                            this.updateParamName(elem);
+                            break;
+                        case "value":
+                            this.updateParamValue(elem);
+                            break;
+                    }
                     this.populateFieldsExceptActiveOne();
                 }
             }
@@ -41,10 +76,9 @@ var UrlParser;
             // updating params only if there is no active element (probably this condition is redundant)
             if (!this.doc.activeElement ||
                 // or if the active element is not one of the text fields
-                this.formTextElements.indexOf(this.doc.activeElement.tagName) == -1 ||
-                // or active element does not belong to param fields (and only if it is a full_url field)
-                // second part of this condition is an optimization as for now we have only one text field which should trigger params population
-                (!this.doc.activeElement["param-name"] && this.doc.activeElement.id == "full_url")) {
+                !this.isTextFieldActive() ||
+                // or active element does not one of param fields
+                !this.doc.activeElement.parentElement["param-name"]) {
                 this.populateParams();
             }
         };
@@ -73,9 +107,52 @@ var UrlParser;
         ViewModel.prototype.createNewParamFields = function (name) {
             var param = document.createElement("div");
             param.className = "param";
+            // we need to encode param name as it may contain invalid chars for url
+            // the default value is specified to prevent from addiong this param to the url object
             param["param-name"] = encodeURIComponent(name) || "--";
             param.innerHTML = '<input type="text" class="name" /> <input type="text" class="value" /> <input type="checkbox" title="Encode / decode" /> <input type="button" value="x" />';
             return param;
+        };
+        ViewModel.prototype.deleteParam = function (name) {
+            // remove param
+            if (name) {
+                var params = this.url.params();
+                delete params[name];
+                this.url.params(params);
+            }
+        };
+        ViewModel.prototype.updateParamName = function (elem) {
+            var origName = elem.parentElement["param-name"];
+            // if name is empty string we need to remove param
+            if (elem.value == "") {
+                this.deleteParam(origName);
+            }
+            else {
+                var params = this.url.params();
+                // it is impossible to raneme property so we need to delete old one and add new one
+                if (params[origName] != undefined) {
+                    // remove parameter from the list
+                    delete params[origName];
+                }
+                // readding it with new name
+                params[elem.value] = elem.nextElementSibling.value;
+                this.url.params(params);
+                elem.parentElement["param-name"] = elem.value;
+            }
+        };
+        ViewModel.prototype.updateParamValue = function (elem) {
+            // check if it's a temporary param name
+            if (elem.parentElement["param-name"] == "--") {
+                // do nothing - we cannot set param without its name
+                return;
+            }
+            var params = this.url.params();
+            params[elem.parentElement["param-name"]] = elem.nextElementSibling["checked"] ? encodeURIComponent(elem.value) : elem.value;
+            this.url.params(params);
+        };
+        ViewModel.prototype.isTextFieldActive = function () {
+            // check if tag is an INPUT or TEXTAREA, additionally check if the INPUT type is text
+            return this.formTextElements.indexOf(this.doc.activeElement.tagName) != -1 && (!this.doc.activeElement["type"] || this.doc.activeElement["type"] == "text");
         };
         return ViewModel;
     })();
