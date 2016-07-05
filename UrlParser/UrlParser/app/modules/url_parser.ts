@@ -15,6 +15,7 @@ module UrlParser {
         }
 
         private getSet(value: any, propertyName: string) {
+            // check whether to set or return a value
             if (value == undefined) {
                 return this.anchor[propertyName];
             }
@@ -52,11 +53,13 @@ module UrlParser {
         }
 
         params(value?: IMap): IMap {
+            // check whether we should set or return value
             if (value == undefined) {
 
                 var params: IMap = {}
                 var matches = this.anchor.search.match(paramPattern);
                 if (matches) {
+                    // matches are concatenated params withvalues e.g. ["name=value", "name2=value2"]
                     matches.forEach(param => {
                         var nameValue = param.split("=", 2);
                         if (nameValue.length == 2) {
@@ -82,6 +85,7 @@ module UrlParser {
 
         url(url?: string): string {
             if (url == undefined) {
+                // return regular url with prefix (like 'view-source:')
                 return this.urlPrefix + this.anchor.href;
             }
             

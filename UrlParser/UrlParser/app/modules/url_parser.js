@@ -9,6 +9,7 @@ var UrlParser;
             this.url(uri);
         }
         Uri.prototype.getSet = function (value, propertyName) {
+            // check whether to set or return a value
             if (value == undefined) {
                 return this.anchor[propertyName];
             }
@@ -37,10 +38,12 @@ var UrlParser;
             return this.getSet(value, "host");
         };
         Uri.prototype.params = function (value) {
+            // check whether we should set or return value
             if (value == undefined) {
                 var params = {};
                 var matches = this.anchor.search.match(paramPattern);
                 if (matches) {
+                    // matches are concatenated params withvalues e.g. ["name=value", "name2=value2"]
                     matches.forEach(function (param) {
                         var nameValue = param.split("=", 2);
                         if (nameValue.length == 2) {
@@ -63,6 +66,7 @@ var UrlParser;
         };
         Uri.prototype.url = function (url) {
             if (url == undefined) {
+                // return regular url with prefix (like 'view-source:')
                 return this.urlPrefix + this.anchor.href;
             }
             var matches = url.match(prefixPattern);

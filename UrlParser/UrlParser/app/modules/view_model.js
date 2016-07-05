@@ -49,17 +49,21 @@ var UrlParser;
             }
         };
         ViewModel.prototype.buttonClickHandler = function (elem) {
+            // this handler is triggered for any button click on page
             var paramName = elem.parentElement["param-name"];
             if (paramName) {
+                // this seems to be a delete param button so we're removing param
                 this.deleteParam(paramName);
                 this.populateFieldsExceptActiveOne();
             }
             else {
                 switch (elem.id) {
                     case "add_param":
+                        // add param button
                         this.doc.getElementById("params").appendChild(this.createNewParamFields());
                         break;
                     case "go":
+                        // submit button
                         this.submit(this.url.url());
                         break;
                 }
@@ -71,7 +75,7 @@ var UrlParser;
             if (this.isTextFieldActive()) {
                 // clear error message
                 this.setErrorMessage("", elem);
-                // check if we have a mapping from field ID to Url object function
+                // check if we have a mapping from field ID to Url object function (used for basic fields)
                 if (elem.id && typeof this.mapIdToFunction[elem.id]) {
                     this.url[this.mapIdToFunction[elem.id]](elem.value);
                     if (elem.value != this.url[this.mapIdToFunction[elem.id]]()) {
@@ -196,7 +200,9 @@ var UrlParser;
             return this.formTextElements.indexOf(this.doc.activeElement.tagName) != -1 && (this.doc.activeElement["type"] == "textarea" || this.doc.activeElement["type"] == "text");
         };
         ViewModel.prototype.setErrorMessage = function (err, elem) {
+            // setting error message
             this.doc.getElementById("err").textContent = err ? "Error: " + err : "";
+            // if DOM element was passed we're setting or removing the error indicator color
             if (elem) {
                 if (err) {
                     elem.classList.add("error");
