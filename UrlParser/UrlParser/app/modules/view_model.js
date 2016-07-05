@@ -1,7 +1,7 @@
 var UrlParser;
 (function (UrlParser) {
     var ViewModel = (function () {
-        function ViewModel(url, doc) {
+        function ViewModel(url, doc, submit) {
             var _this = this;
             this.formTextElements = ["INPUT", "TEXTAREA"];
             this.mapIdToFunction = {
@@ -11,9 +11,15 @@ var UrlParser;
             };
             this.url = url;
             this.doc = doc;
+            this.submit = submit;
             // bind event handlers
-            doc.body.addEventListener("keyup", function (evt) { return _this.keyboardEventDispatcher(evt); });
             doc.body.addEventListener("click", function (evt) { return _this.clickEventDispatcher(evt); });
+            doc.body.addEventListener("keyup", function (evt) { return _this.keyboardEventDispatcher(evt); });
+            doc.body.addEventListener("keydown", function (evt) {
+                if (_this.isTextFieldActive() && evt.keyCode == 13) {
+                    submit(_this.url.url());
+                }
+            });
             this.populateFieldsExceptActiveOne();
         }
         ViewModel.prototype.clickEventDispatcher = function (evt) {
@@ -32,8 +38,20 @@ var UrlParser;
                         break;
                     case "button":
                         var paramName = elem.parentElement["param-name"];
-                        this.deleteParam(paramName);
-                        this.populateFieldsExceptActiveOne();
+                        if (paramName) {
+                            this.deleteParam(paramName);
+                            this.populateFieldsExceptActiveOne();
+                        }
+                        else {
+                            switch (elem.id) {
+                                case "add_param":
+                                    this.doc.getElementById("params").appendChild(this.createNewParamFields());
+                                    break;
+                                case "go":
+                                    this.submit(this.url.url());
+                                    break;
+                            }
+                        }
                         break;
                 }
             }
@@ -42,19 +60,20 @@ var UrlParser;
             // casting to the INPUT elem but it can be a TEXTAREA as well
             var elem = evt.target;
             if (this.isTextFieldActive()) {
-                // check if element has a special property
+                // clear error message
+                this.setErrorMessage("");
+                elem.classList.remove("error");
+                // check if we have a mapping from field ID to Url object function
                 if (elem.id && typeof this.mapIdToFunction[elem.id]) {
                     this.url[this.mapIdToFunction[elem.id]](elem.value);
                     this.populateFieldsExceptActiveOne();
                 }
                 else if (elem.parentElement["param-name"]) {
-                    switch (elem.className) {
-                        case "name":
-                            this.updateParamName(elem);
-                            break;
-                        case "value":
-                            this.updateParamValue(elem);
-                            break;
+                    if (elem.classList.contains("name")) {
+                        this.updateParamName(elem);
+                    }
+                    else if (elem.classList.contains("value")) {
+                        this.updateParamValue(elem);
                     }
                     this.populateFieldsExceptActiveOne();
                 }
@@ -123,21 +142,30 @@ var UrlParser;
         };
         ViewModel.prototype.updateParamName = function (elem) {
             var origName = elem.parentElement["param-name"];
+            var safeNewName = encodeURIComponent(elem.value);
+            var params = this.url.params();
+            // check if param exists already and it is different than the initial one
+            if (params[safeNewName] && safeNewName != origName) {
+                elem.classList.add("error");
+                this.setErrorMessage("param with the same name already exists");
+                return;
+            }
             // if name is empty string we need to remove param
-            if (elem.value == "") {
+            if (safeNewName == "") {
                 this.deleteParam(origName);
             }
             else {
-                var params = this.url.params();
                 // it is impossible to raneme property so we need to delete old one and add new one
                 if (params[origName] != undefined) {
                     // remove parameter from the list
                     delete params[origName];
                 }
+                var value = elem.nextElementSibling.value;
+                var shouldEncode = elem.nextElementSibling.nextElementSibling["checked"];
                 // readding it with new name
-                params[elem.value] = elem.nextElementSibling.value;
+                params[safeNewName] = shouldEncode ? encodeURIComponent(value) : value;
                 this.url.params(params);
-                elem.parentElement["param-name"] = elem.value;
+                elem.parentElement["param-name"] = safeNewName;
             }
         };
         ViewModel.prototype.updateParamValue = function (elem) {
@@ -153,6 +181,9 @@ var UrlParser;
         ViewModel.prototype.isTextFieldActive = function () {
             // check if tag is an INPUT or TEXTAREA, additionally check if the INPUT type is text
             return this.formTextElements.indexOf(this.doc.activeElement.tagName) != -1 && (!this.doc.activeElement["type"] || this.doc.activeElement["type"] == "text");
+        };
+        ViewModel.prototype.setErrorMessage = function (err) {
+            this.doc.getElementById("err").textContent = err ? "Error: " + err : "";
         };
         return ViewModel;
     })();

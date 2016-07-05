@@ -12,13 +12,21 @@
             "path": "pathname"
         };
 
-        constructor(url: Uri, doc: HTMLDocument) {
+        private submit: (URL: string) => void;
+
+        constructor(url: Uri, doc: HTMLDocument, submit: (url:string) => void) {
             this.url = url;
             this.doc = doc;
+            this.submit = submit;
 
             // bind event handlers
-            doc.body.addEventListener("keyup", evt => this.keyboardEventDispatcher(evt));
             doc.body.addEventListener("click", evt => this.clickEventDispatcher(evt));
+            doc.body.addEventListener("keyup", evt => this.keyboardEventDispatcher(evt));
+            doc.body.addEventListener("keydown", evt => {
+                if (this.isTextFieldActive() && evt.keyCode == 13) {
+                    submit(this.url.url());
+                }
+            });
 
             this.populateFieldsExceptActiveOne();
         }
@@ -40,8 +48,20 @@
                         break;
                     case "button":
                         var paramName = elem.parentElement["param-name"];
-                        this.deleteParam(paramName);
-                        this.populateFieldsExceptActiveOne();
+                        if (paramName) {
+                            this.deleteParam(paramName);
+                            this.populateFieldsExceptActiveOne();
+                        }
+                        else {
+                            switch (elem.id) {
+                                case "add_param":
+                                    this.doc.getElementById("params").appendChild(this.createNewParamFields());
+                                    break;
+                                case "go":
+                                    this.submit(this.url.url());
+                                    break;
+                            }
+                        }
                         break;
                 }
             }
@@ -52,19 +72,22 @@
             var elem = <HTMLInputElement>evt.target;
 
             if (this.isTextFieldActive()) {
-                // check if element has a special property
+                // clear error message
+                this.setErrorMessage("");
+                elem.classList.remove("error");
+
+                // check if we have a mapping from field ID to Url object function
                 if (elem.id && typeof this.mapIdToFunction[elem.id]) {
                     this.url[this.mapIdToFunction[elem.id]](elem.value);
                     this.populateFieldsExceptActiveOne();
                 }
                 else if (elem.parentElement["param-name"]) {
-                    switch (elem.className) {
-                        case "name":
-                            this.updateParamName(elem);
-                            break;
-                        case "value":
-                            this.updateParamValue(elem);
-                            break;
+
+                    if (elem.classList.contains("name")) {
+                        this.updateParamName(elem);
+                    }
+                    else if (elem.classList.contains("value")) {
+                        this.updateParamValue(elem);
                     }
 
                     this.populateFieldsExceptActiveOne();
@@ -147,25 +170,34 @@
 
         private updateParamName(elem: HTMLInputElement): void {
             var origName = elem.parentElement["param-name"];
+            var safeNewName = encodeURIComponent(elem.value);
+            var params = this.url.params();
+
+            // check if param exists already and it is different than the initial one
+            if (params[safeNewName] && safeNewName != origName) {
+                elem.classList.add("error");
+                this.setErrorMessage("param with the same name already exists");
+                return;
+            }
 
             // if name is empty string we need to remove param
-            if (elem.value == "") {
+            if (safeNewName == "") {
                 this.deleteParam(origName)
             }
             else {
-                var params = this.url.params();
-
                 // it is impossible to raneme property so we need to delete old one and add new one
                 if (params[origName] != undefined) {
                     // remove parameter from the list
                     delete params[origName];
                 }
 
+                var value = (<HTMLInputElement>elem.nextElementSibling).value;
+                var shouldEncode = elem.nextElementSibling.nextElementSibling["checked"];
                 // readding it with new name
-                params[elem.value] = (<HTMLInputElement>elem.nextElementSibling).value;
+                params[safeNewName] = shouldEncode ? encodeURIComponent(value) : value;
                 this.url.params(params);
 
-                elem.parentElement["param-name"] = elem.value;
+                elem.parentElement["param-name"] = safeNewName;
             }
         }
 
@@ -183,6 +215,10 @@
         private isTextFieldActive(): boolean {
             // check if tag is an INPUT or TEXTAREA, additionally check if the INPUT type is text
             return this.formTextElements.indexOf(this.doc.activeElement.tagName) != -1 && (!this.doc.activeElement["type"] || this.doc.activeElement["type"] == "text");
+        }
+
+        private setErrorMessage(err: string) {
+            this.doc.getElementById("err").textContent = err ? "Error: " + err : "";
         }
     }
 }
