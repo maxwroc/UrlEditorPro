@@ -6,11 +6,23 @@
       body {
         min-width: 400px;
         overflow-x: hidden;
+        background-color: #f6f6f6;
       }
 
-        .container > * {
-            flex: 1 100%;
-        }
+      input[type=text],
+      textarea {
+          background-color: #edf3ff;
+          border: 1px solid #dcdcdc;
+      }
+
+      input[type=text]:focus:not(.error),
+      textarea:focus {
+          background-color: #c9ecfa;
+      }
+
+      .container > * {
+          flex: 1 100%;
+      }
 
       .container,
       .param {
@@ -27,6 +39,7 @@
           width: 60px;
       }
 
+      #add_param,
       .param input[type=button],
       .param input[type=checkbox] {
           width: 22px;
@@ -40,6 +53,19 @@
           margin: 15px 0 0 0;
       }
 
+      .two-elem > *:first-child {
+          flex: 1;
+      }
+
+      #err {
+          color: red;
+          padding: 2px 0;
+      }
+
+      body .error {
+          background-color: #ffa9a9;
+      }
+
     </style>
 
     <!--
@@ -50,6 +76,7 @@
      -->
     <script src="popup.js"></script>
     <script src="modules/url_parser.js"></script>
+    <script src="modules/view_model.js"></script>
   </head>
   <body>
       <div class="container">
@@ -60,6 +87,10 @@
           <input id="path" type="text" />
       </div>
       <div id="params">
+      </div>
+      <div class="container two-elem">
+        <span id="err"></span>
+        <input type="button" id="add_param" value="+" />
       </div>
       <div class="container last">
           <input type="button" value="Go" id="go" />
