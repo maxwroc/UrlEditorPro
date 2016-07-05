@@ -6,7 +6,7 @@ var UrlParser;
             this.formTextElements = ["INPUT", "TEXTAREA"];
             this.mapIdToFunction = {
                 "full_url": "url",
-                "hostname": "hostname",
+                "hostname": "host",
                 "path": "pathname"
             };
             this.url = url;
@@ -18,6 +18,8 @@ var UrlParser;
             doc.body.addEventListener("keydown", function (evt) {
                 if (_this.isTextFieldActive() && evt.keyCode == 13) {
                     submit(_this.url.url());
+                    // we don't want a new line to be added in TEXTAREA
+                    evt.preventDefault();
                 }
             });
             this.populateFieldsExceptActiveOne();
@@ -187,7 +189,7 @@ var UrlParser;
         };
         ViewModel.prototype.isTextFieldActive = function () {
             // check if tag is an INPUT or TEXTAREA, additionally check if the INPUT type is text
-            return this.formTextElements.indexOf(this.doc.activeElement.tagName) != -1 && (!this.doc.activeElement["type"] || this.doc.activeElement["type"] == "text");
+            return this.formTextElements.indexOf(this.doc.activeElement.tagName) != -1 && (this.doc.activeElement["type"] == "textarea" || this.doc.activeElement["type"] == "text");
         };
         ViewModel.prototype.setErrorMessage = function (err) {
             this.doc.getElementById("err").textContent = err ? "Error: " + err : "";

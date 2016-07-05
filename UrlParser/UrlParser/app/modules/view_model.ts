@@ -8,7 +8,7 @@
 
         private mapIdToFunction: IMap = {
             "full_url": "url",
-            "hostname": "hostname",
+            "hostname": "host",
             "path": "pathname"
         };
 
@@ -25,6 +25,8 @@
             doc.body.addEventListener("keydown", evt => {
                 if (this.isTextFieldActive() && evt.keyCode == 13) {
                     submit(this.url.url());
+                    // we don't want a new line to be added in TEXTAREA
+                    evt.preventDefault();
                 }
             });
 
@@ -223,7 +225,7 @@
 
         private isTextFieldActive(): boolean {
             // check if tag is an INPUT or TEXTAREA, additionally check if the INPUT type is text
-            return this.formTextElements.indexOf(this.doc.activeElement.tagName) != -1 && (!this.doc.activeElement["type"] || this.doc.activeElement["type"] == "text");
+            return this.formTextElements.indexOf(this.doc.activeElement.tagName) != -1 && (this.doc.activeElement["type"] == "textarea" || this.doc.activeElement["type"] == "text");
         }
 
         private setErrorMessage(err: string) {
