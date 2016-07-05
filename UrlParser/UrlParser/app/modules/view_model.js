@@ -28,30 +28,37 @@ var UrlParser;
                 var inputElem = elem;
                 switch (inputElem.type) {
                     case "checkbox":
-                        var valElem = inputElem.previousElementSibling;
-                        if (inputElem["checked"]) {
-                            valElem.value = decodeURIComponent(valElem.value);
-                        }
-                        else {
-                            valElem.value = encodeURIComponent(valElem.value);
-                        }
+                        this.checkboxClickHandler(inputElem);
                         break;
                     case "button":
-                        var paramName = elem.parentElement["param-name"];
-                        if (paramName) {
-                            this.deleteParam(paramName);
-                            this.populateFieldsExceptActiveOne();
-                        }
-                        else {
-                            switch (elem.id) {
-                                case "add_param":
-                                    this.doc.getElementById("params").appendChild(this.createNewParamFields());
-                                    break;
-                                case "go":
-                                    this.submit(this.url.url());
-                                    break;
-                            }
-                        }
+                        this.buttonClickHandler(inputElem);
+                        break;
+                }
+            }
+        };
+        ViewModel.prototype.checkboxClickHandler = function (elem) {
+            var valElem = elem.previousElementSibling;
+            // we have only one checkbox for encoding/decoding value
+            if (elem.checked) {
+                valElem.value = decodeURIComponent(valElem.value);
+            }
+            else {
+                valElem.value = encodeURIComponent(valElem.value);
+            }
+        };
+        ViewModel.prototype.buttonClickHandler = function (elem) {
+            var paramName = elem.parentElement["param-name"];
+            if (paramName) {
+                this.deleteParam(paramName);
+                this.populateFieldsExceptActiveOne();
+            }
+            else {
+                switch (elem.id) {
+                    case "add_param":
+                        this.doc.getElementById("params").appendChild(this.createNewParamFields());
+                        break;
+                    case "go":
+                        this.submit(this.url.url());
                         break;
                 }
             }
