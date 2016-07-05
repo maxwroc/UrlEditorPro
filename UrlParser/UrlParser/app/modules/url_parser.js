@@ -32,6 +32,7 @@ var UrlParser;
             this.anchor.href = uri;
         }
         Uri.prototype.getSet = function (value, propertyName) {
+            // add url validation (regex) - bug: type in host field couple of :
             if (value == undefined) {
                 return this.anchor[propertyName];
             }

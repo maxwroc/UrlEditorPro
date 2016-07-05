@@ -40,6 +40,9 @@ module UrlParser {
         }
 
         private getSet(value: any, propertyName: string) {
+
+            // add url validation (regex) - bug: type in host field couple of :
+
             if (value == undefined) {
                 return this.anchor[propertyName];
             }

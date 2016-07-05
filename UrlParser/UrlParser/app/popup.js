@@ -3,17 +3,16 @@ var UrlParser;
     function ge(id) {
         return document.getElementById(id);
     }
-    function populateBasicFields(url) {
-        ge("full_url").value = url.url();
-        ge("hostname").value = url.hostname();
-        ge("path").value = url.pathname();
+    function updateValueIfNotActive(id, value) {
+        var elem = ge(id);
+        if (elem && document.activeElement != elem) {
+            elem.value = value;
+        }
     }
-    function createNewParamsFields(name) {
-        var param = document.createElement("div");
-        param.className = "param";
-        param["param-name"] = name || "--";
-        param.innerHTML = '<input type="text" class="name" /> <input type="text" class="value" /> <input type="checkbox" title="Encode / decode" /> <input type="button" value="x" />';
-        return param;
+    function populateBasicFields(url) {
+        updateValueIfNotActive("full_url", url.url());
+        updateValueIfNotActive("hostname", url.host());
+        updateValueIfNotActive("path", url.pathname());
     }
     function populateParams(url) {
         var params = document.getElementById("params");
@@ -27,6 +26,26 @@ var UrlParser;
             paramValue.value = urlParams[name];
             params.appendChild(param);
         }
+    }
+    function createNewParamsFields(name) {
+        var param = document.createElement("div");
+        param.className = "param";
+        param["param-name"] = name || "--";
+        param.innerHTML = '<input type="text" class="name" /> <input type="text" class="value" /> <input type="checkbox" title="Encode / decode" /> <input type="button" value="x" />';
+        return param;
+    }
+    function isCharacterKeyPress(evt) {
+        if (typeof evt.which == "undefined") {
+            // This is IE, which only fires keypress events for printable keys
+            return true;
+        }
+        else if (typeof evt.which == "number" && evt.which > 0) {
+            // In other browsers except old versions of WebKit, evt.which is
+            // only greater than zero if the keypress is a printable key.
+            // We need to filter out backspace and ctrl/alt/meta key combinations
+            return !evt.ctrlKey && !evt.metaKey && !evt.altKey;
+        }
+        return false;
     }
     function deleteParam(url, name) {
         // remove param
@@ -52,6 +71,9 @@ var UrlParser;
             ge("params").addEventListener("keyup", function (evt) {
                 if (evt.keyCode == 13) {
                     return submit();
+                }
+                if (!isCharacterKeyPress(evt)) {
+                    return;
                 }
                 var c = evt.target;
                 if (c.tagName == "INPUT" && c.type == "text" && c.parentElement["param-name"]) {
