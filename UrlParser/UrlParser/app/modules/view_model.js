@@ -70,11 +70,13 @@ var UrlParser;
             var elem = evt.target;
             if (this.isTextFieldActive()) {
                 // clear error message
-                this.setErrorMessage("");
-                elem.classList.remove("error");
+                this.setErrorMessage("", elem);
                 // check if we have a mapping from field ID to Url object function
                 if (elem.id && typeof this.mapIdToFunction[elem.id]) {
                     this.url[this.mapIdToFunction[elem.id]](elem.value);
+                    if (elem.value != this.url[this.mapIdToFunction[elem.id]]()) {
+                        this.setErrorMessage("url is invalid", elem);
+                    }
                     this.populateFieldsExceptActiveOne();
                 }
                 else if (elem.parentElement["param-name"]) {
@@ -113,6 +115,8 @@ var UrlParser;
         ViewModel.prototype.setValueIfNotActive = function (elem, value) {
             // check if it isn't currently active element (we don't want to overwrite text which user might be typing still)
             if (elem != this.doc.activeElement) {
+                // just in case we remove the error class
+                elem.classList.remove("error");
                 elem.value = value;
             }
         };
@@ -156,7 +160,7 @@ var UrlParser;
             // check if param exists already and it is different than the initial one
             if (params[safeNewName] && safeNewName != origName) {
                 elem.classList.add("error");
-                this.setErrorMessage("param with the same name already exists");
+                this.setErrorMessage("param with the same name already exists", elem);
                 return;
             }
             // if name is empty string we need to remove param
@@ -191,8 +195,16 @@ var UrlParser;
             // check if tag is an INPUT or TEXTAREA, additionally check if the INPUT type is text
             return this.formTextElements.indexOf(this.doc.activeElement.tagName) != -1 && (this.doc.activeElement["type"] == "textarea" || this.doc.activeElement["type"] == "text");
         };
-        ViewModel.prototype.setErrorMessage = function (err) {
+        ViewModel.prototype.setErrorMessage = function (err, elem) {
             this.doc.getElementById("err").textContent = err ? "Error: " + err : "";
+            if (elem) {
+                if (err) {
+                    elem.classList.add("error");
+                }
+                else {
+                    elem.classList.remove("error");
+                }
+            }
         };
         return ViewModel;
     })();
