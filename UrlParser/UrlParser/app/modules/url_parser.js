@@ -66,7 +66,7 @@ var UrlParser;
                 return this.urlPrefix + this.anchor.href;
             }
             var matches = url.match(prefixPattern);
-            if (matches.length > 1) {
+            if (matches && matches.length > 1) {
                 this.urlPrefix = matches[1];
                 // remove prefix from the url before passing it to anchor elem
                 url = url.replace(prefixPattern, "http");
