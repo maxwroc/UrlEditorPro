@@ -41,7 +41,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="app\img\icon.png" />
+    <Content Include="app\img\edit.png" />
+    <Content Include="app\img\edit2.png" />
+    <Content Include="app\img\edit3.png" />
+    <Content Include="app\img\pencil.png" />
+    <Content Include="app\img\write.png" />
+    <Content Include="app\options.html" />
     <Content Include="app\popup.html" />
     <Content Include="Properties\build\lib\Ionic.Zip.DLL" />
     <Content Include="Properties\build\lib\MSBuild.ExtensionPack.dll" />
@@ -59,6 +64,7 @@
     <TypeScriptCompile Include="app\modules\view_model.ts" />
     <TypeScriptCompile Include="app\modules\shared_interfaces.d.ts" />
     <TypeScriptCompile Include="app\modules\url_parser.ts" />
+    <TypeScriptCompile Include="app\options.ts" />
     <TypeScriptCompile Include="app\popup.ts" />
   </ItemGroup>
   <PropertyGroup>
