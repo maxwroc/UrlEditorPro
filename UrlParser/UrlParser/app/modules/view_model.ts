@@ -1,5 +1,7 @@
 ﻿module UrlParser {
 
+    var paramEncodedPattern = /%[a-fA-F0-9]{2}/;
+
     export class ViewModel {
         private url: Uri;
         private doc: HTMLDocument;
@@ -165,6 +167,8 @@
             var urlParams = this.url.params();
             for (var name in urlParams) {
                 var param = this.createNewParamFields(name);
+                // check if param value is encoded
+                var isEncoded = paramEncodedPattern.test(urlParams[name]);
 
                 // parameter name field
                 var paramNameElem = <HTMLInputElement>param.firstElementChild;
@@ -172,7 +176,13 @@
 
                 // parameter value field
                 var paramValue = <HTMLInputElement>paramNameElem.nextElementSibling;
-                paramValue.value = urlParams[name];
+                paramValue.value = isEncoded ? decodeURIComponent(urlParams[name]) : urlParams[name];
+
+                // parameter encoded checkbox
+                if (isEncoded) {
+                    var paramEncoded = <HTMLInputElement>paramValue.nextElementSibling;
+                    paramEncoded.checked = true;
+                }
 
                 params.appendChild(param);
             }

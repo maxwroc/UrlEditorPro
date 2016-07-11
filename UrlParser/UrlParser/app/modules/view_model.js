@@ -1,5 +1,6 @@
 var UrlParser;
 (function (UrlParser) {
+    var paramEncodedPattern = /%[a-fA-F0-9]{2}/;
     var ViewModel = (function () {
         function ViewModel(url, doc, submit) {
             var _this = this;
@@ -135,12 +136,19 @@ var UrlParser;
             var urlParams = this.url.params();
             for (var name in urlParams) {
                 var param = this.createNewParamFields(name);
+                // check if param value is encoded
+                var isEncoded = paramEncodedPattern.test(urlParams[name]);
                 // parameter name field
                 var paramNameElem = param.firstElementChild;
                 paramNameElem.value = name;
                 // parameter value field
                 var paramValue = paramNameElem.nextElementSibling;
-                paramValue.value = urlParams[name];
+                paramValue.value = isEncoded ? decodeURIComponent(urlParams[name]) : urlParams[name];
+                // parameter encoded checkbox
+                if (isEncoded) {
+                    var paramEncoded = paramValue.nextElementSibling;
+                    paramEncoded.checked = true;
+                }
                 params.appendChild(param);
             }
         };
