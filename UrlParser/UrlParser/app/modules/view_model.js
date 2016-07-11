@@ -76,10 +76,14 @@ var UrlParser;
                 // clear error message
                 this.setErrorMessage("", elem);
                 // check if we have a mapping from field ID to Url object function (used for basic fields)
-                if (elem.id && typeof this.mapIdToFunction[elem.id]) {
-                    this.url[this.mapIdToFunction[elem.id]](elem.value);
-                    if (elem.value != this.url[this.mapIdToFunction[elem.id]]()) {
-                        this.setErrorMessage("url is invalid", elem);
+                if (elem.id && typeof this.mapIdToFunction[elem.id] != "undefined") {
+                    var funcName = this.mapIdToFunction[elem.id];
+                    this.url[funcName](elem.value);
+                    if (elem.value != this.url[funcName]()) {
+                        // default http port number is removed automatically so we shouldn't show error in that case
+                        if (funcName != "host" || elem.value.match(/:80$/) == null) {
+                            this.setErrorMessage("url is invalid", elem);
+                        }
                     }
                     this.populateFieldsExceptActiveOne();
                 }
