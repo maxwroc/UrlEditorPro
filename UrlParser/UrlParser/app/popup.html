@@ -11,13 +11,16 @@
 
       input[type=text],
       textarea {
-          background-color: #edf3ff;
-          border: 1px solid #dcdcdc;
+          background-color: #fff;
+          border: 1px solid #cacaca;
+          border-radius: 5px;
+          padding: 5px;
       }
 
       input[type=text]:focus:not(.error),
       textarea:focus {
-          background-color: #c9ecfa;
+          box-shadow: inset 0 0 0.5em rgba(0, 0, 0, 0.3) !important;
+          outline: none;
       }
 
       .container > * {
@@ -43,7 +46,15 @@
       .param input[type=button],
       .param input[type=checkbox] {
           width: 22px;
+          height: 22px;
+          border-radius:5px;
+          background-color: #cacaca;
           flex: none;
+      }
+
+      .param input[type=button] {
+          margin-top: 2px;
+          background-color: #e7e7e7;
       }
       
       .container {
@@ -64,6 +75,7 @@
 
       body .error {
           background-color: #ffa9a9;
+          outline: none;
       }
 
     </style>
