@@ -49,6 +49,15 @@ module UrlParser {
         }
 
         host(value?: string): string {
+            var current = this.getSet(undefined, "host");;
+            if (value == undefined) {
+                return current
+            }
+            
+            // sometimes port number stays in the url - we need to be sure that it won't be in the final url when it is not needed
+            if (this.getSet(undefined, "port") == "0" && value.indexOf(":") == -1) {
+                value += ":80"; // set default http port number (it will disappear on final url)
+            }
             return this.getSet(value, "host");
         }
 
