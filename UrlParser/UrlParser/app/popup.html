@@ -42,6 +42,7 @@
       .param {
           display: flex;
           position: relative;
+          margin: 2px 0;
       }
       .value,
       .container > * {
@@ -49,6 +50,15 @@
       }
       .param input[type=text] {
           width: 150px;
+      }
+      .param input[type=text]:nth-of-type(1),
+      .container input[type=text]:nth-of-type(1) {
+          border-radius: 5px 0 0 5px;
+      }
+      .param input[type=text]:nth-of-type(2),
+      .container input[type=text]:nth-of-type(2) {
+          border-radius: 0 5px 5px 0;
+          border-left: none;
       }
       .param input:first-child {
           width: 15%;
