@@ -69,8 +69,9 @@ var UrlParser;
                     search += name + "=" + value[name];
                 }
                 if (search) {
-                    this.anchor.search = "?" + search;
+                    search = "?" + search;
                 }
+                this.anchor.search = search;
             }
         };
         Uri.prototype.url = function (url) {

@@ -87,8 +87,10 @@ module UrlParser {
                 }
 
                 if (search) {
-                    this.anchor.search = "?" + search;
+                    search = "?" + search;
                 }
+
+                this.anchor.search = search;
             }
         }
 
