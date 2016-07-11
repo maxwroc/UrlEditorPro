@@ -1,6 +1,7 @@
 var UrlParser;
 (function (UrlParser) {
     var paramEncodedPattern = /%[a-fA-F0-9]{2}/;
+    var port80Pattern = /:80$/;
     var ViewModel = (function () {
         function ViewModel(url, doc, submit) {
             var _this = this;
@@ -82,7 +83,7 @@ var UrlParser;
                     this.url[funcName](elem.value);
                     if (elem.value != this.url[funcName]()) {
                         // default http port number is removed automatically so we shouldn't show error in that case
-                        if (funcName != "host" || elem.value.match(/:80$/) == null) {
+                        if (funcName != "host" || !port80Pattern.test(elem.value)) {
                             this.setErrorMessage("url is invalid", elem);
                         }
                     }
