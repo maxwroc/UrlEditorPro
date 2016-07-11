@@ -2,6 +2,8 @@ var UrlParser;
 (function (UrlParser) {
     var paramEncodedPattern = /%[a-fA-F0-9]{2}/;
     var port80Pattern = /:80$/;
+    var maxClientWidth = 800;
+    var paramsMarginSum = 86; //5 * 4 + 2 * 3 + 2 * 22 + 2 * 8;
     var ViewModel = (function () {
         function ViewModel(url, doc, submit) {
             var _this = this;
@@ -14,6 +16,7 @@ var UrlParser;
             this.url = url;
             this.doc = doc;
             this.submit = submit;
+            this.measureElem = doc.getElementById("measure");
             // bind event handlers
             doc.body.addEventListener("click", function (evt) { return _this.clickEventDispatcher(evt); });
             doc.body.addEventListener("keyup", function (evt) { return _this.keyboardEventDispatcher(evt); });
@@ -134,6 +137,7 @@ var UrlParser;
             var params = this.doc.getElementById("params");
             // clean old set of params
             params.innerHTML = "";
+            var longestName = 0, longestValue = 0, longestBoth = 0;
             var urlParams = this.url.params();
             for (var name in urlParams) {
                 var param = this.createNewParamFields(name);
@@ -150,7 +154,24 @@ var UrlParser;
                     var paramEncoded = paramValue.nextElementSibling;
                     paramEncoded.checked = true;
                 }
+                // measuring
+                var nameWidth = this.getTextWidth(name);
+                if (nameWidth > longestName) {
+                    longestName = nameWidth;
+                }
+                var valueWidth = this.getTextWidth(paramValue.value);
+                if (valueWidth > longestValue) {
+                    longestValue = valueWidth;
+                }
+                var bothWidth = nameWidth + valueWidth;
+                if (bothWidth > longestBoth) {
+                    longestBoth = bothWidth;
+                }
                 params.appendChild(param);
+            }
+            longestBoth += paramsMarginSum;
+            if (longestBoth > params.clientWidth) {
+                this.doc.body.style.width = Math.min(longestBoth, maxClientWidth) + "px";
             }
         };
         ViewModel.prototype.createNewParamFields = function (name) {
@@ -224,6 +245,10 @@ var UrlParser;
                     elem.classList.remove("error");
                 }
             }
+        };
+        ViewModel.prototype.getTextWidth = function (text) {
+            this.measureElem.textContent = text;
+            return this.measureElem.offsetWidth;
         };
         return ViewModel;
     })();

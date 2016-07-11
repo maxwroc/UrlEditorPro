@@ -2,6 +2,8 @@
 
     var paramEncodedPattern = /%[a-fA-F0-9]{2}/;
     var port80Pattern = /:80$/;
+    var maxClientWidth = 800;
+    var paramsMarginSum = 86; //5 * 4 + 2 * 3 + 2 * 22 + 2 * 8;
 
     export class ViewModel {
         private url: Uri;
@@ -15,12 +17,15 @@
             "path": "pathname"
         };
 
+        private measureElem: HTMLSpanElement;
         private submit: (URL: string) => void;
 
         constructor(url: Uri, doc: HTMLDocument, submit: (url:string) => void) {
             this.url = url;
             this.doc = doc;
             this.submit = submit;
+
+            this.measureElem = <HTMLSpanElement>doc.getElementById("measure");
 
             // bind event handlers
             doc.body.addEventListener("click", evt => this.clickEventDispatcher(evt));
@@ -165,6 +170,8 @@
             // clean old set of params
             params.innerHTML = "";
 
+            var longestName = 0, longestValue = 0, longestBoth = 0;
+
             var urlParams = this.url.params();
             for (var name in urlParams) {
                 var param = this.createNewParamFields(name);
@@ -185,7 +192,26 @@
                     paramEncoded.checked = true;
                 }
 
+                // measuring
+                var nameWidth = this.getTextWidth(name);
+                if (nameWidth > longestName) {
+                    longestName = nameWidth;
+                }
+                var valueWidth = this.getTextWidth(paramValue.value);
+                if (valueWidth > longestValue) {
+                    longestValue = valueWidth;
+                }
+                var bothWidth = nameWidth + valueWidth;
+                if (bothWidth > longestBoth) {
+                    longestBoth = bothWidth;
+                }
+
                 params.appendChild(param);
+            }
+
+            longestBoth += paramsMarginSum;
+            if (longestBoth > params.clientWidth) {
+                this.doc.body.style.width = Math.min(longestBoth, maxClientWidth) + "px";
             }
         }
 
@@ -270,6 +296,11 @@
                     elem.classList.remove("error");
                 }
             }
+        }
+
+        private getTextWidth(text: string): number {
+            this.measureElem.textContent = text;
+            return this.measureElem.offsetWidth;
         }
     }
 }

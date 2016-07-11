@@ -27,9 +27,21 @@
           flex: 1 100%;
       }
 
+      #measure,
+      input[type=text] {
+          font-size: 13px;
+          font-family: Arial;
+      }
+
+      #measure {
+          position: absolute;
+          visibility: hidden;
+          white-space: nowrap;
+      }
       .container,
       .param {
           display: flex;
+          position: relative;
       }
       .value,
       .container > * {
@@ -39,7 +51,8 @@
           width: 150px;
       }
       .param input:first-child {
-          width: 60px;
+          width: 15%;
+          min-width: 80px;
       }
 
       #add_param,
@@ -95,6 +108,7 @@
           <textarea id="full_url" rows="7"></textarea>
       </div>
       <div class="container">
+          <span id="measure"></span>
           <input id="hostname" type="text" />
           <input id="path" type="text" />
       </div>
