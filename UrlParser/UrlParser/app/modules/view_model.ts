@@ -80,8 +80,7 @@
             else {
                 switch (elem.id) {
                     case "add_param":
-                        // add param button
-                        this.doc.getElementById("params").appendChild(this.createNewParamFields());
+                        this.addNewParamFields();
                         break;
                     case "go":
                         // submit button
@@ -94,6 +93,10 @@
         private keyboardEventDispatcher(evt: KeyboardEvent) {
             // casting to the INPUT elem but it can be a TEXTAREA as well
             var elem = <HTMLInputElement>evt.target;
+            
+            if (this.keyboardNavigation(evt)) {
+                return;
+            }
 
             if (this.isTextFieldActive()) {
                 // clear error message
@@ -129,7 +132,7 @@
             }
         }
 
-        private populateFieldsExceptActiveOne() {
+        private populateFieldsExceptActiveOne(forceUpdateParams: boolean = false, setFocusOnLastParam: boolean = false) {
             // iterate over elements which should be populatad
             this.formTextElements.forEach(tagName => {
                 var elements = this.doc.getElementsByTagName(tagName);
@@ -143,13 +146,15 @@
                 }
             });
 
-            // updating params only if there is no active element (probably this condition is redundant)
-            if (!this.doc.activeElement ||
+            // updating params only if force update flag is true
+            if (forceUpdateParams ||
+                // or if there is no active element (probably this condition is redundant)
+                !this.doc.activeElement ||
                 // or if the active element is not one of the text fields
                 !this.isTextFieldActive() ||
                 // or active element does not one of param fields
                 !this.doc.activeElement.parentElement["param-name"]) {
-                this.populateParams();
+                this.populateParams(setFocusOnLastParam);
             }
         }
 
@@ -163,8 +168,8 @@
             }
         }
 
-        private populateParams() {
-
+        private populateParams(setFocusOnLastOne: boolean = false) {
+            var paramNameElem: HTMLInputElement;
             var params = this.doc.getElementById("params");
 
             // clean old set of params
@@ -174,12 +179,12 @@
 
             var urlParams = this.url.params();
             for (var name in urlParams) {
-                var param = this.createNewParamFields(name);
+                var param = this.createNewParamContainer(name);
                 // check if param value is encoded
                 var isEncoded = paramEncodedPattern.test(urlParams[name]);
 
                 // parameter name field
-                var paramNameElem = <HTMLInputElement>param.firstElementChild;
+                paramNameElem = <HTMLInputElement>param.firstElementChild;
                 paramNameElem.value = name;
 
                 // parameter value field
@@ -213,9 +218,13 @@
             if (longestBoth > params.clientWidth) {
                 this.doc.body.style.width = Math.min(longestBoth, maxClientWidth) + "px";
             }
+
+            if (setFocusOnLastOne && paramNameElem) {
+                paramNameElem.focus();
+            }
         }
 
-        private createNewParamFields(name?: string): HTMLElement {
+        private createNewParamContainer(name?: string): HTMLElement {
             var param = <HTMLDivElement>document.createElement("div");
             param.className = "param";
             // we need to encode param name as it may contain invalid chars for url
@@ -301,6 +310,85 @@
         private getTextWidth(text: string): number {
             this.measureElem.textContent = text;
             return this.measureElem.offsetWidth;
+        }
+
+        private keyboardNavigation(evt: KeyboardEvent): boolean {
+
+            switch (evt.keyCode) {
+                case 9: // tab
+                    return true;
+                case 187: // = (+)
+                    // add new param
+                    if (evt.ctrlKey) {
+                        this.addNewParamFields();
+                        return true;
+                    }
+                    break;
+                case 189: // -
+                    // delete current param
+                    if (evt.ctrlKey) {
+                        var parent = (<HTMLInputElement>evt.target).parentElement;
+                        if (parent && parent["param-name"]) {
+                            this.deleteParam(parent["param-name"]);
+                            this.populateFieldsExceptActiveOne(true/*forceUpdateParams*/, true/*setFocusOnLastParam*/);
+                            return true;
+                        }
+                    }
+                    break;
+            }
+
+            var elem = <HTMLInputElement>evt.target;
+            if (evt.ctrlKey && [37, 38, 39, 40].indexOf(evt.keyCode) != -1) {
+                var nextElem: HTMLInputElement;
+                switch (evt.keyCode) {
+                    case 38: // up
+                        var nextContainer = elem.parentElement.previousElementSibling;
+                        // we need to handle case when user would like to go from params collection to basic fields
+                        if (elem.parentElement.parentElement.id == "params" && !nextContainer) {
+                            nextContainer = elem.parentElement.parentElement.previousElementSibling;
+                        }
+                        nextElem = this.getElementInTheSameColumn<HTMLInputElement>(elem, <HTMLElement>nextContainer);
+                        break;
+                    case 40: // down
+                        var nextContainer = elem.parentElement.nextElementSibling;
+                        // we need to handle case when user would like to go from basic fields to params collection
+                        if (nextContainer.id == "params") {
+                            nextContainer = nextContainer.firstElementChild;
+                        }
+                        nextElem = this.getElementInTheSameColumn<HTMLInputElement>(elem, <HTMLElement>nextContainer);
+                        break;
+                    case 37: // left
+                        nextElem = <HTMLInputElement>elem.previousElementSibling;
+                        break;
+                    case 39: // right
+                        nextElem = <HTMLInputElement>elem.nextElementSibling;
+                        break;
+                }
+                
+                evt.preventDefault();
+
+                if (nextElem && this.formTextElements.indexOf(nextElem.tagName) != -1) {
+                    nextElem.focus();
+                }
+                
+                return true;
+            }
+
+            return false;
+        }
+
+        private getElementInTheSameColumn<T>(currentElem: HTMLElement, container: HTMLElement): T {
+            if (currentElem && container) {
+                var index = getIndexOfSiblingGivenType(currentElem, this.formTextElements);
+                return <any>findNthElementOfType(container, this.formTextElements, index);
+            }
+        }
+
+        private addNewParamFields() {
+            var container = this.createNewParamContainer()
+            this.doc.getElementById("params").appendChild(container);
+
+            (<HTMLInputElement>container.firstElementChild).focus();
         }
     }
 }

@@ -64,8 +64,7 @@ var UrlParser;
             else {
                 switch (elem.id) {
                     case "add_param":
-                        // add param button
-                        this.doc.getElementById("params").appendChild(this.createNewParamFields());
+                        this.addNewParamFields();
                         break;
                     case "go":
                         // submit button
@@ -77,6 +76,9 @@ var UrlParser;
         ViewModel.prototype.keyboardEventDispatcher = function (evt) {
             // casting to the INPUT elem but it can be a TEXTAREA as well
             var elem = evt.target;
+            if (this.keyboardNavigation(evt)) {
+                return;
+            }
             if (this.isTextFieldActive()) {
                 // clear error message
                 this.setErrorMessage("", elem);
@@ -103,8 +105,10 @@ var UrlParser;
                 }
             }
         };
-        ViewModel.prototype.populateFieldsExceptActiveOne = function () {
+        ViewModel.prototype.populateFieldsExceptActiveOne = function (forceUpdateParams, setFocusOnLastParam) {
             var _this = this;
+            if (forceUpdateParams === void 0) { forceUpdateParams = false; }
+            if (setFocusOnLastParam === void 0) { setFocusOnLastParam = false; }
             // iterate over elements which should be populatad
             this.formTextElements.forEach(function (tagName) {
                 var elements = _this.doc.getElementsByTagName(tagName);
@@ -116,13 +120,15 @@ var UrlParser;
                     }
                 }
             });
-            // updating params only if there is no active element (probably this condition is redundant)
-            if (!this.doc.activeElement ||
+            // updating params only if force update flag is true
+            if (forceUpdateParams ||
+                // or if there is no active element (probably this condition is redundant)
+                !this.doc.activeElement ||
                 // or if the active element is not one of the text fields
                 !this.isTextFieldActive() ||
                 // or active element does not one of param fields
                 !this.doc.activeElement.parentElement["param-name"]) {
-                this.populateParams();
+                this.populateParams(setFocusOnLastParam);
             }
         };
         ViewModel.prototype.setValueIfNotActive = function (elem, value) {
@@ -133,18 +139,20 @@ var UrlParser;
                 elem.value = value;
             }
         };
-        ViewModel.prototype.populateParams = function () {
+        ViewModel.prototype.populateParams = function (setFocusOnLastOne) {
+            if (setFocusOnLastOne === void 0) { setFocusOnLastOne = false; }
+            var paramNameElem;
             var params = this.doc.getElementById("params");
             // clean old set of params
             params.innerHTML = "";
             var longestName = 0, longestValue = 0, longestBoth = 0;
             var urlParams = this.url.params();
             for (var name in urlParams) {
-                var param = this.createNewParamFields(name);
+                var param = this.createNewParamContainer(name);
                 // check if param value is encoded
                 var isEncoded = paramEncodedPattern.test(urlParams[name]);
                 // parameter name field
-                var paramNameElem = param.firstElementChild;
+                paramNameElem = param.firstElementChild;
                 paramNameElem.value = name;
                 // parameter value field
                 var paramValue = paramNameElem.nextElementSibling;
@@ -173,8 +181,11 @@ var UrlParser;
             if (longestBoth > params.clientWidth) {
                 this.doc.body.style.width = Math.min(longestBoth, maxClientWidth) + "px";
             }
+            if (setFocusOnLastOne && paramNameElem) {
+                paramNameElem.focus();
+            }
         };
-        ViewModel.prototype.createNewParamFields = function (name) {
+        ViewModel.prototype.createNewParamContainer = function (name) {
             var param = document.createElement("div");
             param.className = "param";
             // we need to encode param name as it may contain invalid chars for url
@@ -249,6 +260,75 @@ var UrlParser;
         ViewModel.prototype.getTextWidth = function (text) {
             this.measureElem.textContent = text;
             return this.measureElem.offsetWidth;
+        };
+        ViewModel.prototype.keyboardNavigation = function (evt) {
+            switch (evt.keyCode) {
+                case 9:
+                    return true;
+                case 187:
+                    // add new param
+                    if (evt.ctrlKey) {
+                        this.addNewParamFields();
+                        return true;
+                    }
+                    break;
+                case 189:
+                    // delete current param
+                    if (evt.ctrlKey) {
+                        var parent = evt.target.parentElement;
+                        if (parent && parent["param-name"]) {
+                            this.deleteParam(parent["param-name"]);
+                            this.populateFieldsExceptActiveOne(true /*forceUpdateParams*/, true /*setFocusOnLastParam*/);
+                            return true;
+                        }
+                    }
+                    break;
+            }
+            var elem = evt.target;
+            if (evt.ctrlKey && [37, 38, 39, 40].indexOf(evt.keyCode) != -1) {
+                var nextElem;
+                switch (evt.keyCode) {
+                    case 38:
+                        var nextContainer = elem.parentElement.previousElementSibling;
+                        // we need to handle case when user would like to go from params collection to basic fields
+                        if (elem.parentElement.parentElement.id == "params" && !nextContainer) {
+                            nextContainer = elem.parentElement.parentElement.previousElementSibling;
+                        }
+                        nextElem = this.getElementInTheSameColumn(elem, nextContainer);
+                        break;
+                    case 40:
+                        var nextContainer = elem.parentElement.nextElementSibling;
+                        // we need to handle case when user would like to go from basic fields to params collection
+                        if (nextContainer.id == "params") {
+                            nextContainer = nextContainer.firstElementChild;
+                        }
+                        nextElem = this.getElementInTheSameColumn(elem, nextContainer);
+                        break;
+                    case 37:
+                        nextElem = elem.previousElementSibling;
+                        break;
+                    case 39:
+                        nextElem = elem.nextElementSibling;
+                        break;
+                }
+                evt.preventDefault();
+                if (nextElem && this.formTextElements.indexOf(nextElem.tagName) != -1) {
+                    nextElem.focus();
+                }
+                return true;
+            }
+            return false;
+        };
+        ViewModel.prototype.getElementInTheSameColumn = function (currentElem, container) {
+            if (currentElem && container) {
+                var index = UrlParser.getIndexOfSiblingGivenType(currentElem, this.formTextElements);
+                return UrlParser.findNthElementOfType(container, this.formTextElements, index);
+            }
+        };
+        ViewModel.prototype.addNewParamFields = function () {
+            var container = this.createNewParamContainer();
+            this.doc.getElementById("params").appendChild(container);
+            container.firstElementChild.focus();
         };
         return ViewModel;
     })();
