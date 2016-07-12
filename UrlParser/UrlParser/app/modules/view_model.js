@@ -21,6 +21,9 @@ var UrlParser;
             doc.body.addEventListener("click", function (evt) { return _this.clickEventDispatcher(evt); });
             doc.body.addEventListener("keyup", function (evt) { return _this.keyboardEventDispatcher(evt); });
             doc.body.addEventListener("keydown", function (evt) {
+                if (_this.keyboardNavigation(evt)) {
+                    return;
+                }
                 if (_this.isTextFieldActive() && evt.keyCode == 13) {
                     submit(_this.url.url());
                     // we don't want a new line to be added in TEXTAREA
@@ -76,9 +79,6 @@ var UrlParser;
         ViewModel.prototype.keyboardEventDispatcher = function (evt) {
             // casting to the INPUT elem but it can be a TEXTAREA as well
             var elem = evt.target;
-            if (this.keyboardNavigation(evt)) {
-                return;
-            }
             if (this.isTextFieldActive()) {
                 // clear error message
                 this.setErrorMessage("", elem);

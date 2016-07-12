@@ -31,6 +31,11 @@
             doc.body.addEventListener("click", evt => this.clickEventDispatcher(evt));
             doc.body.addEventListener("keyup", evt => this.keyboardEventDispatcher(evt));
             doc.body.addEventListener("keydown", evt => {
+                
+                if (this.keyboardNavigation(evt)) {
+                    return;
+                }
+
                 if (this.isTextFieldActive() && evt.keyCode == 13) {
                     submit(this.url.url());
                     // we don't want a new line to be added in TEXTAREA
@@ -93,10 +98,6 @@
         private keyboardEventDispatcher(evt: KeyboardEvent) {
             // casting to the INPUT elem but it can be a TEXTAREA as well
             var elem = <HTMLInputElement>evt.target;
-            
-            if (this.keyboardNavigation(evt)) {
-                return;
-            }
 
             if (this.isTextFieldActive()) {
                 // clear error message
