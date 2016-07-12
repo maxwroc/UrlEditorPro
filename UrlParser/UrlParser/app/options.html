@@ -33,7 +33,7 @@
             font-size: 18pt;
             font-weight: 400;
             text-transform: uppercase;
-            margin: 0 0 20px;
+            margin: 0;
         }
         h3 {
             line-height: 60px;
@@ -57,9 +57,14 @@
         .setting {
             border-top: 1px solid #cacaca;
             display: flex;
+            margin-top: 20px;
         }
         .setting h3 {
             width: 250px;
+        }
+        .setting-value {
+            margin-top: 20px;
+            flex: 1;
         }
 
         #icon-list li {
@@ -87,6 +92,18 @@
             width: 30px;
             height: 30px;
         }
+
+        .grid > div {
+            display: flex;
+        }
+        .grid > div > span {
+            flex: 1;
+        }
+        .highlihgt-first-column > div > span:first-child {
+            font-weight: bold;
+            flex: none;
+            width: 100px;
+        }
     </style>
     <script src="options.js"></script>
 </head>
@@ -104,6 +121,19 @@
                     </div>
                 </div>
             </div>
+            <div class="setting">
+                <h3>Keyboard shortcuts</h3>
+                <div class="setting-value">
+                    <div class="grid highlihgt-first-column">
+                        <div><span id="action-shortcut"></span><span>Lunch extension (action) pane</span></div>
+                        <div><span>Ctrl+&quot;+&quot;</span><span>Add new parameter</span></div>
+                        <div><span>Ctrl+&quot;-&quot;</span><span>Remove currently selected parameter</span></div>
+                        <div><span>Ctrl+Arrow</span><span>Navigate to nearest field</span></div>
+                        <div><span>Esc</span><span>Close extension (action) pane</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </body>
 </html>

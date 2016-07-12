@@ -26,6 +26,13 @@ var UrlParser;
                     }
                 }
             });
+            chrome.commands.getAll(function (commands) {
+                commands.forEach(function (command) {
+                    if (command.name == "_execute_browser_action") {
+                        document.getElementById("action-shortcut").innerText = command.shortcut;
+                    }
+                });
+            });
         }
         function showHideIconCredits() {
             document.getElementById("icon-list").nextElementSibling.style.display = icons.indexOf(localStorage["currentIcon"]) == 0 ? "block" : "none";

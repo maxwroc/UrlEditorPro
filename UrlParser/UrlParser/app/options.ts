@@ -29,6 +29,15 @@ module UrlParser.Options {
                 }
             }
         });
+
+
+        chrome.commands.getAll((commands: any[]) => {
+            commands.forEach(command => {
+                if (command.name == "_execute_browser_action") {
+                    document.getElementById("action-shortcut").innerText = command.shortcut;
+                }
+            }
+        });
     }
 
     function showHideIconCredits() {
