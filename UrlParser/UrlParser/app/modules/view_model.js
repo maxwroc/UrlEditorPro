@@ -2,7 +2,7 @@ var UrlParser;
 (function (UrlParser) {
     var paramEncodedPattern = /%[a-fA-F0-9]{2}/;
     var port80Pattern = /:80$/;
-    var maxClientWidth = 800;
+    var maxClientWidth = 780;
     var paramsMarginSum = 86; //5 * 4 + 2 * 3 + 2 * 22 + 2 * 8;
     var ViewModel = (function () {
         function ViewModel(url, doc, submit) {
@@ -31,6 +31,8 @@ var UrlParser;
                 }
             });
             this.populateFieldsExceptActiveOne();
+            // set focus on first field
+            doc.getElementById("full_url").focus();
         }
         ViewModel.prototype.clickEventDispatcher = function (evt) {
             var elem = evt.target;
