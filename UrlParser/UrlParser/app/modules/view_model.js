@@ -19,7 +19,7 @@ var UrlParser;
             this.measureElem = doc.getElementById("measure");
             // bind event handlers
             doc.body.addEventListener("click", function (evt) { return _this.clickEventDispatcher(evt); });
-            doc.body.addEventListener("keyup", function (evt) { return _this.keyboardEventDispatcher(evt); });
+            doc.body.addEventListener("input", function (evt) { return _this.keyboardEventDispatcher(evt); });
             doc.body.addEventListener("keydown", function (evt) {
                 if (_this.keyboardNavigation(evt)) {
                     return;

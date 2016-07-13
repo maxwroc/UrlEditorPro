@@ -29,7 +29,7 @@
 
             // bind event handlers
             doc.body.addEventListener("click", evt => this.clickEventDispatcher(evt));
-            doc.body.addEventListener("keyup", evt => this.keyboardEventDispatcher(evt));
+            doc.body.addEventListener("input", evt => this.keyboardEventDispatcher(evt));
             doc.body.addEventListener("keydown", evt => {
                 
                 if (this.keyboardNavigation(evt)) {
@@ -95,7 +95,7 @@
             }
         }
 
-        private keyboardEventDispatcher(evt: KeyboardEvent) {
+        private keyboardEventDispatcher(evt: Event) {
             // casting to the INPUT elem but it can be a TEXTAREA as well
             var elem = <HTMLInputElement>evt.target;
 
