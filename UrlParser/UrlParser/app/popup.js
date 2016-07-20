@@ -15,8 +15,14 @@ var UrlParser;
     }
     function initialize() {
         chrome.tabs.getSelected(null, function (tab) {
+            var settings = new UrlParser.Settings(localStorage);
             new UrlParser.ViewModel(new UrlParser.Uri(tab.url), document, function (url) {
+                // redirect current tab
                 chrome.tabs.update(tab.id, { url: url });
+                // check if we should close extension popup/action pane
+                if (settings.autoHide) {
+                    window.close();
+                }
             });
         });
     }

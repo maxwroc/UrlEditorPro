@@ -67,28 +67,28 @@
             flex: 1;
         }
 
-        #icon-list li {
+        .icon-list li {
             margin: 5px;
             display: inline;
         }
-        #icon-list span {
+        .icon-list span {
             display: inline-block;
             border-radius: 5px;
             border: 1px solid #cacaca;
             height: 38px;
             padding: 3px;
         }
-        #icon-list label > input{ /* HIDE RADIO */
+        .icon-list label > input{ /* HIDE RADIO */
           visibility: hidden; /* Makes input not-clickable */
           position: absolute; /* Remove input from document flow */
         }
-        #icon-list label > input + span{ /* IMAGE STYLES */
+        .icon-list label > input + span{ /* IMAGE STYLES */
           cursor: pointer;
         }
-        #icon-list label > input:checked + span{ /* (RADIO CHECKED) IMAGE STYLES */
+        .icon-list label > input:checked + span{ /* (RADIO CHECKED) IMAGE STYLES */
           box-shadow: 1px 1px 10px 5px #b7b7b7;
         }
-        #icon-list img {
+        .icon-list img {
             width: 30px;
             height: 30px;
         }
@@ -105,6 +105,8 @@
             width: 100px;
         }
     </style>
+    <script src="modules/settings.js"></script>
+    <script src="modules/helpers.js"></script>
     <script src="options.js"></script>
 </head>
 <body>
@@ -115,8 +117,14 @@
             <div class="setting">
                 <h3>Icon</h3>
                 <div class="setting-value">
-                    <ul id="icon-list"></ul>
-                    <div>
+                    <ul class="icon-list">
+                        <li><label><input type="radio" name="icon" value="img/edit.png" /><span><img src="img/edit.png" /></span></label></li>
+                        <li><label><input type="radio" name="icon" value="img/edit2.png" /><span><img src="img/edit2.png" /></span></label></li>
+                        <li><label><input type="radio" name="icon" value="img/edit3.png" /><span><img src="img/edit3.png" /></span></label></li>
+                        <li><label><input type="radio" name="icon" value="img/pencil.png" /><span><img src="img/pencil.png" /></span></label></li>
+                        <li><label><input type="radio" name="icon" value="img/write.png" /><span><img src="img/write.png" /></span></label></li>
+                    </ul>
+                    <div id="icon-credits">
                         <div>Icon made by <a href="http://www.flaticon.com/authors/gregor-cresnar" title="Gregor Cresnar">Gregor Cresnar</a><br />from <a href="http://www.flaticon.com" title="Flaticon">www.flaticon.com</a> is licensed by <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a></div>
                     </div>
                 </div>
@@ -130,6 +138,14 @@
                         <div><span>Ctrl+&quot;-&quot;</span><span>Remove currently selected parameter</span></div>
                         <div><span>Ctrl+Arrow</span><span>Navigate to nearest field</span></div>
                         <div><span>Esc</span><span>Close extension (action) pane</span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="setting">
+                <h3>Miscellaneous</h3>
+                <div class="setting-value">
+                    <div class="grid highlihgt-first-column">
+                        <div><span><input type="checkbox" name="autoHide" /></span><span>Hide extension after redirection</span></div>
                     </div>
                 </div>
             </div>

@@ -2,30 +2,49 @@ var UrlParser;
 (function (UrlParser) {
     var Options;
     (function (Options) {
-        var icons = ["img/edit.png", "img/edit2.png", "img/edit3.png", "img/pencil.png", "img/write.png"];
+        var settings = new UrlParser.Settings(localStorage);
         function initialize() {
-            var iconsContainer = document.getElementById("icon-list");
-            var currentIcon = localStorage["currentIcon"] || icons[0];
-            icons.forEach(function (path) {
-                var iconElem = document.createElement("label");
-                iconElem.innerHTML = '<li><label><input type="radio" name="icon" value="' + path + '" ' + (currentIcon == path ? 'checked' : '') + '/><span><img src="' + path + '" /></span></label></li>';
-                iconsContainer.appendChild(iconElem);
-            });
-            showHideIconCredits();
             document.body.addEventListener("change", function (evt) {
                 var elem = evt.target;
-                if (elem.tagName == "INPUT") {
+                if (elem.tagName == "INPUT" && settings[elem.name] != undefined) {
+                    // save setting
+                    switch (elem.type) {
+                        case "checkbox":
+                            settings.setValue(elem.name, elem.checked);
+                            break;
+                        case "radio":
+                            if (elem.checked) {
+                                settings.setValue(elem.name, elem.value);
+                            }
+                            break;
+                    }
+                    // apply setting
                     switch (elem.name) {
                         case "icon":
                             chrome.browserAction.setIcon({
                                 path: elem.value
                             });
-                            localStorage["currentIcon"] = elem.value;
-                            showHideIconCredits();
+                            toggleCredits();
                             break;
                     }
                 }
             });
+            var inputs = document.getElementsByTagName("INPUT");
+            for (var i = 0, input; input = inputs[i]; i++) {
+                if (input.name && settings[input.name] != undefined) {
+                    switch (input.type) {
+                        case "checkbox":
+                            input.checked = settings[input.name];
+                            break;
+                        case "radio":
+                            if (input.value == settings[input.name]) {
+                                input.checked = true;
+                                toggleCredits();
+                            }
+                            break;
+                    }
+                }
+            }
             chrome.commands.getAll(function (commands) {
                 commands.forEach(function (command) {
                     if (command.name == "_execute_browser_action") {
@@ -34,8 +53,8 @@ var UrlParser;
                 });
             });
         }
-        function showHideIconCredits() {
-            document.getElementById("icon-list").nextElementSibling.style.display = icons.indexOf(localStorage["currentIcon"]) == 0 ? "block" : "none";
+        function toggleCredits() {
+            document.getElementById("icon-credits").style.display = settings.icon == "img/edit.png" ? "block" : "none";
         }
         document.addEventListener('DOMContentLoaded', function () { return initialize(); });
     })(Options = UrlParser.Options || (UrlParser.Options = {}));

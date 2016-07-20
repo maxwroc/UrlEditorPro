@@ -20,7 +20,7 @@
         private measureElem: HTMLSpanElement;
         private submit: (URL: string) => void;
 
-        constructor(url: Uri, doc: HTMLDocument, submit: (url:string) => void) {
+        constructor(url: Uri, doc: HTMLDocument, submit: (url: string) => void) {
             this.url = url;
             this.doc = doc;
             this.submit = submit;

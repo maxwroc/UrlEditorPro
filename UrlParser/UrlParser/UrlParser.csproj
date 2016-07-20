@@ -62,6 +62,7 @@
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="app\modules\helpers.ts" />
+    <TypeScriptCompile Include="app\modules\settings.ts" />
     <TypeScriptCompile Include="app\modules\view_model.ts" />
     <TypeScriptCompile Include="app\modules\shared_interfaces.d.ts" />
     <TypeScriptCompile Include="app\modules\url_parser.ts" />
