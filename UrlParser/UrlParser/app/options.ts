@@ -2,6 +2,7 @@
 module UrlParser.Options {
 
     var settings = new Settings(localStorage);
+    var autoSuggestData: IAutoSuggestData;
     
     function initialize() {
 
@@ -28,6 +29,16 @@ module UrlParser.Options {
                         chrome.browserAction.setIcon({
                             path: elem.value
                         });
+                        break;
+                }
+            }
+            else if (elem.tagName == "SELECT") {
+                switch (elem.name) {
+                    case "page":
+                        var pageData = autoSuggestData[elem.value] || {};
+                        populateComboBox("autoSuggestParams", Object.keys(pageData), "-- select param --");
+                        break;
+                    case "param":
                         break;
                 }
             }
@@ -59,6 +70,11 @@ module UrlParser.Options {
                 }
             });
         });
+
+        if (settings.autoSuggestData) {
+            autoSuggestData = <IAutoSuggestData>JSON.parse(settings.autoSuggestData);
+            populateComboBox("autoSuggestPages", Object.keys(autoSuggestData), "-- select page --");
+        }
     }
 
     function toggleRelatedElem(elem: HTMLInputElement) {
@@ -75,6 +91,22 @@ module UrlParser.Options {
                 toggleElem.style.display = forceValue.toLowerCase() == "show" ? "block" : "none";
             }
         }
+    }
+
+    function populateComboBox(elemId: string, data: string[], defaultValue: string = "--") {
+        var combo = <HTMLSelectElement>document.getElementById(elemId);
+        combo.innerHTML = "";
+
+        data = data || [];
+
+        // add dummy element on the beginning
+        data.unshift(defaultValue);
+
+        data.forEach(optionValue => {
+            var option = document.createElement("option");
+            option.value = option.textContent = optionValue;
+            combo.appendChild(option);
+        });
     }
 
     document.addEventListener('DOMContentLoaded', () => initialize());

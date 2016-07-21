@@ -1,10 +1,10 @@
 ﻿module UrlParser {
 
-    interface IAutoSuggestData {
+    export interface IAutoSuggestData {
         [pageHostName: string]: IAutoSuggestPageData;
     }
 
-    interface IAutoSuggestPageData {
+    export interface IAutoSuggestPageData {
         [paramName: string]: string[]
     }
 

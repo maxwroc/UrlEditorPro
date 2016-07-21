@@ -3,6 +3,7 @@ var UrlParser;
     var Options;
     (function (Options) {
         var settings = new UrlParser.Settings(localStorage);
+        var autoSuggestData;
         function initialize() {
             document.body.addEventListener("change", function (evt) {
                 var elem = evt.target;
@@ -26,6 +27,16 @@ var UrlParser;
                             chrome.browserAction.setIcon({
                                 path: elem.value
                             });
+                            break;
+                    }
+                }
+                else if (elem.tagName == "SELECT") {
+                    switch (elem.name) {
+                        case "page":
+                            var pageData = autoSuggestData[elem.value] || {};
+                            populateComboBox("autoSuggestParams", Object.keys(pageData), "-- select param --");
+                            break;
+                        case "param":
                             break;
                     }
                 }
@@ -54,6 +65,10 @@ var UrlParser;
                     }
                 });
             });
+            if (settings.autoSuggestData) {
+                autoSuggestData = JSON.parse(settings.autoSuggestData);
+                populateComboBox("autoSuggestPages", Object.keys(autoSuggestData), "-- select page --");
+            }
         }
         function toggleRelatedElem(elem) {
             var paramsAttr = elem.getAttribute("toggleElem"); // format: elemId[|show/hide]
@@ -68,6 +83,19 @@ var UrlParser;
                     toggleElem.style.display = forceValue.toLowerCase() == "show" ? "block" : "none";
                 }
             }
+        }
+        function populateComboBox(elemId, data, defaultValue) {
+            if (defaultValue === void 0) { defaultValue = "--"; }
+            var combo = document.getElementById(elemId);
+            combo.innerHTML = "";
+            data = data || [];
+            // add dummy element on the beginning
+            data.unshift(defaultValue);
+            data.forEach(function (optionValue) {
+                var option = document.createElement("option");
+                option.value = option.textContent = optionValue;
+                combo.appendChild(option);
+            });
         }
         document.addEventListener('DOMContentLoaded', function () { return initialize(); });
     })(Options = UrlParser.Options || (UrlParser.Options = {}));
