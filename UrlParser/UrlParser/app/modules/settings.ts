@@ -14,6 +14,21 @@
         */
         public autoHide = true;
 
+        /**
+        * Whether to show parameter suggestions
+        */
+        public autoSuggest = true;
+
+        /**
+        * Whether to save new parameters to suggest them in the future
+        */
+        public autoSuggestSaveNew = true;
+
+        /**
+        * Params suggestion data. We keep it as a string to prevent from parsing it on the initialization.
+        */
+        public autoSuggestData = '{ "www.bing.com": { "uncrunched": [ "1", "0" ] }}';
+
         constructor(storage) {
             storageCache = storage;
 

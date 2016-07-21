@@ -12,6 +12,18 @@ var UrlParser;
             * Whether to hide action pane after submission
             */
             this.autoHide = true;
+            /**
+            * Whether to show parameter suggestions
+            */
+            this.autoSuggest = true;
+            /**
+            * Whether to save new parameters to suggest them in the future
+            */
+            this.autoSuggestSaveNew = true;
+            /**
+            * Params suggestion data. We keep it as a string to prevent from parsing it on the initialization.
+            */
+            this.autoSuggestData = '{ "www.bing.com": { "uncrunched": [ "1", "0" ] }}';
             storageCache = storage;
             Object.keys(this).forEach(function (key) {
                 // check if property is not inherited

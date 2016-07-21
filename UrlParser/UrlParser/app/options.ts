@@ -12,11 +12,13 @@ module UrlParser.Options {
                 switch (elem.type) {
                     case "checkbox":
                         settings.setValue(elem.name, elem.checked);
+                        toggleRelatedElem(elem);
                         break;
                     case "radio":
                         if (elem.checked) {
                             settings.setValue(elem.name, elem.value);
                         }
+                        toggleRelatedElem(elem);
                         break;
                 }
 
@@ -26,7 +28,6 @@ module UrlParser.Options {
                         chrome.browserAction.setIcon({
                             path: elem.value
                         });
-                        toggleCredits();
                         break;
                 }
             }
@@ -38,11 +39,12 @@ module UrlParser.Options {
                 switch (input.type) {
                     case "checkbox":
                         input.checked = settings[input.name];
+                        toggleRelatedElem(input);
                         break;
                     case "radio":
                         if (input.value == settings[input.name]) {
                             input.checked = true;
-                            toggleCredits();
+                            toggleRelatedElem(input);
                         }
                         break;
                 }
@@ -59,8 +61,20 @@ module UrlParser.Options {
         });
     }
 
-    function toggleCredits() {
-        (<HTMLDivElement>document.getElementById("icon-credits")).style.display = settings.icon == "img/edit.png" ? "block" : "none";
+    function toggleRelatedElem(elem: HTMLInputElement) {
+        var paramsAttr = elem.getAttribute("toggleElem"); // format: elemId[|show/hide]
+        if (paramsAttr) {
+            var params = paramsAttr.split("|");
+            var toggleElem = document.getElementById(params[0]);
+            var forceValue = params[1];
+
+            if (forceValue == undefined) {
+                toggleElem.style.display = elem.checked? "block" : "none";
+            }
+            else {
+                toggleElem.style.display = forceValue.toLowerCase() == "show" ? "block" : "none";
+            }
+        }
     }
 
     document.addEventListener('DOMContentLoaded', () => initialize());

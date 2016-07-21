@@ -61,6 +61,7 @@
     <Content Include="app\manifest.json" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="app\modules\autosuggest.ts" />
     <TypeScriptCompile Include="app\modules\helpers.ts" />
     <TypeScriptCompile Include="app\modules\settings.ts" />
     <TypeScriptCompile Include="app\modules\view_model.ts" />

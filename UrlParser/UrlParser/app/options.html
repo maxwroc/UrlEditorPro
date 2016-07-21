@@ -92,17 +92,31 @@
             width: 30px;
             height: 30px;
         }
-
-        .grid > div {
-            display: flex;
+        #iconCredits {
+            display: none;
         }
-        .grid > div > span {
+
+        .grid > * {
+            display: flex;
+            margin: 2px 0;
+        }
+        .grid > * > * {
             flex: 1;
         }
         .highlihgt-first-column > div > span:first-child {
             font-weight: bold;
             flex: none;
             width: 100px;
+        }
+        .setting-value .section {
+            margin-top: 10px;
+        }
+        .grid-space > * > * {
+            margin: 0 2px;
+        }
+        .grid-last-small > * > *:last-child {
+            flex: none;
+            width: 70px;
         }
     </style>
     <script src="modules/settings.js"></script>
@@ -118,13 +132,13 @@
                 <h3>Icon</h3>
                 <div class="setting-value">
                     <ul class="icon-list">
-                        <li><label><input type="radio" name="icon" value="img/edit.png" /><span><img src="img/edit.png" /></span></label></li>
-                        <li><label><input type="radio" name="icon" value="img/edit2.png" /><span><img src="img/edit2.png" /></span></label></li>
-                        <li><label><input type="radio" name="icon" value="img/edit3.png" /><span><img src="img/edit3.png" /></span></label></li>
-                        <li><label><input type="radio" name="icon" value="img/pencil.png" /><span><img src="img/pencil.png" /></span></label></li>
-                        <li><label><input type="radio" name="icon" value="img/write.png" /><span><img src="img/write.png" /></span></label></li>
+                        <li><label><input type="radio" name="icon" value="img/edit.png" toggleElem="iconCredits" /><span><img src="img/edit.png" /></span></label></li>
+                        <li><label><input type="radio" name="icon" value="img/edit2.png" toggleElem="iconCredits|hide" /><span><img src="img/edit2.png" /></span></label></li>
+                        <li><label><input type="radio" name="icon" value="img/edit3.png" toggleElem="iconCredits|hide" /><span><img src="img/edit3.png" /></span></label></li>
+                        <li><label><input type="radio" name="icon" value="img/pencil.png" toggleElem="iconCredits|hide" /><span><img src="img/pencil.png" /></span></label></li>
+                        <li><label><input type="radio" name="icon" value="img/write.png" toggleElem="iconCredits|hide" /><span><img src="img/write.png" /></span></label></li>
                     </ul>
-                    <div id="icon-credits">
+                    <div id="iconCredits">
                         <div>Icon made by <a href="http://www.flaticon.com/authors/gregor-cresnar" title="Gregor Cresnar">Gregor Cresnar</a><br />from <a href="http://www.flaticon.com" title="Flaticon">www.flaticon.com</a> is licensed by <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a></div>
                     </div>
                 </div>
@@ -138,6 +152,50 @@
                         <div><span>Ctrl+&quot;-&quot;</span><span>Remove currently selected parameter</span></div>
                         <div><span>Ctrl+Arrow</span><span>Navigate to nearest field</span></div>
                         <div><span>Esc</span><span>Close extension (action) pane</span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="setting">
+                <h3>Recently used params</h3>
+                <div class="setting-value">
+                    <div class="grid highlihgt-first-column">
+                        <div><span><input type="checkbox" name="autoSuggest" toggleElem="autoSuggestOptions" /></span><span>Suggest recently used parameters</span></div>
+                    </div>
+                    <div id="autoSuggestOptions">
+                        <div class="grid highlihgt-first-column">
+                            <div><span><input type="checkbox" name="autoSuggestSaveNew" /></span><span>Save new parameters</span></div>
+                        </div>
+                        <div class="section grid grid-space grid-last-small">
+                            <div>Select a website to view parameters saved</div>
+                            <div>
+                                <select name="page">
+                                    <option value="--">-- select page --</option>
+                                </select>
+                                <input name="delete" type="button" value="Delete" />
+                            </div>
+                        </div>
+                        <div class="section grid grid-space grid-last-small">
+                            <div>Select a param to view values saved</div>
+                            <div>
+                                <select name="param">
+                                    <option value="--">-- select parameter --</option>
+                                </select>
+                                <input name="delete" type="button" value="Delete" />
+                            </div>
+                        </div>
+                        <div class="section">
+                            <div>Parameter list</div>
+                            <div id="autoSuggestParamValues" class="grid grid-space grid-last-small">
+                                <div>
+                                    <input type="text" value="zonk" disabled />
+                                    <input name="delete" type="button" value="Delete" />
+                                </div>
+                                <div>
+                                    <input type="text" value="zonk 3 ekjfewhf fe fe eo e e e f f sd fsdf sdf dsf sd fs " disabled />
+                                    <input name="delete" type="button" value="Delete" />
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
