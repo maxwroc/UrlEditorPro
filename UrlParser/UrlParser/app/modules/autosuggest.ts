@@ -80,7 +80,7 @@
                     prefix = name;
                 }
                 else if (pageData[name]) {
-                    suggestions = Object.keys(pageData[name]);
+                    suggestions = pageData[name];
                     prefix = value;
                 }
 
@@ -105,6 +105,14 @@
         private container: HTMLUListElement;
 
         private doc: Document;
+
+        private elem: HTMLInputElement;
+
+        private handler;
+
+        private active: HTMLLIElement;
+
+        private originalText: string;
 
         constructor(doc: Document) {
             this.doc = doc;
@@ -136,11 +144,80 @@
                 this.container.style.top = pos.bottom + "px";
                 this.container.style.left = pos.left + "px";
                 this.container.style.display = "block";
+
+                this.elem = elem;
+                this.originalText = this.elem.value;
+
+                // we need to wrap it to be able to remove it later
+                this.handler = (evt: KeyboardEvent) => this.keyboardNavigation(evt);
+
+                this.elem.addEventListener("keydown", this.handler, true);
             }
         }
 
         hide() {
             this.container.style.display = "none";
+            if (this.elem) {
+                this.elem.removeEventListener("keydown", this.handler, true);
+                this.elem = undefined;
+            }
+            this.active = undefined;
+        }
+
+        private keyboardNavigation(evt: KeyboardEvent) {
+            var handled: boolean;
+            var elementToFocus: HTMLInputElement;
+
+            // allow user to navigate to other input elem
+            if (evt.ctrlKey) {
+                return;
+            }
+
+            var suggestionToSelect: HTMLLIElement;
+
+            switch (evt.keyCode) {
+                case 38: // up
+                    handled = true;
+                    suggestionToSelect = this.active ? <HTMLLIElement>this.active.previousElementSibling : <HTMLLIElement>this.container.lastElementChild;
+                    break;
+                case 40: // down
+                    handled = true;
+                    suggestionToSelect = this.active ? <HTMLLIElement>this.active.nextElementSibling : <HTMLLIElement>this.container.firstElementChild;
+                    break;
+                case 13: // enter
+                    if (this.active) {
+                        handled = true;
+                        this.originalText = this.active.textContent;
+
+                        var nextInput = <HTMLInputElement>this.elem.nextElementSibling;
+                        if (nextInput.tagName == "INPUT" && nextInput.type == "text") {
+                            elementToFocus = nextInput;
+                        }
+                        else {
+                            // hack: close suggestions pane when no next element
+                            setTimeout(() => this.hide(), 1);
+                        }
+                    }
+                    break;
+            }
+
+            this.active && this.active.classList.remove("hv");
+            suggestionToSelect && suggestionToSelect.classList.add("hv");
+
+            this.active = suggestionToSelect;
+
+            // put suggestion text into input elem
+            this.elem.value = this.active ? this.active.textContent : this.originalText;
+
+            if (handled) {
+                evt.preventDefault();
+            }
+
+            evt.stopPropagation();
+
+            if (elementToFocus) {
+                elementToFocus.focus();
+            }
         }
     }
 }

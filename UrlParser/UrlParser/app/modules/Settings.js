@@ -23,7 +23,7 @@ var UrlParser;
             /**
             * Params suggestion data. We keep it as a string to prevent from parsing it on the initialization.
             */
-            this.autoSuggestData = '{ "www.bing.com": { "uncrunched": [ "1", "0" ] }}';
+            this.autoSuggestData = '{ "www.bing.com": { "uncrunched": [ "1", "0" ], "format": ["pbxml", "pbhtml", "aqm"] }}';
             storageCache = storage;
             Object.keys(this).forEach(function (key) {
                 // check if property is not inherited
