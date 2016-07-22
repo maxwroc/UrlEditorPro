@@ -30,6 +30,7 @@
             // bind event handlers
             doc.body.addEventListener("click", evt => this.clickEventDispatcher(evt));
             doc.body.addEventListener("input", evt => this.keyboardEventDispatcher(evt));
+            doc.body.addEventListener("updated", evt => this.keyboardEventDispatcher(evt));
             doc.body.addEventListener("keydown", evt => {
                 
                 if (this.keyboardNavigation(evt)) {

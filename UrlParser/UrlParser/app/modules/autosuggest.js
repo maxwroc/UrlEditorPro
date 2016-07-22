@@ -75,7 +75,7 @@ var UrlParser;
         function Suggestions(doc) {
             this.doc = doc;
             this.container = doc.createElement("ul");
-            this.container.setAttribute("style", "position: absolute; margin: 0; background-color: white; border: 1px solid gray; display: none; list-style: none; padding: 0 5px");
+            this.container.className = "suggestions";
             this.doc.body.appendChild(this.container);
         }
         Suggestions.prototype.add = function (text) {
@@ -97,9 +97,10 @@ var UrlParser;
             // show only if there is anything to show
             if (this.container.innerHTML) {
                 var pos = elem.getBoundingClientRect();
-                this.container.style.top = pos.bottom + "px";
+                this.container.style.top = (pos.bottom - 3) + "px";
                 this.container.style.left = pos.left + "px";
                 this.container.style.display = "block";
+                this.container.style.width = elem.offsetWidth + "px";
                 this.elem = elem;
                 this.originalText = this.elem.value;
                 // we need to wrap it to be able to remove it later
@@ -145,7 +146,15 @@ var UrlParser;
                             // hack: close suggestions pane when no next element
                             setTimeout(function () { return _this.hide(); }, 1);
                         }
+                        var e = new Event("updated");
+                        e.initEvent("updated", true, true);
+                        this.elem.dispatchEvent(e);
                     }
+                    break;
+                case 27:
+                    handled = true;
+                    // delay hiding to properly execute remaining code
+                    setTimeout(function () { return _this.hide(); }, 1);
                     break;
             }
             this.active && this.active.classList.remove("hv");

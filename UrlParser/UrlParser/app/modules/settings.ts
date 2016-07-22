@@ -27,7 +27,7 @@
         /**
         * Params suggestion data. We keep it as a string to prevent from parsing it on the initialization.
         */
-        public autoSuggestData = '{ "www.bing.com": { "uncrunched": [ "1", "0" ], "format": ["pbxml", "pbhtml", "aqm"] }}';
+        public autoSuggestData = '{ "www.bing.com": { "uncrunched": [ "1", "0" ], "format": ["pbxml", "pbhtml", "aqm"], "addfeaturesnoexpansion": ["sup052", "entitiesaqr"] }}';
 
         constructor(storage) {
             storageCache = storage;

@@ -3,6 +3,9 @@
   <head>
     <title>Getting Started Extension's Popup</title>
     <style>
+      * {
+        box-sizing: border-box;
+      }
       body {
         min-width: 400px;
         overflow-x: hidden;
@@ -101,7 +104,21 @@
           outline: none;
       }
       .hv {
-          background-color: gray;
+          background-color: #cacaca;
+      }
+
+      .suggestions {
+          position: absolute; 
+          margin: 0; 
+          background-color: white; 
+          border: 1px solid #cacaca; 
+          display: none; 
+          list-style: none; 
+          padding: 0;
+          border-radius: 0 0 5px 5px;
+      }
+      .suggestions li {
+          padding: 0 5px;
       }
 
     </style>
