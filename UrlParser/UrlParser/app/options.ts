@@ -36,9 +36,33 @@ module UrlParser.Options {
                 switch (elem.name) {
                     case "page":
                         var pageData = autoSuggestData[elem.value] || {};
-                        populateComboBox("autoSuggestParams", Object.keys(pageData), "-- select param --");
+                        populateComboBox("autoSuggestParams", Object.keys(pageData), "-- select param --", elem.value);
                         break;
                     case "param":
+                        var paramData = autoSuggestData[elem["source"]][elem.value] || [];
+                        var paramValuesElem = document.getElementById("autoSuggestParamValues");
+
+                        // clear param list
+                        paramValuesElem.innerHTML = "";
+
+                        paramData.forEach(value => {
+                            var paramVal = document.createElement("div");
+
+                            var input = document.createElement("input");
+                            input.type = "text";
+                            input.disabled = true;
+                            input.value = value;
+                            input.name = "paramValue";
+                            paramVal.appendChild(input);
+
+                            var deleteBtn = document.createElement("input");
+                            deleteBtn.type = "button";
+                            deleteBtn.value = "Delete";
+                            deleteBtn.name = "delete";
+                            paramVal.appendChild(deleteBtn);
+
+                            paramValuesElem.appendChild(paramVal);
+                        });
                         break;
                 }
             }
@@ -93,9 +117,10 @@ module UrlParser.Options {
         }
     }
 
-    function populateComboBox(elemId: string, data: string[], defaultValue: string = "--") {
+    function populateComboBox(elemId: string, data: string[], defaultValue: string = "--", comboSource: string = "") {
         var combo = <HTMLSelectElement>document.getElementById(elemId);
         combo.innerHTML = "";
+        combo["source"] = comboSource;
 
         data = data || [];
 

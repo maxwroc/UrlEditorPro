@@ -34,9 +34,28 @@ var UrlParser;
                     switch (elem.name) {
                         case "page":
                             var pageData = autoSuggestData[elem.value] || {};
-                            populateComboBox("autoSuggestParams", Object.keys(pageData), "-- select param --");
+                            populateComboBox("autoSuggestParams", Object.keys(pageData), "-- select param --", elem.value);
                             break;
                         case "param":
+                            var paramData = autoSuggestData[elem["source"]][elem.value] || [];
+                            var paramValuesElem = document.getElementById("autoSuggestParamValues");
+                            // clear param list
+                            paramValuesElem.innerHTML = "";
+                            paramData.forEach(function (value) {
+                                var paramVal = document.createElement("div");
+                                var input = document.createElement("input");
+                                input.type = "text";
+                                input.disabled = true;
+                                input.value = value;
+                                input.name = "paramValue";
+                                paramVal.appendChild(input);
+                                var deleteBtn = document.createElement("input");
+                                deleteBtn.type = "button";
+                                deleteBtn.value = "Delete";
+                                deleteBtn.name = "delete";
+                                paramVal.appendChild(deleteBtn);
+                                paramValuesElem.appendChild(paramVal);
+                            });
                             break;
                     }
                 }
@@ -84,10 +103,12 @@ var UrlParser;
                 }
             }
         }
-        function populateComboBox(elemId, data, defaultValue) {
+        function populateComboBox(elemId, data, defaultValue, comboSource) {
             if (defaultValue === void 0) { defaultValue = "--"; }
+            if (comboSource === void 0) { comboSource = ""; }
             var combo = document.getElementById(elemId);
             combo.innerHTML = "";
+            combo["source"] = comboSource;
             data = data || [];
             // add dummy element on the beginning
             data.unshift(defaultValue);
