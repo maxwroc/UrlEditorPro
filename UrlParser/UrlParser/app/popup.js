@@ -16,9 +16,12 @@ var UrlParser;
     function initialize() {
         chrome.tabs.getSelected(null, function (tab) {
             var settings = new UrlParser.Settings(localStorage);
-            new UrlParser.ViewModel(new UrlParser.Uri(tab.url), document, function (url) {
+            var uri = new UrlParser.Uri(tab.url);
+            var autosuggest = new UrlParser.AutoSuggest(settings, document, uri);
+            new UrlParser.ViewModel(uri, document, function (uri) {
                 // redirect current tab
-                chrome.tabs.update(tab.id, { url: url });
+                chrome.tabs.update(tab.id, { url: uri.url() });
+                autosuggest.onSubmission(uri);
                 // check if we should close extension popup/action pane
                 if (settings.autoHide) {
                     window.close();

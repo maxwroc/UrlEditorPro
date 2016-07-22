@@ -18,9 +18,9 @@
         };
 
         private measureElem: HTMLSpanElement;
-        private submit: (URL: string) => void;
+        private submit: (uri: Uri) => void;
 
-        constructor(url: Uri, doc: HTMLDocument, submit: (url: string) => void) {
+        constructor(url: Uri, doc: HTMLDocument, submit: (uri: Uri) => void) {
             this.url = url;
             this.doc = doc;
             this.submit = submit;
@@ -37,7 +37,7 @@
                 }
 
                 if (this.isTextFieldActive() && evt.keyCode == 13) {
-                    submit(this.url.url());
+                    submit(this.url);
                     // we don't want a new line to be added in TEXTAREA
                     evt.preventDefault();
                 }
@@ -92,7 +92,7 @@
                         break;
                     case "go":
                         // submit button
-                        this.submit(this.url.url());
+                        this.submit(this.url);
                         break;
                 }
             }
@@ -234,7 +234,7 @@
             // we need to encode param name as it may contain invalid chars for url
             // the default value is specified to prevent from addiong this param to the url object
             param["param-name"] = encodeURIComponent(name) || "--";
-            param.innerHTML = '<input type="text" class="name" /> <input type="text" class="value" /> <input type="checkbox" title="Encode / decode" /> <input type="button" value="x" />';
+            param.innerHTML = '<input type="text" name="name" class="name" /> <input type="text" name="value" class="value" /> <input type="checkbox" title="Encode / decode" /> <input type="button" value="x" />';
             return param;
         }
 

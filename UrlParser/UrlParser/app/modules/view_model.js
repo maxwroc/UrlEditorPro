@@ -25,7 +25,7 @@ var UrlParser;
                     return;
                 }
                 if (_this.isTextFieldActive() && evt.keyCode == 13) {
-                    submit(_this.url.url());
+                    submit(_this.url);
                     // we don't want a new line to be added in TEXTAREA
                     evt.preventDefault();
                 }
@@ -73,7 +73,7 @@ var UrlParser;
                         break;
                     case "go":
                         // submit button
-                        this.submit(this.url.url());
+                        this.submit(this.url);
                         break;
                 }
             }
@@ -193,7 +193,7 @@ var UrlParser;
             // we need to encode param name as it may contain invalid chars for url
             // the default value is specified to prevent from addiong this param to the url object
             param["param-name"] = encodeURIComponent(name) || "--";
-            param.innerHTML = '<input type="text" class="name" /> <input type="text" class="value" /> <input type="checkbox" title="Encode / decode" /> <input type="button" value="x" />';
+            param.innerHTML = '<input type="text" name="name" class="name" /> <input type="text" name="value" class="value" /> <input type="checkbox" title="Encode / decode" /> <input type="button" value="x" />';
             return param;
         };
         ViewModel.prototype.deleteParam = function (name) {
