@@ -4,7 +4,7 @@ var UrlParser;
         function AutoSuggest(settings, doc, baseUrl) {
             var _this = this;
             this.settings = settings;
-            this.baseUrl = baseUrl;
+            this.baseUrl = new UrlParser.Uri(baseUrl.url());
             // initialize suggestions container
             this.suggestions = new Suggestions(doc);
             // bind event handlers
@@ -15,8 +15,30 @@ var UrlParser;
             document.body.addEventListener("input", function (evt) { return _this.onDomEvent(evt.target); });
         }
         AutoSuggest.prototype.onSubmission = function (submittedUri) {
-            // compute differences and save new params
-            this.baseUrl = submittedUri;
+            var _this = this;
+            if (this.settings.autoSuggestSaveNew && this.parsedData) {
+                // compute differences and save new params
+                var baseParams = this.baseUrl.params();
+                var newParams = submittedUri.params();
+                var baseParamNames = Object.keys(baseParams);
+                var newParamNames = Object.keys(newParams);
+                var diffNames = newParamNames.filter(function (newParam) { return baseParamNames.indexOf(newParam) < 0; });
+                if (diffNames.length > 0) {
+                    var pageName = submittedUri.hostname();
+                    // make sure that page entry is set
+                    this.parsedData[pageName] = this.parsedData[pageName] || {};
+                    var existingNames = Object.keys(this.parsedData[pageName]);
+                    diffNames.forEach(function (newParam) {
+                        if (existingNames.indexOf(newParam) == -1) {
+                            _this.parsedData[pageName][newParam] = [];
+                        }
+                        _this.parsedData[pageName][newParam].push(newParams[newParam]);
+                    });
+                    // save in settings
+                    this.settings.setValue("autoSuggestData", JSON.stringify(this.parsedData));
+                }
+                this.baseUrl = submittedUri;
+            }
         };
         AutoSuggest.prototype.onDomEvent = function (elem) {
             if (elem.tagName == "INPUT" && elem.type == "text" && elem.parentElement["param-name"]) {
@@ -134,6 +156,7 @@ var UrlParser;
                     handled = true;
                     suggestionToSelect = this.active ? this.active.nextElementSibling : this.container.firstElementChild;
                     break;
+                case 9: // tab
                 case 13:
                     if (this.active) {
                         handled = true;

@@ -20,7 +20,7 @@
 
         constructor(settings: Settings, doc: Document, baseUrl: Uri) {
             this.settings = settings;
-            this.baseUrl = baseUrl;
+            this.baseUrl = new Uri(baseUrl.url());
 
             // initialize suggestions container
             this.suggestions = new Suggestions(doc);
@@ -34,8 +34,38 @@
         }
 
         onSubmission(submittedUri: Uri) {
-            // compute differences and save new params
-            this.baseUrl = submittedUri;
+            if (this.settings.autoSuggestSaveNew && this.parsedData) {
+                // compute differences and save new params
+                var baseParams = this.baseUrl.params();
+                var newParams = submittedUri.params();
+
+                var baseParamNames = Object.keys(baseParams);
+                var newParamNames = Object.keys(newParams);
+
+
+                var diffNames = newParamNames.filter(newParam => baseParamNames.indexOf(newParam) < 0);
+                if (diffNames.length > 0) {
+
+                    var pageName = submittedUri.hostname();
+                    // make sure that page entry is set
+                    this.parsedData[pageName] = this.parsedData[pageName] || {};
+
+                    var existingNames = Object.keys(this.parsedData[pageName]);
+
+                    diffNames.forEach(newParam => {
+                        if (existingNames.indexOf(newParam) == -1) {
+                            this.parsedData[pageName][newParam] = [];
+                        }
+
+                        this.parsedData[pageName][newParam].push(newParams[newParam]);
+                    });
+
+                    // save in settings
+                    this.settings.setValue("autoSuggestData", JSON.stringify(this.parsedData));
+                }
+
+                this.baseUrl = submittedUri;
+            }
         }
 
         private onDomEvent(elem: HTMLInputElement) {
@@ -185,6 +215,7 @@
                     handled = true;
                     suggestionToSelect = this.active ? <HTMLLIElement>this.active.nextElementSibling : <HTMLLIElement>this.container.firstElementChild;
                     break;
+                case 9: // tab
                 case 13: // enter
                     if (this.active) {
                         handled = true;
