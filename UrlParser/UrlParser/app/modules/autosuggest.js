@@ -32,7 +32,10 @@ var UrlParser;
                         if (existingNames.indexOf(newParam) == -1) {
                             _this.parsedData[pageName][newParam] = [];
                         }
-                        _this.parsedData[pageName][newParam].push(newParams[newParam]);
+                        // remove if exists currently
+                        _this.parsedData[pageName][newParam] = _this.parsedData[pageName][newParam].filter(function (val) { return val != newParam; });
+                        // add on the beginning
+                        _this.parsedData[pageName][newParam].unshift(newParams[newParam]);
                     });
                     // save in settings
                     this.settings.setValue("autoSuggestData", JSON.stringify(this.parsedData));

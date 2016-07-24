@@ -60,6 +60,55 @@ var UrlParser;
                     }
                 }
             });
+            document.body.addEventListener("click", function (evt) {
+                var input = evt.target;
+                if (input.tagName == "INPUT" && input.name == "delete" && autoSuggestData) {
+                    var pageElem = document.getElementById("autoSuggestPages");
+                    var paramElem = document.getElementById("autoSuggestParams");
+                    var paramValues = document.getElementById("autoSuggestParamValues");
+                    var saveData = false;
+                    var subjectElem = input.previousElementSibling;
+                    // check if deleting page
+                    if (subjectElem == pageElem && autoSuggestData[subjectElem.value]) {
+                        if (confirm("Do you want to dletete all (" + Object.keys(autoSuggestData[subjectElem.value]).length + ") parameters for page: " + subjectElem.value)) {
+                            delete autoSuggestData[subjectElem.value];
+                            // remove element from the list
+                            var select = subjectElem;
+                            select.remove(select.selectedIndex);
+                            // remove all param values
+                            var paramsSelect = paramElem;
+                            paramElem.innerHTML = "";
+                            paramElem.value = "";
+                            // remove all visible values
+                            paramValues.innerHTML = "";
+                            saveData = true;
+                        }
+                    }
+                    else if (subjectElem == paramElem && autoSuggestData[pageElem.value][subjectElem.value]) {
+                        if (confirm("Do you want to dletete all (" + Object.keys(autoSuggestData[pageElem.value][subjectElem.value]).length + ") values for parameter: " + subjectElem.value)) {
+                            delete autoSuggestData[pageElem.value][subjectElem.value];
+                            // remove element from the list
+                            var select = subjectElem;
+                            select.remove(select.selectedIndex);
+                            // remove all visible values
+                            paramValues.innerHTML = "";
+                            saveData = true;
+                        }
+                    }
+                    else if (autoSuggestData[pageElem.value] &&
+                        autoSuggestData[pageElem.value][paramElem.value] &&
+                        autoSuggestData[pageElem.value][paramElem.value].indexOf(subjectElem.value) != -1) {
+                        if (confirm("Do you want to delete '" + subjectElem.value + "' value from param '" + paramElem.value + "'")) {
+                            autoSuggestData[pageElem.value][paramElem.value] = autoSuggestData[pageElem.value][paramElem.value].filter(function (val) { return val != subjectElem.value; });
+                            subjectElem.parentElement.parentElement.removeChild(subjectElem.parentElement);
+                            saveData = true;
+                        }
+                    }
+                    if (saveData) {
+                        settings.setValue("autoSuggestData", JSON.stringify(autoSuggestData));
+                    }
+                }
+            });
             var inputs = document.getElementsByTagName("INPUT");
             for (var i = 0, input; input = inputs[i]; i++) {
                 if (input.name && settings[input.name] != undefined) {

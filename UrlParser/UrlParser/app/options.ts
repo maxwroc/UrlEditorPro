@@ -68,6 +68,66 @@ module UrlParser.Options {
             }
         });
 
+        document.body.addEventListener("click", evt => {
+            var input = <HTMLInputElement>evt.target;
+            if (input.tagName == "INPUT" && input.name == "delete" && autoSuggestData) {
+                var pageElem = <HTMLInputElement>document.getElementById("autoSuggestPages");
+                var paramElem = <HTMLInputElement>document.getElementById("autoSuggestParams");
+                var paramValues = <HTMLDivElement>document.getElementById("autoSuggestParamValues");
+
+                var saveData = false;
+
+                var subjectElem = <HTMLInputElement>input.previousElementSibling;
+
+                // check if deleting page
+                if (subjectElem == pageElem && autoSuggestData[subjectElem.value]) {
+                    if (confirm("Do you want to dletete all (" + Object.keys(autoSuggestData[subjectElem.value]).length + ") parameters for page: " + subjectElem.value)) {
+                        delete autoSuggestData[subjectElem.value];
+
+                        // remove element from the list
+                        var select = <HTMLSelectElement><any>subjectElem;
+                        select.remove(select.selectedIndex);
+                        // remove all param values
+                        var paramsSelect = <HTMLSelectElement><any>paramElem;
+                        paramElem.innerHTML = "";
+                        paramElem.value = "";
+                        // remove all visible values
+                        paramValues.innerHTML = "";
+
+                        saveData = true;
+                    }
+                }
+                // check if deleting param
+                else if (subjectElem == paramElem && autoSuggestData[pageElem.value][subjectElem.value]) {
+                    if (confirm("Do you want to dletete all (" + Object.keys(autoSuggestData[pageElem.value][subjectElem.value]).length + ") values for parameter: " + subjectElem.value)) {
+                        delete autoSuggestData[pageElem.value][subjectElem.value];
+
+                        // remove element from the list
+                        var select = <HTMLSelectElement><any>subjectElem;
+                        select.remove(select.selectedIndex);
+                        // remove all visible values
+                        paramValues.innerHTML = "";
+
+                        saveData = true;
+                    }
+                }
+                // check if deleting value
+                else if (autoSuggestData[pageElem.value] &&
+                    autoSuggestData[pageElem.value][paramElem.value] &&
+                    autoSuggestData[pageElem.value][paramElem.value].indexOf(subjectElem.value) != -1) {
+                    if (confirm("Do you want to delete '" + subjectElem.value + "' value from param '" + paramElem.value + "'")) {
+                        autoSuggestData[pageElem.value][paramElem.value] = autoSuggestData[pageElem.value][paramElem.value].filter(val => val != subjectElem.value);
+                        subjectElem.parentElement.parentElement.removeChild(subjectElem.parentElement);
+                        saveData = true;
+                    }
+                }
+
+                if (saveData) {
+                    settings.setValue("autoSuggestData", JSON.stringify(autoSuggestData));
+                }
+            }
+        });
+
         var inputs = document.getElementsByTagName("INPUT");
         for (var i = 0, input: HTMLInputElement; input = <HTMLInputElement>inputs[i]; i++) {
             if (input.name && settings[input.name] != undefined) {

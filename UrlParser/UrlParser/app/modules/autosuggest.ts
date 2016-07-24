@@ -57,7 +57,11 @@
                             this.parsedData[pageName][newParam] = [];
                         }
 
-                        this.parsedData[pageName][newParam].push(newParams[newParam]);
+                        // remove if exists currently
+                        this.parsedData[pageName][newParam] = this.parsedData[pageName][newParam].filter(val => val != newParam);
+
+                        // add on the beginning
+                        this.parsedData[pageName][newParam].unshift(newParams[newParam]);
                     });
 
                     // save in settings
