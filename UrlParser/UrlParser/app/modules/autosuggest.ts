@@ -68,7 +68,8 @@
                     this.settings.setValue("autoSuggestData", JSON.stringify(this.parsedData));
                 }
 
-                this.baseUrl = submittedUri;
+                // create new Uri object to avoid keeping same reference
+                this.baseUrl = new Uri(submittedUri.url());
             }
         }
 
@@ -87,6 +88,9 @@
 
                 if (name) {
                     this.showSuggestions(elem, name, value);
+                }
+                else {
+                    this.suggestions.hide();
                 }
             }
         }

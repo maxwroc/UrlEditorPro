@@ -40,7 +40,8 @@ var UrlParser;
                     // save in settings
                     this.settings.setValue("autoSuggestData", JSON.stringify(this.parsedData));
                 }
-                this.baseUrl = submittedUri;
+                // create new Uri object to avoid keeping same reference
+                this.baseUrl = new UrlParser.Uri(submittedUri.url());
             }
         };
         AutoSuggest.prototype.onDomEvent = function (elem) {
@@ -57,6 +58,9 @@ var UrlParser;
                 }
                 if (name) {
                     this.showSuggestions(elem, name, value);
+                }
+                else {
+                    this.suggestions.hide();
                 }
             }
         };
