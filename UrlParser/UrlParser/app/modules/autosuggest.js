@@ -126,6 +126,7 @@ var UrlParser;
             // show only if there is anything to show
             if (this.container.innerHTML) {
                 var pos = elem.getBoundingClientRect();
+                // pos doesn't contain scroll value so we need to add it
                 this.container.style.top = (pos.bottom + document.body.scrollTop - 3) + "px";
                 this.container.style.left = pos.left + "px";
                 this.container.style.display = "block";
