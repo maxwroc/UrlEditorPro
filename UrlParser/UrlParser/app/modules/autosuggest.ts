@@ -179,7 +179,7 @@
             // show only if there is anything to show
             if (this.container.innerHTML) {
                 var pos = elem.getBoundingClientRect();
-                this.container.style.top = (pos.bottom - 3) + "px";
+                this.container.style.top = (pos.bottom + document.body.scrollTop - 3) + "px";
                 this.container.style.left = pos.left + "px";
                 this.container.style.display = "block";
                 this.container.style.width = elem.offsetWidth + "px";
