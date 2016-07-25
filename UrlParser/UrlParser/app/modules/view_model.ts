@@ -1,4 +1,4 @@
-﻿module UrlParser {
+﻿module UrlEditor {
 
     var paramEncodedPattern = /%[a-fA-F0-9]{2}/;
     var port80Pattern = /:80$/;

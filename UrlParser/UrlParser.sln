@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UrlParser", "UrlParser\UrlParser.csproj", "{9D141603-1A9D-4EEC-82D8-C473EA436839}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UrlEditorPRO", "UrlParser\UrlEditorPRO.csproj", "{9D141603-1A9D-4EEC-82D8-C473EA436839}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

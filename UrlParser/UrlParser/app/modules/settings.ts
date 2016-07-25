@@ -1,4 +1,4 @@
-﻿module UrlParser {
+﻿module UrlEditor {
     
     var storageCache = {};
 

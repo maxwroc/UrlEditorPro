@@ -1,5 +1,5 @@
-var UrlParser;
-(function (UrlParser) {
+var UrlEditor;
+(function (UrlEditor) {
     function isCharacterKeyPress(evt) {
         if (typeof evt.which == "undefined") {
             // This is IE, which only fires keypress events for printable keys
@@ -15,10 +15,10 @@ var UrlParser;
     }
     function initialize() {
         chrome.tabs.getSelected(null, function (tab) {
-            var settings = new UrlParser.Settings(localStorage);
-            var uri = new UrlParser.Uri(tab.url);
-            var autosuggest = new UrlParser.AutoSuggest(settings, document, uri);
-            new UrlParser.ViewModel(uri, document, function (uri) {
+            var settings = new UrlEditor.Settings(localStorage);
+            var uri = new UrlEditor.Uri(tab.url);
+            var autosuggest = new UrlEditor.AutoSuggest(settings, document, uri);
+            new UrlEditor.ViewModel(uri, document, function (uri) {
                 // redirect current tab
                 chrome.tabs.update(tab.id, { url: uri.url() });
                 autosuggest.onSubmission(uri);
@@ -31,4 +31,4 @@ var UrlParser;
     }
     ;
     document.addEventListener('DOMContentLoaded', function () { return initialize(); });
-})(UrlParser || (UrlParser = {}));
+})(UrlEditor || (UrlEditor = {}));

@@ -1,6 +1,6 @@
 ﻿declare var chrome;
 
-module UrlParser {
+module UrlEditor {
 
     function isCharacterKeyPress(evt) {
         if (typeof evt.which == "undefined") {
@@ -19,11 +19,11 @@ module UrlParser {
         chrome.tabs.getSelected(null, function (tab) {
             
             var settings = new Settings(localStorage);
-            var uri = new UrlParser.Uri(tab.url);
+            var uri = new UrlEditor.Uri(tab.url);
 
             var autosuggest = new AutoSuggest(settings, document, uri);
         
-            new UrlParser.ViewModel(uri, document, uri => {
+            new UrlEditor.ViewModel(uri, document, uri => {
                 // redirect current tab
                 chrome.tabs.update(tab.id, { url: uri.url() });
 

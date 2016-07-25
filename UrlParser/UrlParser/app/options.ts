@@ -1,5 +1,5 @@
 ﻿
-module UrlParser.Options {
+module UrlEditor.Options {
 
     var settings = new Settings(localStorage);
     var autoSuggestData: IAutoSuggestData;

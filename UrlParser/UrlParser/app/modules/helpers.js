@@ -1,5 +1,5 @@
-var UrlParser;
-(function (UrlParser) {
+var UrlEditor;
+(function (UrlEditor) {
     /**
      * It iterates over previous siblings and counts elements of given tag names (types)
      */
@@ -12,7 +12,7 @@ var UrlParser;
         }
         return index;
     }
-    UrlParser.getIndexOfSiblingGivenType = getIndexOfSiblingGivenType;
+    UrlEditor.getIndexOfSiblingGivenType = getIndexOfSiblingGivenType;
     /**
      * Returns element in the same column as the given one (grid layout)
      */
@@ -30,5 +30,5 @@ var UrlParser;
         }
         return lastFound;
     }
-    UrlParser.findNthElementOfType = findNthElementOfType;
-})(UrlParser || (UrlParser = {}));
+    UrlEditor.findNthElementOfType = findNthElementOfType;
+})(UrlEditor || (UrlEditor = {}));

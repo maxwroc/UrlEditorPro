@@ -1,5 +1,5 @@
 ﻿
-module UrlParser {
+module UrlEditor {
     
     /**
      * It iterates over previous siblings and counts elements of given tag names (types)

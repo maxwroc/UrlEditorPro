@@ -1,6 +1,6 @@
 ﻿
 
-module UrlParser {
+module UrlEditor {
 
     var paramPattern = /([^\?=&]+)=([^\?=&]+)/g;
     var prefixPattern = /^([a-zA-Z0-9-]+:)http/;

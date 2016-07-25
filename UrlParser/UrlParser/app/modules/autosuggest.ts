@@ -1,4 +1,4 @@
-﻿module UrlParser {
+﻿module UrlEditor {
 
     export interface IAutoSuggestData {
         [pageHostName: string]: IAutoSuggestPageData;

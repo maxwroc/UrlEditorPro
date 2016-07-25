@@ -1,5 +1,5 @@
-var UrlParser;
-(function (UrlParser) {
+var UrlEditor;
+(function (UrlEditor) {
     var paramEncodedPattern = /%[a-fA-F0-9]{2}/;
     var port80Pattern = /:80$/;
     var maxClientWidth = 780;
@@ -324,8 +324,8 @@ var UrlParser;
         };
         ViewModel.prototype.getElementInTheSameColumn = function (currentElem, container) {
             if (currentElem && container) {
-                var index = UrlParser.getIndexOfSiblingGivenType(currentElem, this.formTextElements);
-                return UrlParser.findNthElementOfType(container, this.formTextElements, index);
+                var index = UrlEditor.getIndexOfSiblingGivenType(currentElem, this.formTextElements);
+                return UrlEditor.findNthElementOfType(container, this.formTextElements, index);
             }
         };
         ViewModel.prototype.addNewParamFields = function () {
@@ -335,5 +335,5 @@ var UrlParser;
         };
         return ViewModel;
     })();
-    UrlParser.ViewModel = ViewModel;
-})(UrlParser || (UrlParser = {}));
+    UrlEditor.ViewModel = ViewModel;
+})(UrlEditor || (UrlEditor = {}));

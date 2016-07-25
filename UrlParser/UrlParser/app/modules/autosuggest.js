@@ -1,10 +1,10 @@
-var UrlParser;
-(function (UrlParser) {
+var UrlEditor;
+(function (UrlEditor) {
     var AutoSuggest = (function () {
         function AutoSuggest(settings, doc, baseUrl) {
             var _this = this;
             this.settings = settings;
-            this.baseUrl = new UrlParser.Uri(baseUrl.url());
+            this.baseUrl = new UrlEditor.Uri(baseUrl.url());
             // initialize suggestions container
             this.suggestions = new Suggestions(doc);
             // bind event handlers
@@ -41,7 +41,7 @@ var UrlParser;
                     this.settings.setValue("autoSuggestData", JSON.stringify(this.parsedData));
                 }
                 // create new Uri object to avoid keeping same reference
-                this.baseUrl = new UrlParser.Uri(submittedUri.url());
+                this.baseUrl = new UrlEditor.Uri(submittedUri.url());
             }
         };
         AutoSuggest.prototype.onDomEvent = function (elem) {
@@ -99,7 +99,7 @@ var UrlParser;
         };
         return AutoSuggest;
     })();
-    UrlParser.AutoSuggest = AutoSuggest;
+    UrlEditor.AutoSuggest = AutoSuggest;
     var Suggestions = (function () {
         function Suggestions(doc) {
             this.doc = doc;
@@ -203,4 +203,4 @@ var UrlParser;
         };
         return Suggestions;
     })();
-})(UrlParser || (UrlParser = {}));
+})(UrlEditor || (UrlEditor = {}));

@@ -1,5 +1,5 @@
-var UrlParser;
-(function (UrlParser) {
+var UrlEditor;
+(function (UrlEditor) {
     var paramPattern = /([^\?=&]+)=([^\?=&]+)/g;
     var prefixPattern = /^([a-zA-Z0-9-]+:)http/;
     var Uri = (function () {
@@ -92,5 +92,5 @@ var UrlParser;
         };
         return Uri;
     })();
-    UrlParser.Uri = Uri;
-})(UrlParser || (UrlParser = {}));
+    UrlEditor.Uri = Uri;
+})(UrlEditor || (UrlEditor = {}));
