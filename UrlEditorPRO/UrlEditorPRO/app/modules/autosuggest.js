@@ -15,34 +15,52 @@ var UrlEditor;
             document.body.addEventListener("input", function (evt) { return _this.onDomEvent(evt.target); });
         }
         AutoSuggest.prototype.onSubmission = function (submittedUri) {
-            var _this = this;
-            if (this.settings.autoSuggestSaveNew && this.parsedData) {
-                // compute differences and save new params
-                var baseParams = this.baseUrl.params();
-                var newParams = submittedUri.params();
-                var baseParamNames = Object.keys(baseParams);
-                var newParamNames = Object.keys(newParams);
-                var diffNames = newParamNames.filter(function (newParam) { return baseParamNames.indexOf(newParam) < 0; });
-                if (diffNames.length > 0) {
-                    var pageName = submittedUri.hostname();
-                    // make sure that page entry is set
-                    this.parsedData[pageName] = this.parsedData[pageName] || {};
-                    var existingNames = Object.keys(this.parsedData[pageName]);
-                    diffNames.forEach(function (newParam) {
-                        if (existingNames.indexOf(newParam) == -1) {
-                            _this.parsedData[pageName][newParam] = [];
-                        }
-                        // remove if exists currently
-                        _this.parsedData[pageName][newParam] = _this.parsedData[pageName][newParam].filter(function (val) { return val != newParam; });
-                        // add on the beginning
-                        _this.parsedData[pageName][newParam].unshift(newParams[newParam]);
-                    });
-                    // save in settings
-                    this.settings.setValue("autoSuggestData", JSON.stringify(this.parsedData));
-                }
-                // create new Uri object to avoid keeping same reference
-                this.baseUrl = new UrlEditor.Uri(submittedUri.url());
+            // check if we shouldn't save param data
+            if (!this.settings.autoSuggestSaveNew ||
+                // check if auto-suggest was not triggered at least once
+                !this.parsedData ||
+                // check if host is not the same
+                this.baseUrl.hostname() != submittedUri.hostname()) {
+                // not saving data
+                return;
             }
+            var baseParams = this.baseUrl.params();
+            var submittedParams = submittedUri.params();
+            // create a list of params to save
+            var paramsToSave;
+            Object.keys(submittedParams).forEach(function (name) {
+                // add params to save list when they were just added
+                if (baseParams[name] == undefined ||
+                    // or their value is different than before
+                    baseParams[name] != submittedParams[name]) {
+                    // initilize collection whenever it is needed
+                    paramsToSave = paramsToSave || {};
+                    paramsToSave[name] = submittedParams[name];
+                }
+            });
+            if (paramsToSave) {
+                var pageName = submittedUri.hostname();
+                // make sure that the entry exists
+                var pageData = this.parsedData[pageName] || {};
+                Object.keys(paramsToSave).forEach(function (name) {
+                    // make sure collection of values for parameter name exists
+                    pageData[name] = pageData[name] || [];
+                    // check if value already exists
+                    var foundOnPosition = pageData[name].indexOf(paramsToSave[name]);
+                    if (foundOnPosition != -1) {
+                        // remove it as we want to add it on the beginning of the collection later
+                        pageData[name].splice(foundOnPosition, 1);
+                    }
+                    // add value on the beginning
+                    pageData[name].unshift(submittedParams[name]);
+                });
+                // save in settings
+                this.settings.setValue("autoSuggestData", JSON.stringify(this.parsedData));
+                // clear data cache
+                this.parsedData = undefined;
+            }
+            // create new Uri object to avoid keeping same reference
+            this.baseUrl = new UrlEditor.Uri(submittedUri.url());
         };
         AutoSuggest.prototype.onDomEvent = function (elem) {
             if (elem.tagName == "INPUT" && elem.type == "text" && elem.parentElement["param-name"]) {
