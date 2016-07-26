@@ -41,7 +41,7 @@ var UrlEditor;
             if (paramsToSave) {
                 var pageName = submittedUri.hostname();
                 // make sure that the entry exists
-                var pageData = this.parsedData[pageName] || {};
+                var pageData = this.parsedData[pageName] = this.parsedData[pageName] || {};
                 Object.keys(paramsToSave).forEach(function (name) {
                     // make sure collection of values for parameter name exists
                     pageData[name] = pageData[name] || [];
