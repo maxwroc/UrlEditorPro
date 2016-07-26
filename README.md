@@ -11,7 +11,7 @@ This extension can help you with changing parameters (or parts) of complex and l
 ![Extension main popup window screenshot](https://github.com/maxwroc/UrlEditorPro/blob/master/UrlEditorPRO/screenshots/screenshot.png)
 
 ## Auto-complete / auto-suggest
-![Auto-complete screenshot](https://github.com/maxwroc/UrlEditorPro/blob/master/UrlEditorPRO/screenshots/screenshot_autocomplete.png)
+![Auto-complete screenshot](https://github.com/maxwroc/UrlEditorPro/blob/master/UrlEditorPRO/screenshots/screenshot_autosuggest.png)
 
 ## Options page
 ![Options page screenshot](https://github.com/maxwroc/UrlEditorPro/blob/master/UrlEditorPRO/screenshots/options.png)
