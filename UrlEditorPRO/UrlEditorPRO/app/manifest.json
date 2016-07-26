@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
 
-  "name": "Url Parser",
-  "description": "Extension is useful to parse and modify long URLs. It is able to encode/decode parameters.",
+  "name": "Url Editor PRO",
+  "description": "Makes editing long / complex URLs as easy as possible. Features: encoding/(auto)decoding parameters, auto-suggest/complete, full keyboard support (no need to using mouse), a lot of keyboard short-cuts to cover all major actions...",
   "version": "1.0",
 
   "permissions": [

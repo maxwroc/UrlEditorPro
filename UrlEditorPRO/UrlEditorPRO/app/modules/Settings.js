@@ -1,5 +1,5 @@
-var UrlParser;
-(function (UrlParser) {
+var UrlEditor;
+(function (UrlEditor) {
     var storageCache = {};
     var Settings = (function () {
         function Settings(storage) {
@@ -49,5 +49,5 @@ var UrlParser;
         };
         return Settings;
     })();
-    UrlParser.Settings = Settings;
-})(UrlParser || (UrlParser = {}));
+    UrlEditor.Settings = Settings;
+})(UrlEditor || (UrlEditor = {}));

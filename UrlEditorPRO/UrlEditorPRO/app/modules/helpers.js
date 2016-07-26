@@ -1,38 +1,34 @@
-﻿
-module UrlParser {
-    
+var UrlEditor;
+(function (UrlEditor) {
     /**
      * It iterates over previous siblings and counts elements of given tag names (types)
      */
-    export function getIndexOfSiblingGivenType(elem: HTMLElement, types: string[]): number {
+    function getIndexOfSiblingGivenType(elem, types) {
         var index = 0;
-        for (var i = 0; elem = <HTMLElement>elem.previousElementSibling;) {
+        for (var i = 0; elem = elem.previousElementSibling;) {
             if (types.indexOf(elem.tagName) != -1) {
                 index++;
             }
         }
-
         return index;
     }
-
+    UrlEditor.getIndexOfSiblingGivenType = getIndexOfSiblingGivenType;
     /**
      * Returns element in the same column as the given one (grid layout)
      */
-    export function findNthElementOfType(container: HTMLElement, types: string[], index: number): HTMLElement {
+    function findNthElementOfType(container, types, index) {
         var elementsFound = 0;
         var lastFound = null;
-        for (var i = 0, child: HTMLElement; child = <HTMLElement>container.children[i++];) {
+        for (var i = 0, child; child = container.children[i++];) {
             if (types.indexOf(child.tagName) != -1) {
                 if (elementsFound == index) {
                     return child;
                 }
-
                 lastFound = child;
-
                 elementsFound++;
             }
         }
-
         return lastFound;
     }
-}
+    UrlEditor.findNthElementOfType = findNthElementOfType;
+})(UrlEditor || (UrlEditor = {}));

@@ -1,8 +1,8 @@
-var UrlParser;
-(function (UrlParser) {
+var UrlEditor;
+(function (UrlEditor) {
     var Options;
     (function (Options) {
-        var settings = new UrlParser.Settings(localStorage);
+        var settings = new UrlEditor.Settings(localStorage);
         var autoSuggestData;
         function initialize() {
             document.body.addEventListener("change", function (evt) {
@@ -168,5 +168,5 @@ var UrlParser;
             });
         }
         document.addEventListener('DOMContentLoaded', function () { return initialize(); });
-    })(Options = UrlParser.Options || (UrlParser.Options = {}));
-})(UrlParser || (UrlParser = {}));
+    })(Options = UrlEditor.Options || (UrlEditor.Options = {}));
+})(UrlEditor || (UrlEditor = {}));

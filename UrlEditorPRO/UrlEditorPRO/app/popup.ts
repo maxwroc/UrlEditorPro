@@ -1,11 +1,12 @@
-var UrlParser;
-(function (UrlParser) {
+﻿declare var chrome;
+
+module UrlEditor {
+
     function isCharacterKeyPress(evt) {
         if (typeof evt.which == "undefined") {
             // This is IE, which only fires keypress events for printable keys
             return true;
-        }
-        else if (typeof evt.which == "number" && evt.which > 0) {
+        } else if (typeof evt.which == "number" && evt.which > 0) {
             // In other browsers except old versions of WebKit, evt.which is
             // only greater than zero if the keypress is a printable key.
             // We need to filter out backspace and ctrl/alt/meta key combinations
@@ -13,22 +14,29 @@ var UrlParser;
         }
         return false;
     }
+
     function initialize() {
         chrome.tabs.getSelected(null, function (tab) {
-            var settings = new UrlParser.Settings(localStorage);
-            var uri = new UrlParser.Uri(tab.url);
-            var autosuggest = new UrlParser.AutoSuggest(settings, document, uri);
-            new UrlParser.ViewModel(uri, document, function (uri) {
+            
+            var settings = new Settings(localStorage);
+            var uri = new UrlEditor.Uri(tab.url);
+
+            var autosuggest = new AutoSuggest(settings, document, uri);
+        
+            new UrlEditor.ViewModel(uri, document, uri => {
                 // redirect current tab
                 chrome.tabs.update(tab.id, { url: uri.url() });
+
                 autosuggest.onSubmission(uri);
+
                 // check if we should close extension popup/action pane
                 if (settings.autoHide) {
                     window.close();
                 }
             });
+
         });
-    }
-    ;
-    document.addEventListener('DOMContentLoaded', function () { return initialize(); });
-})(UrlParser || (UrlParser = {}));
+    };
+    
+    document.addEventListener('DOMContentLoaded', () => initialize());
+}

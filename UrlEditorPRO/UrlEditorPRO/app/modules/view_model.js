@@ -1,5 +1,5 @@
-var UrlParser;
-(function (UrlParser) {
+var UrlEditor;
+(function (UrlEditor) {
     var paramEncodedPattern = /%[a-fA-F0-9]{2}/;
     var port80Pattern = /:80$/;
     var maxClientWidth = 780;
@@ -194,7 +194,7 @@ var UrlParser;
             // we need to encode param name as it may contain invalid chars for url
             // the default value is specified to prevent from addiong this param to the url object
             param["param-name"] = encodeURIComponent(name) || "--";
-            param.innerHTML = '<input type="text" name="name" class="name" /> <input type="text" name="value" class="value" /> <input type="checkbox" title="Encode / decode" /> <input type="button" value="x" />';
+            param.innerHTML = '<input type="text" name="name" class="name" autocomplete="off" /> <input type="text" name="value" class="value" autocomplete="off" /> <input type="checkbox" title="Encode / decode" /> <input type="button" value="x" />';
             return param;
         };
         ViewModel.prototype.deleteParam = function (name) {
@@ -324,8 +324,8 @@ var UrlParser;
         };
         ViewModel.prototype.getElementInTheSameColumn = function (currentElem, container) {
             if (currentElem && container) {
-                var index = UrlParser.getIndexOfSiblingGivenType(currentElem, this.formTextElements);
-                return UrlParser.findNthElementOfType(container, this.formTextElements, index);
+                var index = UrlEditor.getIndexOfSiblingGivenType(currentElem, this.formTextElements);
+                return UrlEditor.findNthElementOfType(container, this.formTextElements, index);
             }
         };
         ViewModel.prototype.addNewParamFields = function () {
@@ -335,5 +335,5 @@ var UrlParser;
         };
         return ViewModel;
     })();
-    UrlParser.ViewModel = ViewModel;
-})(UrlParser || (UrlParser = {}));
+    UrlEditor.ViewModel = ViewModel;
+})(UrlEditor || (UrlEditor = {}));
