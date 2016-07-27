@@ -21,7 +21,7 @@
     <IISExpressWindowsAuthentication />
     <IISExpressUseClassicPipelineMode />
     <UseGlobalApplicationHostFile />
-    <TypeScriptToolsVersion>1.7</TypeScriptToolsVersion>
+    <TypeScriptToolsVersion>1.8</TypeScriptToolsVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -55,7 +55,6 @@
     <Content Include="screenshots\readme.txt" />
     <Content Include="..\README.md" />
     <None Include="scripts\_references.js" />
-    <None Include="scripts\chrome-api-vsdoc.js" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="app\manifest.json" />
@@ -69,6 +68,7 @@
     <TypeScriptCompile Include="app\modules\url_parser.ts" />
     <TypeScriptCompile Include="app\options.ts" />
     <TypeScriptCompile Include="app\popup.ts" />
+    <TypeScriptCompile Include="scripts\chrome.d.ts" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

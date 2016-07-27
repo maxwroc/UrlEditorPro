@@ -334,6 +334,6 @@ var UrlEditor;
             container.firstElementChild.focus();
         };
         return ViewModel;
-    })();
+    }());
     UrlEditor.ViewModel = ViewModel;
 })(UrlEditor || (UrlEditor = {}));

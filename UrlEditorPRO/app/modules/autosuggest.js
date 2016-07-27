@@ -116,7 +116,7 @@ var UrlEditor;
             }
         };
         return AutoSuggest;
-    })();
+    }());
     UrlEditor.AutoSuggest = AutoSuggest;
     var Suggestions = (function () {
         function Suggestions(doc) {
@@ -220,5 +220,5 @@ var UrlEditor;
             }
         };
         return Suggestions;
-    })();
+    }());
 })(UrlEditor || (UrlEditor = {}));

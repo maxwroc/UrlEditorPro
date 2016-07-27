@@ -91,6 +91,6 @@ var UrlEditor;
             this.anchor.href = url;
         };
         return Uri;
-    })();
+    }());
     UrlEditor.Uri = Uri;
 })(UrlEditor || (UrlEditor = {}));
