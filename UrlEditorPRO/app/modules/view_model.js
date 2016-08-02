@@ -31,9 +31,7 @@ var UrlEditor;
                     evt.preventDefault();
                 }
             });
-            this.populateFieldsExceptActiveOne();
-            // set focus on first field
-            doc.getElementById("full_url").focus();
+            this.populateFieldsExceptActiveOne(false /*forceUpdateParams*/, true /*setFocusOnLastParam*/);
         }
         ViewModel.prototype.clickEventDispatcher = function (evt) {
             var elem = evt.target;

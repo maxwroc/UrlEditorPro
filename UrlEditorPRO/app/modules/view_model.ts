@@ -44,10 +44,7 @@
                 }
             });
 
-            this.populateFieldsExceptActiveOne();
-
-            // set focus on first field
-            doc.getElementById("full_url").focus();
+            this.populateFieldsExceptActiveOne(false/*forceUpdateParams*/, true/*setFocusOnLastParam*/);
         }
 
         private clickEventDispatcher(evt: MouseEvent) {
