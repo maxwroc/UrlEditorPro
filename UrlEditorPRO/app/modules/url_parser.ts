@@ -2,7 +2,7 @@
 
 module UrlEditor {
 
-    var paramPattern = /([^\?=&]+)=([^\?=&]+)/g;
+    var paramPattern = /([^\?=&]+)=([^\?&]*)/g; // consider to change it to /(?:\?|&(?:amp;)?)([^=&#]+)(?:=?([^&#]*))/g
     var prefixPattern = /^([a-zA-Z0-9-]+:)http/;
 
     export class Uri {
@@ -66,15 +66,10 @@ module UrlEditor {
             if (value == undefined) {
 
                 var params: IMap = {}
-                var matches = this.anchor.search.match(paramPattern);
-                if (matches) {
-                    // matches are concatenated params withvalues e.g. ["name=value", "name2=value2"]
-                    matches.forEach(param => {
-                        var nameValue = param.split("=", 2);
-                        if (nameValue.length == 2) {
-                            params[nameValue[0]] = nameValue[1];
-                        }
-                    });
+                var match: string[];
+
+                while (match = paramPattern.exec(this.anchor.search)) {
+                    params[match[1]] = match[2];
                 }
 
                 return params;
