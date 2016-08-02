@@ -145,10 +145,17 @@ var UrlEditor;
             if (this.container.innerHTML) {
                 var pos = elem.getBoundingClientRect();
                 // pos doesn't contain scroll value so we need to add it
-                this.container.style.top = (pos.bottom + document.body.scrollTop - 3) + "px";
+                var posTop = pos.bottom + document.body.scrollTop - 3;
+                this.container.style.top = posTop + "px";
                 this.container.style.left = pos.left + "px";
                 this.container.style.display = "block";
-                this.container.style.width = elem.offsetWidth + "px";
+                this.container.style.minWidth = elem.offsetWidth + "px";
+                this.container.style.height = "auto";
+                // reduce the height if it is reached page end
+                var tooBig = posTop + this.container.offsetHeight - this.doc.body.offsetHeight;
+                if (tooBig > 0) {
+                    this.container.style.height = (this.container.offsetHeight - tooBig + 8) + "px"; // increase by 8 due to margin
+                }
                 this.elem = elem;
                 this.originalText = this.elem.value;
                 // we need to wrap it to be able to remove it later
@@ -207,7 +214,13 @@ var UrlEditor;
                     break;
             }
             this.active && this.active.classList.remove("hv");
-            suggestionToSelect && suggestionToSelect.classList.add("hv");
+            if (suggestionToSelect) {
+                suggestionToSelect.classList.add("hv");
+                this.ensureIsVisible(suggestionToSelect);
+            }
+            else {
+                this.container.scrollTop = 0;
+            }
             this.active = suggestionToSelect;
             // put suggestion text into input elem
             this.elem.value = this.active ? this.active.textContent : this.originalText;
@@ -217,6 +230,17 @@ var UrlEditor;
             evt.stopPropagation();
             if (elementToFocus) {
                 elementToFocus.focus();
+            }
+        };
+        Suggestions.prototype.ensureIsVisible = function (suggestionElem) {
+            var containerScrollTop = this.container.scrollTop;
+            var suggestionElemOffsetTop = suggestionElem.offsetTop;
+            var offsetBottom = suggestionElemOffsetTop + suggestionElem.offsetHeight;
+            if (offsetBottom > containerScrollTop + this.container.offsetHeight) {
+                this.container.scrollTop = offsetBottom - this.container.offsetHeight + 2; // increase due to border size
+            }
+            else if (suggestionElemOffsetTop < containerScrollTop) {
+                this.container.scrollTop = suggestionElemOffsetTop;
             }
         };
         return Suggestions;
