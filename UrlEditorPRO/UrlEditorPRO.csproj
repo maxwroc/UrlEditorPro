@@ -52,9 +52,7 @@
     <Content Include="Properties\build\lib\MSBuild.ExtensionPack.dll" />
     <Content Include="screenshots\screenshot.png" />
     <Content Include="Properties\build\ligershark.chrome.targets" />
-    <Content Include="screenshots\readme.txt" />
     <Content Include="..\README.md" />
-    <None Include="scripts\_references.js" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="app\manifest.json" />
