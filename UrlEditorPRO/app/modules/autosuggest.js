@@ -151,10 +151,16 @@ var UrlEditor;
                 this.container.style.display = "block";
                 this.container.style.minWidth = elem.offsetWidth + "px";
                 this.container.style.height = "auto";
+                this.container.style.width = "auto";
                 // reduce the height if it is reached page end
-                var tooBig = posTop + this.container.offsetHeight - this.doc.body.offsetHeight;
+                var tooBig = posTop + this.container.offsetHeight - (this.doc.body.offsetHeight + 8); // increase by 8 due to margin
                 if (tooBig > 0) {
-                    this.container.style.height = (this.container.offsetHeight - tooBig + 8) + "px"; // increase by 8 due to margin
+                    this.container.style.height = (this.container.offsetHeight - tooBig) + "px";
+                }
+                // reduce width if it is too wide
+                var tooWide = pos.left + this.container.offsetWidth - (this.doc.body.offsetWidth + 8);
+                if (tooWide > 0) {
+                    this.container.style.width = (this.container.offsetWidth - tooWide) + "px";
                 }
                 this.elem = elem;
                 this.originalText = this.elem.value;
