@@ -337,6 +337,16 @@
                         }
                     }
                     break;
+                case 79: // o
+                    if (evt.ctrlKey) {
+                        if (chrome.runtime.openOptionsPage) {
+                            chrome.runtime.openOptionsPage();
+                        }
+                        else {
+                            window.open(chrome.runtime.getURL("options.html"));
+                        }
+                    }
+                    break;
             }
 
             var elem = <HTMLInputElement>evt.target;
