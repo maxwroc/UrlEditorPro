@@ -1,6 +1,6 @@
 ﻿
 
-module UrlEditor.Tracking {
+module UrlEditor.Tracking.New {
 
     export enum Category {
         AddParam,
@@ -72,3 +72,5 @@ module UrlEditor.Tracking {
         nonInteraction?: boolean
     }
 }
+
+window["UrlEditor"]["Tracking"] = UrlEditor.Tracking.New;
