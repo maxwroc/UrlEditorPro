@@ -1,4 +1,4 @@
-﻿
+﻿declare var _gaq: Array<Array<string | number>>;
 
 module UrlEditor.Tracking {
 
@@ -10,7 +10,7 @@ module UrlEditor.Tracking {
         AutoSuggest
     }
 
-    var _gaq: Array<Array<string | number>> = window["_gaq"] = window["_gaq"] || [];
+    _gaq = window["_gaq"] = window["_gaq"] || [];
     _gaq.push(['_setAccount', 'UA-81916828-1']);
     _gaq.push(['_trackPageview']);
 

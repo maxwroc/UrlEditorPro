@@ -10,7 +10,7 @@ var UrlEditor;
             Category[Category["AutoSuggest"] = 4] = "AutoSuggest";
         })(Tracking.Category || (Tracking.Category = {}));
         var Category = Tracking.Category;
-        var _gaq = window["_gaq"] = window["_gaq"] || [];
+        _gaq = window["_gaq"] = window["_gaq"] || [];
         _gaq.push(['_setAccount', 'UA-81916828-1']);
         _gaq.push(['_trackPageview']);
         var logOncePerSession = {};
