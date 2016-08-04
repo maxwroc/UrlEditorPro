@@ -13,6 +13,7 @@ var UrlEditor;
         _gaq = window["_gaq"] = window["_gaq"] || [];
         _gaq.push(['_setAccount', 'UA-81916828-1']);
         _gaq.push(['_trackPageview']);
+        var enableLogOncePerSession = false;
         var logOncePerSession = {};
         function init() {
             var ga = document.createElement('script');
@@ -40,6 +41,9 @@ var UrlEditor;
             }
         }
         function isLoggingEnabled(params) {
+            if (!enableLogOncePerSession) {
+                return true;
+            }
             var hash = JSON.stringify(params);
             if (logOncePerSession[hash]) {
                 return false;
