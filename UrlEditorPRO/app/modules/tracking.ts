@@ -14,7 +14,7 @@ module UrlEditor.Tracking {
     _gaq.push(['_setAccount', 'UA-81916828-1']);
     _gaq.push(['_trackPageview']);
 
-    var enableLogOncePerSession = false;
+    var enableLogOncePerSession = true;
     var logOncePerSession: IMap<boolean> = {};
 
     export function init() {
