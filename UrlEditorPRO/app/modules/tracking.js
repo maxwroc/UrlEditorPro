@@ -10,44 +10,41 @@ var UrlEditor;
             Category[Category["AutoSuggest"] = 4] = "AutoSuggest";
         })(Tracking.Category || (Tracking.Category = {}));
         var Category = Tracking.Category;
+        _gaq = window["_gaq"] = window["_gaq"] || [];
+        _gaq.push(['_setAccount', 'UA-81916828-1']);
+        _gaq.push(['_trackPageview']);
+        var enableLogOncePerSession = false;
         var logOncePerSession = {};
         function init() {
-            (function (i, s, o, g, r, a, m) {
-                i['GoogleAnalyticsObject'] = r;
-                i[r] = i[r] || function () {
-                    (i[r].q = i[r].q || []).push(arguments);
-                }, i[r].l = 1 * (new Date());
-                a = s.createElement(o),
-                    m = s.getElementsByTagName(o)[0];
-                a.async = 1;
-                a.src = g;
-                m.parentNode.insertBefore(a, m);
-            })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
-            ga('create', 'UA-81916828-1', 'auto');
-            ga('set', 'checkProtocolTask', null);
-            ga('send', 'pageview');
+            var ga = document.createElement('script');
+            ga.type = 'text/javascript';
+            ga.async = true;
+            ga.src = 'https://ssl.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(ga, s);
         }
         Tracking.init = init;
         function trackEvent(category, action, label, value) {
-            var fields = {
-                eventCategory: Category[category],
-                eventAction: action
-            };
-            if (typeof label != "undefined") {
-                fields.eventLabel = label;
-            }
-            if (typeof value != "undefined") {
-                fields.eventValue = value;
-            }
+            var eventData = ["_trackEvent", Category[category], action];
+            addOptionalEventParam(eventData, label);
+            addOptionalEventParam(eventData, value);
             // check if we should log this event
-            if (!isLoggingEnabled(fields)) {
+            if (!isLoggingEnabled(eventData)) {
                 return;
             }
-            ga("send", "event", fields);
+            _gaq.push(eventData);
         }
         Tracking.trackEvent = trackEvent;
-        function isLoggingEnabled(fields) {
-            var hash = JSON.stringify(fields);
+        function addOptionalEventParam(eventData, param) {
+            if (typeof param != "undefined") {
+                eventData.push(param);
+            }
+        }
+        function isLoggingEnabled(params) {
+            if (!enableLogOncePerSession) {
+                return true;
+            }
+            var hash = JSON.stringify(params);
             if (logOncePerSession[hash]) {
                 return false;
             }
