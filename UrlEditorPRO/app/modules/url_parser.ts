@@ -61,11 +61,11 @@ module UrlEditor {
             return this.getSet(value, "host");
         }
 
-        params(value?: IMap): IMap {
+        params(value?: IStringMap): IStringMap {
             // check whether we should set or return value
             if (value == undefined) {
 
-                var params: IMap = {}
+                var params: IStringMap = {}
                 var match: string[];
 
                 while (match = paramPattern.exec(this.anchor.search)) {

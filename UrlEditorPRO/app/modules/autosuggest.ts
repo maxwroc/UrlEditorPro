@@ -50,7 +50,7 @@
             var submittedParams = submittedUri.params();
             
             // create a list of params to save
-            var paramsToSave: IMap;
+            var paramsToSave: IStringMap;
             Object.keys(submittedParams).forEach(name => {
                 // add params to save list when they were just added
                 if (baseParams[name] == undefined ||
@@ -149,6 +149,7 @@
                             text.substr(0, prefix.length) == prefix;
                     }));
 
+                    Tracking.trackEvent(Tracking.Category.AutoSuggest, "shown");
                     this.suggestions.show(elem);
                 }
             }
@@ -272,6 +273,8 @@
                             // hack: close suggestions pane when no next element
                             setTimeout(() => this.hide(), 1);
                         }
+
+                        Tracking.trackEvent(Tracking.Category.AutoSuggest, "used");
                         
                         var e = new Event("updated");
                         e.initEvent("updated", true, true);
@@ -288,6 +291,7 @@
             this.active && this.active.classList.remove("hv");
 
             if (suggestionToSelect) {
+                Tracking.trackEvent(Tracking.Category.AutoSuggest, "selected");
                 suggestionToSelect.classList.add("hv");
                 this.ensureIsVisible(suggestionToSelect);
             }

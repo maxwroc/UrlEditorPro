@@ -111,6 +111,7 @@ var UrlEditor;
                             // and must start with prefix
                             text.substr(0, prefix.length) == prefix;
                     }));
+                    UrlEditor.Tracking.trackEvent(UrlEditor.Tracking.Category.AutoSuggest, "shown");
                     this.suggestions.show(elem);
                 }
             }
@@ -208,6 +209,7 @@ var UrlEditor;
                             // hack: close suggestions pane when no next element
                             setTimeout(function () { return _this.hide(); }, 1);
                         }
+                        UrlEditor.Tracking.trackEvent(UrlEditor.Tracking.Category.AutoSuggest, "used");
                         var e = new Event("updated");
                         e.initEvent("updated", true, true);
                         this.elem.dispatchEvent(e);
@@ -221,6 +223,7 @@ var UrlEditor;
             }
             this.active && this.active.classList.remove("hv");
             if (suggestionToSelect) {
+                UrlEditor.Tracking.trackEvent(UrlEditor.Tracking.Category.AutoSuggest, "selected");
                 suggestionToSelect.classList.add("hv");
                 this.ensureIsVisible(suggestionToSelect);
             }
