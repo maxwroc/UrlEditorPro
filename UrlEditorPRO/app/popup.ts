@@ -1,5 +1,4 @@
 ﻿
-/// <reference path='../scripts/chrome.d.ts' />
 
 module UrlEditor {
 

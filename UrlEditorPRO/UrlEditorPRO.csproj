@@ -62,12 +62,20 @@
     <TypeScriptCompile Include="app\modules\helpers.ts" />
     <TypeScriptCompile Include="app\modules\settings.ts" />
     <TypeScriptCompile Include="app\modules\tracking.ts" />
+    <TypeScriptCompile Include="app\modules\tracking_new.ts" />
     <TypeScriptCompile Include="app\modules\view_model.ts" />
     <TypeScriptCompile Include="app\modules\shared_interfaces.d.ts" />
     <TypeScriptCompile Include="app\modules\url_parser.ts" />
     <TypeScriptCompile Include="app\options.ts" />
     <TypeScriptCompile Include="app\popup.ts" />
-    <TypeScriptCompile Include="scripts\chrome.d.ts" />
+    <TypeScriptCompile Include="scripts\typings\chrome\chrome-app.d.ts" />
+    <TypeScriptCompile Include="scripts\typings\chrome\chrome-cast.d.ts" />
+    <TypeScriptCompile Include="scripts\typings\chrome\chrome.d.ts" />
+    <TypeScriptCompile Include="scripts\typings\filesystem\filesystem.d.ts" />
+    <TypeScriptCompile Include="scripts\typings\filewriter\filewriter.d.ts" />
+    <TypeScriptCompile Include="scripts\typings\google.analytics\ga.d.ts" />
+    <TypeScriptCompile Include="scripts\typings\webrtc\MediaStream.d.ts" />
+    <TypeScriptCompile Include="scripts\typings\webrtc\RTCPeerConnection.d.ts" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
@@ -108,6 +116,9 @@
   </ItemGroup>
   <ItemGroup>
     <Service Include="{4A0DDDB5-7A95-4FBF-97CC-616D07737A77}" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="packages.config" />
   </ItemGroup>
   <PropertyGroup>
     <LigerSharkChromeTargetsPath>$(BuildFolder)\ligershark.chrome.targets</LigerSharkChromeTargetsPath>

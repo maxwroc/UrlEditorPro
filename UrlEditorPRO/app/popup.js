@@ -1,4 +1,3 @@
-/// <reference path='../scripts/chrome.d.ts' />
 var UrlEditor;
 (function (UrlEditor) {
     function isCharacterKeyPress(evt) {
