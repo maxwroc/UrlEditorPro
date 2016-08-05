@@ -8,6 +8,7 @@ var UrlEditor;
             Category[Category["Navigate"] = 2] = "Navigate";
             Category[Category["Encoding"] = 3] = "Encoding";
             Category[Category["AutoSuggest"] = 4] = "AutoSuggest";
+            Category[Category["Settings"] = 5] = "Settings";
         })(Tracking.Category || (Tracking.Category = {}));
         var Category = Tracking.Category;
         _gaq = window["_gaq"] = window["_gaq"] || [];

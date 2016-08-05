@@ -3,7 +3,7 @@
 
   "name": "Url Editor PRO",
   "description": "Makes editing long/complex URLs as easy as possible. Features: encoding/decoding, auto-suggest/complete, full keyboard navigation...",
-  "version": "0.8",
+  "version": "0.8.1",
 
   "permissions": [
     "http://*/*",

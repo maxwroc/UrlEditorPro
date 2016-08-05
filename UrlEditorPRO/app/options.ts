@@ -14,10 +14,12 @@ module UrlEditor.Options {
                 switch (elem.type) {
                     case "checkbox":
                         settings.setValue(elem.name, elem.checked);
+                        Tracking.trackEvent(Tracking.Category.Settings, elem.name, elem.checked.toString());
                         toggleRelatedElem(elem);
                         break;
                     case "radio":
                         if (elem.checked) {
+                            Tracking.trackEvent(Tracking.Category.Settings, elem.name, elem.value);
                             settings.setValue(elem.name, elem.value);
                         }
                         toggleRelatedElem(elem);
@@ -70,19 +72,20 @@ module UrlEditor.Options {
         });
 
         document.body.addEventListener("click", evt => {
-            var input = <HTMLInputElement>evt.target;
-            if (input.tagName == "INPUT" && input.name == "delete" && autoSuggestData) {
+            var elem = <HTMLInputElement>evt.target;
+            if (elem.tagName == "INPUT" && elem.name == "delete" && autoSuggestData) {
                 var pageElem = <HTMLInputElement>document.getElementById("autoSuggestPages");
                 var paramElem = <HTMLInputElement>document.getElementById("autoSuggestParams");
                 var paramValues = <HTMLDivElement>document.getElementById("autoSuggestParamValues");
 
                 var saveData = false;
 
-                var subjectElem = <HTMLInputElement>input.previousElementSibling;
+                var subjectElem = <HTMLInputElement>elem.previousElementSibling;
 
                 // check if deleting page
                 if (subjectElem == pageElem && autoSuggestData[subjectElem.value]) {
                     if (confirm("Do you want to dletete all (" + Object.keys(autoSuggestData[subjectElem.value]).length + ") parameters for page: " + subjectElem.value)) {
+                        Tracking.trackEvent(Tracking.Category.AutoSuggest, "delete page data");
                         delete autoSuggestData[subjectElem.value];
 
                         // remove element from the list
@@ -101,6 +104,7 @@ module UrlEditor.Options {
                 // check if deleting param
                 else if (subjectElem == paramElem && autoSuggestData[pageElem.value][subjectElem.value]) {
                     if (confirm("Do you want to dletete all (" + Object.keys(autoSuggestData[pageElem.value][subjectElem.value]).length + ") values for parameter: " + subjectElem.value)) {
+                        Tracking.trackEvent(Tracking.Category.AutoSuggest, "delete param data");
                         delete autoSuggestData[pageElem.value][subjectElem.value];
 
                         // remove element from the list
@@ -117,6 +121,7 @@ module UrlEditor.Options {
                     autoSuggestData[pageElem.value][paramElem.value] &&
                     autoSuggestData[pageElem.value][paramElem.value].indexOf(subjectElem.value) != -1) {
                     if (confirm("Do you want to delete '" + subjectElem.value + "' value from param '" + paramElem.value + "'")) {
+                        Tracking.trackEvent(Tracking.Category.AutoSuggest, "delete param value");
                         autoSuggestData[pageElem.value][paramElem.value] = autoSuggestData[pageElem.value][paramElem.value].filter(val => val != subjectElem.value);
                         subjectElem.parentElement.parentElement.removeChild(subjectElem.parentElement);
                         saveData = true;
@@ -125,6 +130,14 @@ module UrlEditor.Options {
 
                 if (saveData) {
                     settings.setValue("autoSuggestData", JSON.stringify(autoSuggestData));
+                }
+            }
+
+            // general click tracking
+            if (elem.getAttribute) {
+                var trackId = elem.getAttribute("track");
+                if (trackId) {
+                    Tracking.trackEvent(Tracking.Category.Settings, trackId);
                 }
             }
         });
