@@ -8,7 +8,8 @@ module UrlEditor.Tracking {
         Navigate,
         Encoding,
         AutoSuggest,
-        Settings
+        Settings,
+        Submit
     }
 
     _gaq = window["_gaq"] = window["_gaq"] || [];

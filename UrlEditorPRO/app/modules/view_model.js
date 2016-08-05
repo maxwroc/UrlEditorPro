@@ -26,7 +26,7 @@ var UrlEditor;
                     return;
                 }
                 if (_this.isTextFieldActive() && evt.keyCode == 13) {
-                    UrlEditor.Tracking.trackEvent(UrlEditor.Tracking.Category.Navigate, "keyboard");
+                    UrlEditor.Tracking.trackEvent(UrlEditor.Tracking.Category.Submit, "keyboard");
                     submit(_this.url);
                     // we don't want a new line to be added in TEXTAREA
                     evt.preventDefault();
@@ -75,7 +75,7 @@ var UrlEditor;
                         break;
                     case "go":
                         // submit button
-                        UrlEditor.Tracking.trackEvent(UrlEditor.Tracking.Category.Navigate, "click");
+                        UrlEditor.Tracking.trackEvent(UrlEditor.Tracking.Category.Submit, "click");
                         this.submit(this.url);
                         break;
                 }

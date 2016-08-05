@@ -38,7 +38,7 @@
                 }
 
                 if (this.isTextFieldActive() && evt.keyCode == 13) {
-                    Tracking.trackEvent(Tracking.Category.Navigate, "keyboard");
+                    Tracking.trackEvent(Tracking.Category.Submit, "keyboard");
                     submit(this.url);
                     // we don't want a new line to be added in TEXTAREA
                     evt.preventDefault();
@@ -93,7 +93,7 @@
                         break;
                     case "go":
                         // submit button
-                        Tracking.trackEvent(Tracking.Category.Navigate, "click");
+                        Tracking.trackEvent(Tracking.Category.Submit, "click");
                         this.submit(this.url);
                         break;
                 }
