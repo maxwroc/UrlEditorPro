@@ -48,6 +48,6 @@ var UrlEditor;
             this[name] = value;
         };
         return Settings;
-    })();
+    }());
     UrlEditor.Settings = Settings;
 })(UrlEditor || (UrlEditor = {}));

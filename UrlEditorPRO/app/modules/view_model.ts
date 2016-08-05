@@ -11,7 +11,7 @@
 
         private formTextElements = ["INPUT", "TEXTAREA"];
 
-        private mapIdToFunction: IMap = {
+        private mapIdToFunction: IStringMap = {
             "full_url": "url",
             "hostname": "host",
             "path": "pathname"
@@ -38,16 +38,14 @@
                 }
 
                 if (this.isTextFieldActive() && evt.keyCode == 13) {
+                    Tracking.trackEvent(Tracking.Category.Navigate, "keyboard");
                     submit(this.url);
                     // we don't want a new line to be added in TEXTAREA
                     evt.preventDefault();
                 }
             });
 
-            this.populateFieldsExceptActiveOne();
-
-            // set focus on first field
-            doc.getElementById("full_url").focus();
+            this.populateFieldsExceptActiveOne(false/*forceUpdateParams*/, true/*setFocusOnLastParam*/);
         }
 
         private clickEventDispatcher(evt: MouseEvent) {
@@ -56,6 +54,7 @@
                 var inputElem = <HTMLInputElement>elem;
                 switch (inputElem.type) {
                     case "checkbox":
+                        Tracking.trackEvent(Tracking.Category.Encoding, "click", inputElem.checked.toString());
                         this.checkboxClickHandler(inputElem);
                         break;
                     case "button":
@@ -89,10 +88,12 @@
             else {
                 switch (elem.id) {
                     case "add_param":
+                        Tracking.trackEvent(Tracking.Category.AddParam, "click");
                         this.addNewParamFields();
                         break;
                     case "go":
                         // submit button
+                        Tracking.trackEvent(Tracking.Category.Navigate, "click");
                         this.submit(this.url);
                         break;
                 }
@@ -325,6 +326,7 @@
                 case 187: // = (+)
                     // add new param
                     if (evt.ctrlKey) {
+                        Tracking.trackEvent(Tracking.Category.AddParam, "keyboard");
                         this.addNewParamFields();
                         return true;
                     }
@@ -334,9 +336,21 @@
                     if (evt.ctrlKey) {
                         var parent = (<HTMLInputElement>evt.target).parentElement;
                         if (parent && parent["param-name"]) {
+                            Tracking.trackEvent(Tracking.Category.RemoveParam, "keyboard");
                             this.deleteParam(parent["param-name"]);
                             this.populateFieldsExceptActiveOne(true/*forceUpdateParams*/, true/*setFocusOnLastParam*/);
                             return true;
+                        }
+                    }
+                    break;
+                case 79: // o
+                    if (evt.ctrlKey) {
+                        Tracking.trackEvent(Tracking.Category.Navigate, "keyboard", "options_page");
+                        if (chrome.runtime.openOptionsPage) {
+                            chrome.runtime.openOptionsPage();
+                        }
+                        else {
+                            window.open(chrome.runtime.getURL("options.html"));
                         }
                     }
                     break;
@@ -345,6 +359,7 @@
             var elem = <HTMLInputElement>evt.target;
             if (evt.ctrlKey && [37, 38, 39, 40].indexOf(evt.keyCode) != -1) {
                 var nextElem: HTMLInputElement;
+                Tracking.trackEvent(Tracking.Category.Navigate, "keyboard", "fields");
                 switch (evt.keyCode) {
                     case 38: // up
                         var nextContainer = elem.parentElement.previousElementSibling;
@@ -357,7 +372,7 @@
                     case 40: // down
                         var nextContainer = elem.parentElement.nextElementSibling;
                         // we need to handle case when user would like to go from basic fields to params collection
-                        if (nextContainer.id == "params") {
+                        if (nextContainer && nextContainer.id == "params") {
                             nextContainer = nextContainer.firstElementChild;
                         }
                         nextElem = this.getElementInTheSameColumn<HTMLInputElement>(elem, <HTMLElement>nextContainer);

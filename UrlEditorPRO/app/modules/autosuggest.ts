@@ -50,7 +50,7 @@
             var submittedParams = submittedUri.params();
             
             // create a list of params to save
-            var paramsToSave: IMap;
+            var paramsToSave: IStringMap;
             Object.keys(submittedParams).forEach(name => {
                 // add params to save list when they were just added
                 if (baseParams[name] == undefined ||
@@ -149,6 +149,7 @@
                             text.substr(0, prefix.length) == prefix;
                     }));
 
+                    Tracking.trackEvent(Tracking.Category.AutoSuggest, "shown");
                     this.suggestions.show(elem);
                 }
             }
@@ -199,10 +200,25 @@
             if (this.container.innerHTML) {
                 var pos = elem.getBoundingClientRect();
                 // pos doesn't contain scroll value so we need to add it
-                this.container.style.top = (pos.bottom + document.body.scrollTop - 3) + "px";
+                var posTop = pos.bottom + document.body.scrollTop - 3;
+                this.container.style.top = posTop + "px";
                 this.container.style.left = pos.left + "px";
                 this.container.style.display = "block";
-                this.container.style.width = elem.offsetWidth + "px";
+                this.container.style.minWidth = elem.offsetWidth + "px";
+                this.container.style.height = "auto";
+                this.container.style.width = "auto";
+
+                // reduce the height if it is reached page end
+                var tooBig = posTop + this.container.offsetHeight - (this.doc.body.offsetHeight + 8); // increase by 8 due to margin
+                if (tooBig > 0) {
+                    this.container.style.height = (this.container.offsetHeight - tooBig) + "px"; 
+                }
+
+                // reduce width if it is too wide
+                var tooWide = pos.left + this.container.offsetWidth - (this.doc.body.offsetWidth + 8);
+                if (tooWide > 0) {
+                    this.container.style.width = (this.container.offsetWidth - tooWide) + "px";
+                }
 
                 this.elem = elem;
                 this.originalText = this.elem.value;
@@ -257,6 +273,8 @@
                             // hack: close suggestions pane when no next element
                             setTimeout(() => this.hide(), 1);
                         }
+
+                        Tracking.trackEvent(Tracking.Category.AutoSuggest, "used");
                         
                         var e = new Event("updated");
                         e.initEvent("updated", true, true);
@@ -271,7 +289,15 @@
             }
 
             this.active && this.active.classList.remove("hv");
-            suggestionToSelect && suggestionToSelect.classList.add("hv");
+
+            if (suggestionToSelect) {
+                Tracking.trackEvent(Tracking.Category.AutoSuggest, "selected");
+                suggestionToSelect.classList.add("hv");
+                this.ensureIsVisible(suggestionToSelect);
+            }
+            else {
+                this.container.scrollTop = 0;
+            }
 
             this.active = suggestionToSelect;
 
@@ -286,6 +312,18 @@
 
             if (elementToFocus) {
                 elementToFocus.focus();
+            }
+        }
+
+        private ensureIsVisible(suggestionElem: HTMLElement) {
+            var containerScrollTop = this.container.scrollTop;
+            var suggestionElemOffsetTop = suggestionElem.offsetTop;
+            var offsetBottom = suggestionElemOffsetTop + suggestionElem.offsetHeight;
+            if (offsetBottom > containerScrollTop + this.container.offsetHeight) {
+                this.container.scrollTop = offsetBottom - this.container.offsetHeight + 2; // increase due to border size
+            }
+            else if (suggestionElemOffsetTop < containerScrollTop) {
+                this.container.scrollTop = suggestionElemOffsetTop;
             }
         }
     }

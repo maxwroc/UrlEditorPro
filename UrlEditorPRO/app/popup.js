@@ -14,6 +14,7 @@ var UrlEditor;
         return false;
     }
     function initialize() {
+        UrlEditor.Tracking.init();
         chrome.tabs.getSelected(null, function (tab) {
             var settings = new UrlEditor.Settings(localStorage);
             var uri = new UrlEditor.Uri(tab.url);
@@ -24,7 +25,8 @@ var UrlEditor;
                 autosuggest.onSubmission(uri);
                 // check if we should close extension popup/action pane
                 if (settings.autoHide) {
-                    window.close();
+                    // delay closing popup a bit to make sure tracking data is flushed
+                    setTimeout(function () { return window.close(); }, 500);
                 }
             });
         });

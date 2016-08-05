@@ -117,6 +117,8 @@
           padding: 0;
           border-radius: 0 0 5px 5px;
           box-shadow: 0 0 10px rgba(0, 0, 0, 0.3) !important;
+          overflow-y: auto;
+          overflow-x: hidden;
       }
       .suggestions li {
           padding: 0 5px;
@@ -130,8 +132,9 @@
       -
       - [1]: http://developer.chrome.com/extensions/contentSecurityPolicy.html
      -->
-
+    
     <script src="modules/helpers.js"></script>
+    <script src="modules/tracking.js"></script>
     <script src="modules/settings.js"></script>
     <script src="modules/autosuggest.js"></script>
     <script src="modules/url_parser.js"></script>

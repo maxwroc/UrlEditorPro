@@ -1,4 +1,4 @@
-﻿declare var chrome;
+﻿
 
 module UrlEditor {
 
@@ -16,6 +16,8 @@ module UrlEditor {
     }
 
     function initialize() {
+        Tracking.init();
+
         chrome.tabs.getSelected(null, function (tab) {
             
             var settings = new Settings(localStorage);
@@ -31,7 +33,8 @@ module UrlEditor {
 
                 // check if we should close extension popup/action pane
                 if (settings.autoHide) {
-                    window.close();
+                    // delay closing popup a bit to make sure tracking data is flushed
+                    setTimeout(() => window.close(), 500);
                 }
             });
 

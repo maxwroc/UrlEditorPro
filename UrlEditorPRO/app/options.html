@@ -65,6 +65,11 @@
         .setting-value {
             margin-top: 20px;
             flex: 1;
+            max-width: 356px; /* to prevent from expanding when wide suggestions are loaded */
+        }
+
+        select {
+            max-width: 278px; /* to prevent from expanding when wide suggestions are loaded */
         }
 
         .icon-list li {
@@ -119,6 +124,7 @@
             width: 70px;
         }
     </style>
+    <script src="modules/tracking.js"></script>
     <script src="modules/settings.js"></script>
     <script src="modules/helpers.js"></script>
     <script src="options.js"></script>
@@ -151,6 +157,7 @@
                         <div><span>Ctrl+&quot;+&quot;</span><span>Add new parameter</span></div>
                         <div><span>Ctrl+&quot;-&quot;</span><span>Remove currently selected parameter</span></div>
                         <div><span>Ctrl+Arrow</span><span>Navigate to nearest field</span></div>
+                        <div><span>Ctrl+O</span><span>Open options (this) page</span></div>
                         <div><span>Esc</span><span>Close extension (action) pane</span></div>
                     </div>
                 </div>
@@ -195,6 +202,33 @@
                 <div class="setting-value">
                     <div class="grid highlihgt-first-column">
                         <div><span><input type="checkbox" name="autoHide" /></span><span>Hide extension after redirection</span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="setting">
+                <h3>Development</h3>
+                <div class="setting-value">
+                    <div>
+                        If you have noticed any bugs or if you have some ideas on how to improve the tool feel free to report the issue on the GitHub:
+                    </div>
+                    <div class="section">
+                        <a href="https://github.com/maxwroc/UrlEditorPro/issues/new">https://github.com/maxwroc/UrlEditorPro/issues/new</a>
+                    </div>
+                </div>
+            </div>
+            <div class="setting" style="display: none">
+                <h3>Donations</h3>
+                <div class="setting-value">
+                    <div>
+                        If you find this extension useful and you'd like to express your appreciation please consider a small donation. Thank you!
+                    </div>
+                    <div class="section">
+                        <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+                            <input type="hidden" name="cmd" value="_s-xclick">
+                            <input type="hidden" name="hosted_button_id" value="6LSMGUM9NF5SE">
+                            <input type="image" src="https://www.paypalobjects.com/en_GB/i/btn/btn_donate_LG.gif" border="0" name="submit" alt="PayPal – The safer, easier way to pay online!">
+                            <img alt="" border="0" src="https://www.paypalobjects.com/en_GB/i/scr/pixel.gif" width="1" height="1">
+                        </form>
                     </div>
                 </div>
             </div>

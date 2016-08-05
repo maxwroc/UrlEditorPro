@@ -26,14 +26,13 @@ var UrlEditor;
                     return;
                 }
                 if (_this.isTextFieldActive() && evt.keyCode == 13) {
+                    UrlEditor.Tracking.trackEvent(UrlEditor.Tracking.Category.Navigate, "keyboard");
                     submit(_this.url);
                     // we don't want a new line to be added in TEXTAREA
                     evt.preventDefault();
                 }
             });
-            this.populateFieldsExceptActiveOne();
-            // set focus on first field
-            doc.getElementById("full_url").focus();
+            this.populateFieldsExceptActiveOne(false /*forceUpdateParams*/, true /*setFocusOnLastParam*/);
         }
         ViewModel.prototype.clickEventDispatcher = function (evt) {
             var elem = evt.target;
@@ -41,6 +40,7 @@ var UrlEditor;
                 var inputElem = elem;
                 switch (inputElem.type) {
                     case "checkbox":
+                        UrlEditor.Tracking.trackEvent(UrlEditor.Tracking.Category.Encoding, "click", inputElem.checked.toString());
                         this.checkboxClickHandler(inputElem);
                         break;
                     case "button":
@@ -70,10 +70,12 @@ var UrlEditor;
             else {
                 switch (elem.id) {
                     case "add_param":
+                        UrlEditor.Tracking.trackEvent(UrlEditor.Tracking.Category.AddParam, "click");
                         this.addNewParamFields();
                         break;
                     case "go":
                         // submit button
+                        UrlEditor.Tracking.trackEvent(UrlEditor.Tracking.Category.Navigate, "click");
                         this.submit(this.url);
                         break;
                 }
@@ -271,6 +273,7 @@ var UrlEditor;
                 case 187:
                     // add new param
                     if (evt.ctrlKey) {
+                        UrlEditor.Tracking.trackEvent(UrlEditor.Tracking.Category.AddParam, "keyboard");
                         this.addNewParamFields();
                         return true;
                     }
@@ -280,9 +283,21 @@ var UrlEditor;
                     if (evt.ctrlKey) {
                         var parent = evt.target.parentElement;
                         if (parent && parent["param-name"]) {
+                            UrlEditor.Tracking.trackEvent(UrlEditor.Tracking.Category.RemoveParam, "keyboard");
                             this.deleteParam(parent["param-name"]);
                             this.populateFieldsExceptActiveOne(true /*forceUpdateParams*/, true /*setFocusOnLastParam*/);
                             return true;
+                        }
+                    }
+                    break;
+                case 79:
+                    if (evt.ctrlKey) {
+                        UrlEditor.Tracking.trackEvent(UrlEditor.Tracking.Category.Navigate, "keyboard", "options_page");
+                        if (chrome.runtime.openOptionsPage) {
+                            chrome.runtime.openOptionsPage();
+                        }
+                        else {
+                            window.open(chrome.runtime.getURL("options.html"));
                         }
                     }
                     break;
@@ -290,6 +305,7 @@ var UrlEditor;
             var elem = evt.target;
             if (evt.ctrlKey && [37, 38, 39, 40].indexOf(evt.keyCode) != -1) {
                 var nextElem;
+                UrlEditor.Tracking.trackEvent(UrlEditor.Tracking.Category.Navigate, "keyboard", "fields");
                 switch (evt.keyCode) {
                     case 38:
                         var nextContainer = elem.parentElement.previousElementSibling;
@@ -302,7 +318,7 @@ var UrlEditor;
                     case 40:
                         var nextContainer = elem.parentElement.nextElementSibling;
                         // we need to handle case when user would like to go from basic fields to params collection
-                        if (nextContainer.id == "params") {
+                        if (nextContainer && nextContainer.id == "params") {
                             nextContainer = nextContainer.firstElementChild;
                         }
                         nextElem = this.getElementInTheSameColumn(elem, nextContainer);
@@ -334,6 +350,6 @@ var UrlEditor;
             container.firstElementChild.focus();
         };
         return ViewModel;
-    })();
+    }());
     UrlEditor.ViewModel = ViewModel;
 })(UrlEditor || (UrlEditor = {}));

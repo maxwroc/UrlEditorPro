@@ -1,5 +1,8 @@
 ﻿
-interface IMap {
+interface IMap<T> {
+    [key: string]: T
+}
+interface IStringMap {
     [key: string]: string
 }
 
@@ -11,5 +14,5 @@ interface IParsedUrl {
     query: string;      // => "?search=test"
     hash: string;       // => "#hash"
     host: string;       // => "example.com:3000"
-    params: IMap;
+    params: IStringMap;
 }
