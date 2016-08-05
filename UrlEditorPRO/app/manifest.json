@@ -2,7 +2,7 @@
   "manifest_version": 2,
 
   "name": "Url Editor PRO",
-  "description": "Makes editing long / complex URLs as easy as possible. Features: encoding/(auto)decoding parameters, auto-suggest/complete, full keyboard support/navigation (you can forget about mouse)",
+  "description": "Makes editing long/complex URLs as easy as possible. Features: encoding/decoding, auto-suggest/complete, full keyboard navigation...",
   "version": "0.8",
 
   "permissions": [
