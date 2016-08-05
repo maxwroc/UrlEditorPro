@@ -7,7 +7,8 @@ module UrlEditor.Tracking {
         RemoveParam,
         Navigate,
         Encoding,
-        AutoSuggest
+        AutoSuggest,
+        Settings
     }
 
     _gaq = window["_gaq"] = window["_gaq"] || [];

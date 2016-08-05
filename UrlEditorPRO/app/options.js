@@ -13,10 +13,12 @@ var UrlEditor;
                     switch (elem.type) {
                         case "checkbox":
                             settings.setValue(elem.name, elem.checked);
+                            UrlEditor.Tracking.trackEvent(UrlEditor.Tracking.Category.Settings, elem.name, elem.checked.toString());
                             toggleRelatedElem(elem);
                             break;
                         case "radio":
                             if (elem.checked) {
+                                UrlEditor.Tracking.trackEvent(UrlEditor.Tracking.Category.Settings, elem.name, elem.value);
                                 settings.setValue(elem.name, elem.value);
                             }
                             toggleRelatedElem(elem);
@@ -62,16 +64,17 @@ var UrlEditor;
                 }
             });
             document.body.addEventListener("click", function (evt) {
-                var input = evt.target;
-                if (input.tagName == "INPUT" && input.name == "delete" && autoSuggestData) {
+                var elem = evt.target;
+                if (elem.tagName == "INPUT" && elem.name == "delete" && autoSuggestData) {
                     var pageElem = document.getElementById("autoSuggestPages");
                     var paramElem = document.getElementById("autoSuggestParams");
                     var paramValues = document.getElementById("autoSuggestParamValues");
                     var saveData = false;
-                    var subjectElem = input.previousElementSibling;
+                    var subjectElem = elem.previousElementSibling;
                     // check if deleting page
                     if (subjectElem == pageElem && autoSuggestData[subjectElem.value]) {
                         if (confirm("Do you want to dletete all (" + Object.keys(autoSuggestData[subjectElem.value]).length + ") parameters for page: " + subjectElem.value)) {
+                            UrlEditor.Tracking.trackEvent(UrlEditor.Tracking.Category.AutoSuggest, "delete page data");
                             delete autoSuggestData[subjectElem.value];
                             // remove element from the list
                             var select = subjectElem;
@@ -87,6 +90,7 @@ var UrlEditor;
                     }
                     else if (subjectElem == paramElem && autoSuggestData[pageElem.value][subjectElem.value]) {
                         if (confirm("Do you want to dletete all (" + Object.keys(autoSuggestData[pageElem.value][subjectElem.value]).length + ") values for parameter: " + subjectElem.value)) {
+                            UrlEditor.Tracking.trackEvent(UrlEditor.Tracking.Category.AutoSuggest, "delete param data");
                             delete autoSuggestData[pageElem.value][subjectElem.value];
                             // remove element from the list
                             var select = subjectElem;
@@ -100,6 +104,7 @@ var UrlEditor;
                         autoSuggestData[pageElem.value][paramElem.value] &&
                         autoSuggestData[pageElem.value][paramElem.value].indexOf(subjectElem.value) != -1) {
                         if (confirm("Do you want to delete '" + subjectElem.value + "' value from param '" + paramElem.value + "'")) {
+                            UrlEditor.Tracking.trackEvent(UrlEditor.Tracking.Category.AutoSuggest, "delete param value");
                             autoSuggestData[pageElem.value][paramElem.value] = autoSuggestData[pageElem.value][paramElem.value].filter(function (val) { return val != subjectElem.value; });
                             subjectElem.parentElement.parentElement.removeChild(subjectElem.parentElement);
                             saveData = true;
@@ -107,6 +112,13 @@ var UrlEditor;
                     }
                     if (saveData) {
                         settings.setValue("autoSuggestData", JSON.stringify(autoSuggestData));
+                    }
+                }
+                // general click tracking
+                if (elem.getAttribute) {
+                    var trackId = elem.getAttribute("track");
+                    if (trackId) {
+                        UrlEditor.Tracking.trackEvent(UrlEditor.Tracking.Category.Settings, trackId);
                     }
                 }
             });
