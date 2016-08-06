@@ -1,3 +1,4 @@
+/// <reference path="shared_interfaces.d.ts" />
 var UrlEditor;
 (function (UrlEditor) {
     var paramPattern = /([^\?=&]+)=([^\?&]*)/g; // consider to change it to /(?:\?|&(?:amp;)?)([^=&#]+)(?:=?([^&#]*))/g

@@ -1,4 +1,4 @@
-﻿
+﻿/// <reference path="shared_interfaces.d.ts" />
 
 module UrlEditor {
 
