@@ -240,7 +240,7 @@
 
         private isTextFieldActive(): boolean {
             // check if tag is an INPUT or TEXTAREA, additionally check if the INPUT type is text
-            return this.doc.activeElement && this.doc.activeElement.tagName == "INPUT" && this.doc.activeElement["type"] == "text";
+            return this.formTextElements.indexOf(this.doc.activeElement.tagName) != -1 && (this.doc.activeElement["type"] == "textarea" || this.doc.activeElement["type"] == "text");
         }
 
         private setErrorMessage(err: string, elem?: HTMLElement) {
