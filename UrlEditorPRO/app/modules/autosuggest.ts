@@ -50,7 +50,7 @@
             var submittedParams = submittedUri.params();
             
             // create a list of params to save
-            var paramsToSave: IStringMap;
+            var paramsToSave: IMap<string[]>;
             Object.keys(submittedParams).forEach(name => {
                 // add params to save list when they were just added
                 if (baseParams[name] == undefined ||
@@ -58,7 +58,8 @@
                     baseParams[name] != submittedParams[name]) {
                     // initilize collection whenever it is needed
                     paramsToSave = paramsToSave || {};
-                    paramsToSave[name] = submittedParams[name];
+                    // take only values which were not saved previously
+                    paramsToSave[name] = submittedParams[name].filter(val => baseParams[name].indexOf(val) == -1);
                 }
             });
 
@@ -71,15 +72,18 @@
                     // make sure collection of values for parameter name exists
                     pageData[name] = pageData[name] || [];
 
-                    // check if value already exists
-                    var foundOnPosition = pageData[name].indexOf(paramsToSave[name]);
-                    if (foundOnPosition != -1) {
-                        // remove it as we want to add it on the beginning of the collection later
-                        pageData[name].splice(foundOnPosition, 1);
-                    }
+                    // iterate over newly added param values
+                    paramsToSave[name].forEach(val => {
+                        // check if value already exists
+                        var foundOnPosition = pageData[name].indexOf(val);
+                        if (foundOnPosition != -1) {
+                            // remove it as we want to add it on the beginning of the collection later
+                            pageData[name].splice(foundOnPosition, 1);
+                        }
 
-                    // add value on the beginning
-                    pageData[name].unshift(submittedParams[name]);
+                        // add value on the beginning
+                        pageData[name].unshift(val);
+                    });
                 });
 
                 // save in settings

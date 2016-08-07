@@ -145,6 +145,7 @@ var UrlEditor;
             }
         };
         ViewModel.prototype.populateParams = function (setFocusOnLastOne) {
+            var _this = this;
             if (setFocusOnLastOne === void 0) { setFocusOnLastOne = false; }
             var paramNameElem;
             var params = this.doc.getElementById("params");
@@ -153,34 +154,37 @@ var UrlEditor;
             var longestName = 0, longestValue = 0, longestBoth = 0;
             var urlParams = this.url.params();
             for (var name in urlParams) {
-                var param = this.createNewParamContainer(name);
-                // check if param value is encoded
-                var isEncoded = paramEncodedPattern.test(urlParams[name]);
-                // parameter name field
-                paramNameElem = param.firstElementChild;
-                paramNameElem.value = name;
-                // parameter value field
-                var paramValue = paramNameElem.nextElementSibling;
-                paramValue.value = isEncoded ? decodeURIComponent(urlParams[name]) : urlParams[name];
-                // parameter encoded checkbox
-                if (isEncoded) {
-                    var paramEncoded = paramValue.nextElementSibling;
-                    paramEncoded.checked = true;
-                }
-                // measuring
-                var nameWidth = this.getTextWidth(name);
-                if (nameWidth > longestName) {
-                    longestName = nameWidth;
-                }
-                var valueWidth = this.getTextWidth(paramValue.value);
-                if (valueWidth > longestValue) {
-                    longestValue = valueWidth;
-                }
-                var bothWidth = nameWidth + valueWidth;
-                if (bothWidth > longestBoth) {
-                    longestBoth = bothWidth;
-                }
-                params.appendChild(param);
+                urlParams[name].forEach(function (value, valueIndex) {
+                    var param = _this.createNewParamContainer(name);
+                    // check if param value is encoded
+                    var isEncoded = paramEncodedPattern.test(value);
+                    // parameter name field
+                    paramNameElem = param.firstElementChild;
+                    paramNameElem.value = name;
+                    // parameter value field
+                    var paramValue = paramNameElem.nextElementSibling;
+                    paramValue.value = isEncoded ? decodeURIComponent(value) : value;
+                    paramValue["param-value-position"] = valueIndex;
+                    // parameter encoded checkbox
+                    if (isEncoded) {
+                        var paramEncoded = paramValue.nextElementSibling;
+                        paramEncoded.checked = true;
+                    }
+                    // measuring
+                    var nameWidth = _this.getTextWidth(name);
+                    if (nameWidth > longestName) {
+                        longestName = nameWidth;
+                    }
+                    var valueWidth = _this.getTextWidth(paramValue.value);
+                    if (valueWidth > longestValue) {
+                        longestValue = valueWidth;
+                    }
+                    var bothWidth = nameWidth + valueWidth;
+                    if (bothWidth > longestBoth) {
+                        longestBoth = bothWidth;
+                    }
+                    params.appendChild(param);
+                });
             }
             longestBoth += paramsMarginSum;
             if (longestBoth > params.clientWidth) {
@@ -219,18 +223,28 @@ var UrlEditor;
             }
             // if name is empty string we need to remove param
             if (safeNewName == "") {
-                this.deleteParam(origName);
+                if (params[origName].length == 1) {
+                    this.deleteParam(origName);
+                }
+                else {
+                    // delete just one value
+                    var value = elem.nextElementSibling.value;
+                    var foundOnPosition = params[origName].indexOf(value);
+                    if (foundOnPosition != -1) {
+                        params[origName].splice(foundOnPosition, 1);
+                        this.url.params(params);
+                    }
+                }
             }
             else {
+                var values = params[origName];
                 // it is impossible to raneme property so we need to delete old one and add new one
-                if (params[origName] != undefined) {
+                if (values != undefined) {
                     // remove parameter from the list
                     delete params[origName];
                 }
-                var value = elem.nextElementSibling.value;
-                var shouldEncode = elem.nextElementSibling.nextElementSibling["checked"];
                 // readding it with new name
-                params[safeNewName] = shouldEncode ? encodeURIComponent(value) : value;
+                params[safeNewName] = values || [];
                 this.url.params(params);
                 elem.parentElement["param-name"] = safeNewName;
             }
@@ -241,8 +255,13 @@ var UrlEditor;
                 // do nothing - we cannot set param without its name
                 return;
             }
+            // make sure it is set
+            elem["param-value-position"] = elem["param-value-position"] || 0;
             var params = this.url.params();
-            params[elem.parentElement["param-name"]] = elem.nextElementSibling["checked"] ? encodeURIComponent(elem.value) : elem.value;
+            var values = params[elem.parentElement["param-name"]];
+            var value = elem.nextElementSibling["checked"] ? encodeURIComponent(elem.value) : elem.value;
+            // replace value
+            values.splice(elem["param-value-position"], 1, value);
             this.url.params(params);
         };
         ViewModel.prototype.isTextFieldActive = function () {

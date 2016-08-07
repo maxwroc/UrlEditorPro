@@ -185,39 +185,43 @@
 
             var urlParams = this.url.params();
             for (var name in urlParams) {
-                var param = this.createNewParamContainer(name);
-                // check if param value is encoded
-                var isEncoded = paramEncodedPattern.test(urlParams[name]);
 
-                // parameter name field
-                paramNameElem = <HTMLInputElement>param.firstElementChild;
-                paramNameElem.value = name;
+                urlParams[name].forEach((value, valueIndex) => {
+                    var param = this.createNewParamContainer(name);
+                    // check if param value is encoded
+                    var isEncoded = paramEncodedPattern.test(value);
 
-                // parameter value field
-                var paramValue = <HTMLInputElement>paramNameElem.nextElementSibling;
-                paramValue.value = isEncoded ? decodeURIComponent(urlParams[name]) : urlParams[name];
+                    // parameter name field
+                    paramNameElem = <HTMLInputElement>param.firstElementChild;
+                    paramNameElem.value = name;
 
-                // parameter encoded checkbox
-                if (isEncoded) {
-                    var paramEncoded = <HTMLInputElement>paramValue.nextElementSibling;
-                    paramEncoded.checked = true;
-                }
+                    // parameter value field
+                    var paramValue = <HTMLInputElement>paramNameElem.nextElementSibling;
+                    paramValue.value = isEncoded ? decodeURIComponent(value) : value;
+                    paramValue["param-value-position"] = valueIndex;
 
-                // measuring
-                var nameWidth = this.getTextWidth(name);
-                if (nameWidth > longestName) {
-                    longestName = nameWidth;
-                }
-                var valueWidth = this.getTextWidth(paramValue.value);
-                if (valueWidth > longestValue) {
-                    longestValue = valueWidth;
-                }
-                var bothWidth = nameWidth + valueWidth;
-                if (bothWidth > longestBoth) {
-                    longestBoth = bothWidth;
-                }
+                    // parameter encoded checkbox
+                    if (isEncoded) {
+                        var paramEncoded = <HTMLInputElement>paramValue.nextElementSibling;
+                        paramEncoded.checked = true;
+                    }
 
-                params.appendChild(param);
+                    // measuring
+                    var nameWidth = this.getTextWidth(name);
+                    if (nameWidth > longestName) {
+                        longestName = nameWidth;
+                    }
+                    var valueWidth = this.getTextWidth(paramValue.value);
+                    if (valueWidth > longestValue) {
+                        longestValue = valueWidth;
+                    }
+                    var bothWidth = nameWidth + valueWidth;
+                    if (bothWidth > longestBoth) {
+                        longestBoth = bothWidth;
+                    }
+
+                    params.appendChild(param);
+                });
             }
 
             longestBoth += paramsMarginSum;
@@ -263,19 +267,29 @@
 
             // if name is empty string we need to remove param
             if (safeNewName == "") {
-                this.deleteParam(origName)
+                if (params[origName].length == 1) {
+                    this.deleteParam(origName);
+                }
+                else {
+                    // delete just one value
+                    var value = (<HTMLInputElement>elem.nextElementSibling).value;
+                    var foundOnPosition = params[origName].indexOf(value);
+                    if (foundOnPosition != -1) {
+                        params[origName].splice(foundOnPosition, 1);
+                        this.url.params(params);
+                    }
+                }
             }
             else {
+                var values = params[origName];
                 // it is impossible to raneme property so we need to delete old one and add new one
-                if (params[origName] != undefined) {
+                if (values != undefined) {
                     // remove parameter from the list
                     delete params[origName];
                 }
-
-                var value = (<HTMLInputElement>elem.nextElementSibling).value;
-                var shouldEncode = elem.nextElementSibling.nextElementSibling["checked"];
+                
                 // readding it with new name
-                params[safeNewName] = shouldEncode ? encodeURIComponent(value) : value;
+                params[safeNewName] = values || [];
                 this.url.params(params);
 
                 elem.parentElement["param-name"] = safeNewName;
@@ -288,8 +302,15 @@
                 // do nothing - we cannot set param without its name
                 return;
             }
+
+            // make sure it is set
+            elem["param-value-position"] = elem["param-value-position"] || 0;
+
             var params = this.url.params();
-            params[elem.parentElement["param-name"]] = elem.nextElementSibling["checked"] ? encodeURIComponent(elem.value) : elem.value;
+            var values = params[elem.parentElement["param-name"]];
+            var value = elem.nextElementSibling["checked"] ? encodeURIComponent(elem.value) : elem.value;
+            // replace value
+            values.splice(elem["param-value-position"], 1, value);
             this.url.params(params);
         }
 
