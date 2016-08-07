@@ -15,6 +15,11 @@
         public autoHide = true;
 
         /**
+        * Whether to sort parameters automatically
+        */
+        public autoSortParams = false;
+
+        /**
         * Whether to show parameter suggestions
         */
         public autoSuggest = true;

@@ -13,6 +13,10 @@ var UrlEditor;
             */
             this.autoHide = true;
             /**
+            * Whether to sort parameters automatically
+            */
+            this.autoSortParams = false;
+            /**
             * Whether to show parameter suggestions
             */
             this.autoSuggest = true;

@@ -19,7 +19,7 @@ var UrlEditor;
             var settings = new UrlEditor.Settings(localStorage);
             var uri = new UrlEditor.Uri(tab.url);
             var autosuggest = new UrlEditor.AutoSuggest(settings, document, uri);
-            new UrlEditor.ViewModel(uri, document, function (uri) {
+            new UrlEditor.ViewModel(uri, document, settings, function (uri) {
                 // redirect current tab
                 chrome.tabs.update(tab.id, { url: uri.url() });
                 autosuggest.onSubmission(uri);

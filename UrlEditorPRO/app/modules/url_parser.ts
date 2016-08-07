@@ -1,4 +1,4 @@
-﻿
+﻿/// <reference path="shared_interfaces.d.ts" />
 
 module UrlEditor {
 
@@ -61,15 +61,18 @@ module UrlEditor {
             return this.getSet(value, "host");
         }
 
-        params(value?: IStringMap): IStringMap {
+        params(value?: IMap<string[]>): IMap<string[]> {
             // check whether we should set or return value
             if (value == undefined) {
 
-                var params: IStringMap = {}
+                var params: IMap<string[]> = {}
                 var match: string[];
 
                 while (match = paramPattern.exec(this.anchor.search)) {
-                    params[match[1]] = match[2];
+                    // initialize with empty array if doesn't exist already
+                    params[match[1]] = params[match[1]] || [];
+
+                    params[match[1]].push(match[2]);
                 }
 
                 return params;
@@ -77,8 +80,15 @@ module UrlEditor {
             else {
                 var search = "";
                 for (var name in value) {
-                    search += search ? "&" : "";
-                    search += name + "=" + value[name];
+                    if (value[name].length == 0) {
+                        // add empty string as a value otherwise param won't be added
+                        value[name].push("");
+                    }
+
+                    value[name].forEach(val => {
+                        search += search ? "&" : "";
+                        search += name + "=" + val;
+                    });
                 }
 
                 if (search) {

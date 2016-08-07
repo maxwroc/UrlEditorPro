@@ -25,7 +25,7 @@ module UrlEditor {
 
             var autosuggest = new AutoSuggest(settings, document, uri);
         
-            new UrlEditor.ViewModel(uri, document, uri => {
+            new UrlEditor.ViewModel(uri, document, settings, uri => {
                 // redirect current tab
                 chrome.tabs.update(tab.id, { url: uri.url() });
 
