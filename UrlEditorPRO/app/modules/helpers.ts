@@ -35,4 +35,8 @@ module UrlEditor {
 
         return lastFound;
     }
+
+    export function ge(elementId: string): HTMLElement {
+        return document.getElementById(elementId);
+    }
 }

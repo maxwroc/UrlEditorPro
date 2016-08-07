@@ -9,8 +9,6 @@
         private url: Uri;
         private doc: HTMLDocument;
 
-        private formTextElements = ["INPUT", "TEXTAREA"];
-
         private mapIdToFunction: IStringMap = {
             "full_url": "url",
             "hostname": "host",
@@ -20,12 +18,15 @@
         private measureElem: HTMLSpanElement;
         private submit: (uri: Uri) => void;
 
+        private formTextElements = ["INPUT", "TEXTAREA"];
+
         constructor(url: Uri, doc: HTMLDocument, submit: (uri: Uri) => void) {
             this.url = url;
             this.doc = doc;
             this.submit = submit;
 
-            this.measureElem = <HTMLSpanElement>doc.getElementById("measure");
+
+            this.measureElem = <HTMLSpanElement>ge("measure");
 
             // bind event handlers
             doc.body.addEventListener("click", evt => this.clickEventDispatcher(evt));
@@ -45,7 +46,7 @@
                 }
             });
 
-            this.populateFieldsExceptActiveOne(false/*forceUpdateParams*/, true/*setFocusOnLastParam*/);
+            this.populateInputFields(false/*forceUpdateParams*/, true/*setFocusOnLastParam*/);
         }
 
         private clickEventDispatcher(evt: MouseEvent) {
@@ -82,8 +83,7 @@
             var paramName = elem.parentElement["param-name"];
             if (paramName) {
                 // this seems to be a delete param button so we're removing param
-                this.deleteParam(paramName);
-                this.populateFieldsExceptActiveOne();
+                this.deleteParam(<IParamContainerElement>elem.parentElement);
             }
             else {
                 switch (elem.id) {
@@ -108,60 +108,36 @@
                 // clear error message
                 this.setErrorMessage("", elem);
 
-                // check if we have a mapping from field ID to Url object function (used for basic fields)
-                if (elem.id && typeof this.mapIdToFunction[elem.id] != "undefined") {
-                    var funcName = this.mapIdToFunction[elem.id];
-
-                    this.url[funcName](elem.value);
-
-                    if (elem.value != this.url[funcName]()) {
-                        // default http port number is removed automatically so we shouldn't show error in that case
-                        if (funcName != "host" || !port80Pattern.test(elem.value)) {
-                            this.setErrorMessage("url is invalid", elem);
-                        }
-                    }
-
-                    this.populateFieldsExceptActiveOne();
-                }
-                // check if event happened on one of param fields
-                else if (elem.parentElement["param-name"]) {
-
-                    if (elem.classList.contains("name")) {
-                        this.updateParamName(elem);
-                    }
-                    else if (elem.classList.contains("value")) {
-                        this.updateParamValue(elem);
-                    }
-
-                    this.populateFieldsExceptActiveOne();
-                }
+                this.setUriFromFields();
+                this.updateFields();
             }
         }
 
-        private populateFieldsExceptActiveOne(forceUpdateParams: boolean = false, setFocusOnLastParam: boolean = false) {
-            // iterate over elements which should be populatad
-            this.formTextElements.forEach(tagName => {
-                var elements = this.doc.getElementsByTagName(tagName);
+        private updateFields() {
+            var activeElem = <HTMLElement>this.doc.activeElement;
+            var isTextFieldActive = this.isTextFieldActive();
 
-                for (var i = 0, elem; elem = <HTMLInputElement>elements[i]; i++) {
-                    // check if element has ID set, the mapping exists 
-                    if (elem.id && this.mapIdToFunction[elem.id]) {
-                        // updating element value using a function name taken from mapping
-                        this.setValueIfNotActive(elem, this.url[this.mapIdToFunction[elem.id]]());
-                    }
-                }
-            });
-
-            // updating params only if force update flag is true
-            if (forceUpdateParams ||
-                // or if there is no active element (probably this condition is redundant)
-                !this.doc.activeElement ||
-                // or if the active element is not one of the text fields
-                !this.isTextFieldActive() ||
-                // or active element does not one of param fields
-                !this.doc.activeElement.parentElement["param-name"]) {
-                this.populateParams(setFocusOnLastParam);
+            if (activeElem.id == "full_url" || !isTextFieldActive) {
+                this.populateInputFields();
             }
+
+            if (activeElem.id != "full_url" || !isTextFieldActive) {
+                (<HTMLTextAreaElement>ge("full_url")).value = this.url.url();
+            }
+        }
+
+        private populateInputFields(forceUpdateParams: boolean = false, setFocusOnLastParam: boolean = false) {
+            // iterate over elements which should be populatad
+            var elements = this.doc.getElementsByTagName("input");
+            for (var i = 0, elem; elem = <HTMLInputElement>elements[i]; i++) {
+                // check if element has ID set, the mapping exists 
+                if (elem.id && this.mapIdToFunction[elem.id]) {
+                    // updating element value using a function name taken from mapping
+                    this.setValueIfNotActive(elem, this.url[this.mapIdToFunction[elem.id]]());
+                }
+            }
+
+            this.populateParams(setFocusOnLastParam);
         }
 
         private setValueIfNotActive(elem: HTMLInputElement, value: string) {
@@ -175,8 +151,8 @@
         }
 
         private populateParams(setFocusOnLastOne: boolean = false) {
-            var paramNameElem: HTMLInputElement;
-            var params = this.doc.getElementById("params");
+            var param: IParamContainerElement;
+            var params = ge("params");
 
             // clean old set of params
             params.innerHTML = "";
@@ -187,22 +163,20 @@
             for (var name in urlParams) {
 
                 urlParams[name].forEach((value, valueIndex) => {
-                    var param = this.createNewParamContainer(name);
+                    param = this.createNewParamContainer(name);
                     // check if param value is encoded
                     var isEncoded = paramEncodedPattern.test(value);
 
                     // parameter name field
-                    paramNameElem = <HTMLInputElement>param.firstElementChild;
-                    paramNameElem.value = name;
+                    param.nameElement.value = name;
 
                     // parameter value field
-                    var paramValue = <HTMLInputElement>paramNameElem.nextElementSibling;
-                    paramValue.value = isEncoded ? decodeURIComponent(value) : value;
-                    paramValue["param-value-position"] = valueIndex;
+                    param.valueElement.value = isEncoded ? decodeURIComponent(value) : value;
+                    param.valueElement["param-value-position"] = valueIndex;
 
                     // parameter encoded checkbox
                     if (isEncoded) {
-                        var paramEncoded = <HTMLInputElement>paramValue.nextElementSibling;
+                        var paramEncoded = <HTMLInputElement>param.valueElement.nextElementSibling;
                         paramEncoded.checked = true;
                     }
 
@@ -211,7 +185,7 @@
                     if (nameWidth > longestName) {
                         longestName = nameWidth;
                     }
-                    var valueWidth = this.getTextWidth(paramValue.value);
+                    var valueWidth = this.getTextWidth(param.valueElement.value);
                     if (valueWidth > longestValue) {
                         longestValue = valueWidth;
                     }
@@ -229,99 +203,49 @@
                 this.doc.body.style.width = Math.min(longestBoth, maxClientWidth) + "px";
             }
 
-            if (setFocusOnLastOne && paramNameElem) {
-                paramNameElem.focus();
+            if (setFocusOnLastOne && param) {
+                param.nameElement.focus();
             }
         }
 
-        private createNewParamContainer(name?: string): HTMLElement {
-            var param = <HTMLDivElement>document.createElement("div");
+        private createNewParamContainer(name?: string): IParamContainerElement {
+            var param = <IParamContainerElement>document.createElement("div");
             param.className = "param";
             // we need to encode param name as it may contain invalid chars for url
             // the default value is specified to prevent from addiong this param to the url object
             param["param-name"] = encodeURIComponent(name) || "--";
             param.innerHTML = '<input type="text" name="name" class="name" autocomplete="off" /> <input type="text" name="value" class="value" autocomplete="off" /> <input type="checkbox" title="Encode / decode" /> <input type="button" value="x" />';
+
+            // parameter name field
+            param.nameElement = <HTMLInputElement>param.firstElementChild;
+            // parameter value field
+            param.valueElement = <HTMLInputElement>param.nameElement.nextElementSibling;
+            // encode element
+            param.encodeElement = <HTMLInputElement>param.valueElement.nextElementSibling;
+
             return param;
         }
 
-        private deleteParam(name: string) {
-            // remove param
-            if (name) {
-                var params = this.url.params();
-                delete params[name];
-                this.url.params(params);
+        private deleteParam(elem: IParamContainerElement) {
+
+            // set focus on previous param
+            if (elem.previousElementSibling) {
+                (<IParamContainerElement>elem.previousElementSibling).nameElement.focus();
             }
-        }
-
-        private updateParamName(elem: HTMLInputElement): void {
-            var origName = elem.parentElement["param-name"];
-            var safeNewName = encodeURIComponent(elem.value);
-            var params = this.url.params();
-
-            // check if param exists already and it is different than the initial one
-            if (params[safeNewName] && safeNewName != origName) {
-                elem.classList.add("error");
-                this.setErrorMessage("param with the same name already exists", elem);
-                return;
-            }
-
-            // if name is empty string we need to remove param
-            if (safeNewName == "") {
-                if (params[origName].length == 1) {
-                    this.deleteParam(origName);
-                }
-                else {
-                    // delete just one value
-                    var value = (<HTMLInputElement>elem.nextElementSibling).value;
-                    var foundOnPosition = params[origName].indexOf(value);
-                    if (foundOnPosition != -1) {
-                        params[origName].splice(foundOnPosition, 1);
-                        this.url.params(params);
-                    }
-                }
-            }
-            else {
-                var values = params[origName];
-                // it is impossible to raneme property so we need to delete old one and add new one
-                if (values != undefined) {
-                    // remove parameter from the list
-                    delete params[origName];
-                }
-                
-                // readding it with new name
-                params[safeNewName] = values || [];
-                this.url.params(params);
-
-                elem.parentElement["param-name"] = safeNewName;
-            }
-        }
-
-        private updateParamValue(elem: HTMLInputElement): void {
-            // check if it's a temporary param name
-            if (elem.parentElement["param-name"] == "--") {
-                // do nothing - we cannot set param without its name
-                return;
-            }
-
-            // make sure it is set
-            elem["param-value-position"] = elem["param-value-position"] || 0;
-
-            var params = this.url.params();
-            var values = params[elem.parentElement["param-name"]];
-            var value = elem.nextElementSibling["checked"] ? encodeURIComponent(elem.value) : elem.value;
-            // replace value
-            values.splice(elem["param-value-position"], 1, value);
-            this.url.params(params);
+            
+            elem.parentElement.removeChild(elem.parentElement);
+            this.setUriFromFields();
+            this.updateFields();
         }
 
         private isTextFieldActive(): boolean {
             // check if tag is an INPUT or TEXTAREA, additionally check if the INPUT type is text
-            return this.formTextElements.indexOf(this.doc.activeElement.tagName) != -1 && (this.doc.activeElement["type"] == "textarea" || this.doc.activeElement["type"] == "text");
+            return this.doc.activeElement && this.doc.activeElement.tagName == "INPUT" && this.doc.activeElement["type"] == "text";
         }
 
         private setErrorMessage(err: string, elem?: HTMLElement) {
             // setting error message
-            this.doc.getElementById("err").textContent = err ? "Error: " + err : "";
+            ge("err").textContent = err ? "Error: " + err : "";
 
             // if DOM element was passed we're setting or removing the error indicator color
             if (elem) {
@@ -358,8 +282,7 @@
                         var parent = (<HTMLInputElement>evt.target).parentElement;
                         if (parent && parent["param-name"]) {
                             Tracking.trackEvent(Tracking.Category.RemoveParam, "keyboard");
-                            this.deleteParam(parent["param-name"]);
-                            this.populateFieldsExceptActiveOne(true/*forceUpdateParams*/, true/*setFocusOnLastParam*/);
+                            this.deleteParam(<IParamContainerElement>parent);
                             return true;
                         }
                     }
@@ -427,9 +350,48 @@
 
         private addNewParamFields() {
             var container = this.createNewParamContainer()
-            this.doc.getElementById("params").appendChild(container);
+            ge("params").appendChild(container);
 
             (<HTMLInputElement>container.firstElementChild).focus();
         }
+
+        private setUriFromFields() {
+            var currentInput = <HTMLInputElement>this.doc.activeElement;
+
+            if (currentInput) {
+                var func = this.mapIdToFunction[currentInput.id];
+                if (func) {
+                    this.url[func](currentInput.value);
+                }
+                else {
+                    // check if update only params
+                    if (currentInput.parentElement["param-name"]) {
+                        var params: IMap<string[]> = {};
+
+                        var container = ge("params");
+
+                        [].forEach.call(container.childNodes, (child: IParamContainerElement) => {
+                            if (child.nameElement && child.nameElement.value != "") {
+                                // make sure it exists
+                                params[child.nameElement.value] = params[child.nameElement.value] || [];
+
+                                // add value to collection
+                                var value = child.encodeElement.checked ? encodeURIComponent(child.valueElement.value) : child.valueElement.value;
+                                params[child.nameElement.value].push(value);
+                            }
+                        });
+
+                        this.url.params(params);
+                    }
+                }
+            } // if
+            
+        } // function
+    } // class
+
+    interface IParamContainerElement extends HTMLDivElement {
+        nameElement?: HTMLInputElement;
+        valueElement?: HTMLInputElement;
+        encodeElement?: HTMLInputElement;
     }
-}
+} // module

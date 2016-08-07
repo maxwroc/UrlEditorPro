@@ -31,4 +31,8 @@ var UrlEditor;
         return lastFound;
     }
     UrlEditor.findNthElementOfType = findNthElementOfType;
+    function ge(elementId) {
+        return document.getElementById(elementId);
+    }
+    UrlEditor.ge = ge;
 })(UrlEditor || (UrlEditor = {}));

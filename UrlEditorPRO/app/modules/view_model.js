@@ -7,16 +7,16 @@ var UrlEditor;
     var ViewModel = (function () {
         function ViewModel(url, doc, submit) {
             var _this = this;
-            this.formTextElements = ["INPUT", "TEXTAREA"];
             this.mapIdToFunction = {
                 "full_url": "url",
                 "hostname": "host",
                 "path": "pathname"
             };
+            this.formTextElements = ["INPUT", "TEXTAREA"];
             this.url = url;
             this.doc = doc;
             this.submit = submit;
-            this.measureElem = doc.getElementById("measure");
+            this.measureElem = UrlEditor.ge("measure");
             // bind event handlers
             doc.body.addEventListener("click", function (evt) { return _this.clickEventDispatcher(evt); });
             doc.body.addEventListener("input", function (evt) { return _this.keyboardEventDispatcher(evt); });
@@ -32,7 +32,7 @@ var UrlEditor;
                     evt.preventDefault();
                 }
             });
-            this.populateFieldsExceptActiveOne(false /*forceUpdateParams*/, true /*setFocusOnLastParam*/);
+            this.populateInputFields(false /*forceUpdateParams*/, true /*setFocusOnLastParam*/);
         }
         ViewModel.prototype.clickEventDispatcher = function (evt) {
             var elem = evt.target;
@@ -64,8 +64,7 @@ var UrlEditor;
             var paramName = elem.parentElement["param-name"];
             if (paramName) {
                 // this seems to be a delete param button so we're removing param
-                this.deleteParam(paramName);
-                this.populateFieldsExceptActiveOne();
+                this.deleteParam(elem.parentElement);
             }
             else {
                 switch (elem.id) {
@@ -87,54 +86,33 @@ var UrlEditor;
             if (this.isTextFieldActive()) {
                 // clear error message
                 this.setErrorMessage("", elem);
-                // check if we have a mapping from field ID to Url object function (used for basic fields)
-                if (elem.id && typeof this.mapIdToFunction[elem.id] != "undefined") {
-                    var funcName = this.mapIdToFunction[elem.id];
-                    this.url[funcName](elem.value);
-                    if (elem.value != this.url[funcName]()) {
-                        // default http port number is removed automatically so we shouldn't show error in that case
-                        if (funcName != "host" || !port80Pattern.test(elem.value)) {
-                            this.setErrorMessage("url is invalid", elem);
-                        }
-                    }
-                    this.populateFieldsExceptActiveOne();
-                }
-                else if (elem.parentElement["param-name"]) {
-                    if (elem.classList.contains("name")) {
-                        this.updateParamName(elem);
-                    }
-                    else if (elem.classList.contains("value")) {
-                        this.updateParamValue(elem);
-                    }
-                    this.populateFieldsExceptActiveOne();
-                }
+                this.setUriFromFields();
+                this.updateFields();
             }
         };
-        ViewModel.prototype.populateFieldsExceptActiveOne = function (forceUpdateParams, setFocusOnLastParam) {
-            var _this = this;
+        ViewModel.prototype.updateFields = function () {
+            var activeElem = this.doc.activeElement;
+            var isTextFieldActive = this.isTextFieldActive();
+            if (activeElem.id == "full_url" || !isTextFieldActive) {
+                this.populateInputFields();
+            }
+            if (activeElem.id != "full_url" || !isTextFieldActive) {
+                UrlEditor.ge("full_url").value = this.url.url();
+            }
+        };
+        ViewModel.prototype.populateInputFields = function (forceUpdateParams, setFocusOnLastParam) {
             if (forceUpdateParams === void 0) { forceUpdateParams = false; }
             if (setFocusOnLastParam === void 0) { setFocusOnLastParam = false; }
             // iterate over elements which should be populatad
-            this.formTextElements.forEach(function (tagName) {
-                var elements = _this.doc.getElementsByTagName(tagName);
-                for (var i = 0, elem; elem = elements[i]; i++) {
-                    // check if element has ID set, the mapping exists 
-                    if (elem.id && _this.mapIdToFunction[elem.id]) {
-                        // updating element value using a function name taken from mapping
-                        _this.setValueIfNotActive(elem, _this.url[_this.mapIdToFunction[elem.id]]());
-                    }
+            var elements = this.doc.getElementsByTagName("input");
+            for (var i = 0, elem; elem = elements[i]; i++) {
+                // check if element has ID set, the mapping exists 
+                if (elem.id && this.mapIdToFunction[elem.id]) {
+                    // updating element value using a function name taken from mapping
+                    this.setValueIfNotActive(elem, this.url[this.mapIdToFunction[elem.id]]());
                 }
-            });
-            // updating params only if force update flag is true
-            if (forceUpdateParams ||
-                // or if there is no active element (probably this condition is redundant)
-                !this.doc.activeElement ||
-                // or if the active element is not one of the text fields
-                !this.isTextFieldActive() ||
-                // or active element does not one of param fields
-                !this.doc.activeElement.parentElement["param-name"]) {
-                this.populateParams(setFocusOnLastParam);
             }
+            this.populateParams(setFocusOnLastParam);
         };
         ViewModel.prototype.setValueIfNotActive = function (elem, value) {
             // check if it isn't currently active element (we don't want to overwrite text which user might be typing still)
@@ -147,27 +125,25 @@ var UrlEditor;
         ViewModel.prototype.populateParams = function (setFocusOnLastOne) {
             var _this = this;
             if (setFocusOnLastOne === void 0) { setFocusOnLastOne = false; }
-            var paramNameElem;
-            var params = this.doc.getElementById("params");
+            var param;
+            var params = UrlEditor.ge("params");
             // clean old set of params
             params.innerHTML = "";
             var longestName = 0, longestValue = 0, longestBoth = 0;
             var urlParams = this.url.params();
             for (var name in urlParams) {
                 urlParams[name].forEach(function (value, valueIndex) {
-                    var param = _this.createNewParamContainer(name);
+                    param = _this.createNewParamContainer(name);
                     // check if param value is encoded
                     var isEncoded = paramEncodedPattern.test(value);
                     // parameter name field
-                    paramNameElem = param.firstElementChild;
-                    paramNameElem.value = name;
+                    param.nameElement.value = name;
                     // parameter value field
-                    var paramValue = paramNameElem.nextElementSibling;
-                    paramValue.value = isEncoded ? decodeURIComponent(value) : value;
-                    paramValue["param-value-position"] = valueIndex;
+                    param.valueElement.value = isEncoded ? decodeURIComponent(value) : value;
+                    param.valueElement["param-value-position"] = valueIndex;
                     // parameter encoded checkbox
                     if (isEncoded) {
-                        var paramEncoded = paramValue.nextElementSibling;
+                        var paramEncoded = param.valueElement.nextElementSibling;
                         paramEncoded.checked = true;
                     }
                     // measuring
@@ -175,7 +151,7 @@ var UrlEditor;
                     if (nameWidth > longestName) {
                         longestName = nameWidth;
                     }
-                    var valueWidth = _this.getTextWidth(paramValue.value);
+                    var valueWidth = _this.getTextWidth(param.valueElement.value);
                     if (valueWidth > longestValue) {
                         longestValue = valueWidth;
                     }
@@ -190,8 +166,8 @@ var UrlEditor;
             if (longestBoth > params.clientWidth) {
                 this.doc.body.style.width = Math.min(longestBoth, maxClientWidth) + "px";
             }
-            if (setFocusOnLastOne && paramNameElem) {
-                paramNameElem.focus();
+            if (setFocusOnLastOne && param) {
+                param.nameElement.focus();
             }
         };
         ViewModel.prototype.createNewParamContainer = function (name) {
@@ -201,76 +177,30 @@ var UrlEditor;
             // the default value is specified to prevent from addiong this param to the url object
             param["param-name"] = encodeURIComponent(name) || "--";
             param.innerHTML = '<input type="text" name="name" class="name" autocomplete="off" /> <input type="text" name="value" class="value" autocomplete="off" /> <input type="checkbox" title="Encode / decode" /> <input type="button" value="x" />';
+            // parameter name field
+            param.nameElement = param.firstElementChild;
+            // parameter value field
+            param.valueElement = param.nameElement.nextElementSibling;
+            // encode element
+            param.encodeElement = param.valueElement.nextElementSibling;
             return param;
         };
-        ViewModel.prototype.deleteParam = function (name) {
-            // remove param
-            if (name) {
-                var params = this.url.params();
-                delete params[name];
-                this.url.params(params);
+        ViewModel.prototype.deleteParam = function (elem) {
+            // set focus on previous param
+            if (elem.previousElementSibling) {
+                elem.previousElementSibling.nameElement.focus();
             }
-        };
-        ViewModel.prototype.updateParamName = function (elem) {
-            var origName = elem.parentElement["param-name"];
-            var safeNewName = encodeURIComponent(elem.value);
-            var params = this.url.params();
-            // check if param exists already and it is different than the initial one
-            if (params[safeNewName] && safeNewName != origName) {
-                elem.classList.add("error");
-                this.setErrorMessage("param with the same name already exists", elem);
-                return;
-            }
-            // if name is empty string we need to remove param
-            if (safeNewName == "") {
-                if (params[origName].length == 1) {
-                    this.deleteParam(origName);
-                }
-                else {
-                    // delete just one value
-                    var value = elem.nextElementSibling.value;
-                    var foundOnPosition = params[origName].indexOf(value);
-                    if (foundOnPosition != -1) {
-                        params[origName].splice(foundOnPosition, 1);
-                        this.url.params(params);
-                    }
-                }
-            }
-            else {
-                var values = params[origName];
-                // it is impossible to raneme property so we need to delete old one and add new one
-                if (values != undefined) {
-                    // remove parameter from the list
-                    delete params[origName];
-                }
-                // readding it with new name
-                params[safeNewName] = values || [];
-                this.url.params(params);
-                elem.parentElement["param-name"] = safeNewName;
-            }
-        };
-        ViewModel.prototype.updateParamValue = function (elem) {
-            // check if it's a temporary param name
-            if (elem.parentElement["param-name"] == "--") {
-                // do nothing - we cannot set param without its name
-                return;
-            }
-            // make sure it is set
-            elem["param-value-position"] = elem["param-value-position"] || 0;
-            var params = this.url.params();
-            var values = params[elem.parentElement["param-name"]];
-            var value = elem.nextElementSibling["checked"] ? encodeURIComponent(elem.value) : elem.value;
-            // replace value
-            values.splice(elem["param-value-position"], 1, value);
-            this.url.params(params);
+            elem.parentElement.removeChild(elem.parentElement);
+            this.setUriFromFields();
+            this.updateFields();
         };
         ViewModel.prototype.isTextFieldActive = function () {
             // check if tag is an INPUT or TEXTAREA, additionally check if the INPUT type is text
-            return this.formTextElements.indexOf(this.doc.activeElement.tagName) != -1 && (this.doc.activeElement["type"] == "textarea" || this.doc.activeElement["type"] == "text");
+            return this.doc.activeElement && this.doc.activeElement.tagName == "INPUT" && this.doc.activeElement["type"] == "text";
         };
         ViewModel.prototype.setErrorMessage = function (err, elem) {
             // setting error message
-            this.doc.getElementById("err").textContent = err ? "Error: " + err : "";
+            UrlEditor.ge("err").textContent = err ? "Error: " + err : "";
             // if DOM element was passed we're setting or removing the error indicator color
             if (elem) {
                 if (err) {
@@ -303,8 +233,7 @@ var UrlEditor;
                         var parent = evt.target.parentElement;
                         if (parent && parent["param-name"]) {
                             UrlEditor.Tracking.trackEvent(UrlEditor.Tracking.Category.RemoveParam, "keyboard");
-                            this.deleteParam(parent["param-name"]);
-                            this.populateFieldsExceptActiveOne(true /*forceUpdateParams*/, true /*setFocusOnLastParam*/);
+                            this.deleteParam(parent);
                             return true;
                         }
                     }
@@ -365,10 +294,36 @@ var UrlEditor;
         };
         ViewModel.prototype.addNewParamFields = function () {
             var container = this.createNewParamContainer();
-            this.doc.getElementById("params").appendChild(container);
+            UrlEditor.ge("params").appendChild(container);
             container.firstElementChild.focus();
         };
+        ViewModel.prototype.setUriFromFields = function () {
+            var currentInput = this.doc.activeElement;
+            if (currentInput) {
+                var func = this.mapIdToFunction[currentInput.id];
+                if (func) {
+                    this.url[func](currentInput.value);
+                }
+                else {
+                    // check if update only params
+                    if (currentInput.parentElement["param-name"]) {
+                        var params = {};
+                        var container = UrlEditor.ge("params");
+                        [].forEach.call(container.childNodes, function (child) {
+                            if (child.nameElement && child.nameElement.value != "") {
+                                // make sure it exists
+                                params[child.nameElement.value] = params[child.nameElement.value] || [];
+                                // add value to collection
+                                var value = child.encodeElement.checked ? encodeURIComponent(child.valueElement.value) : child.valueElement.value;
+                                params[child.nameElement.value].push(value);
+                            }
+                        });
+                        this.url.params(params);
+                    }
+                }
+            } // if
+        }; // function
         return ViewModel;
     }());
-    UrlEditor.ViewModel = ViewModel;
-})(UrlEditor || (UrlEditor = {}));
+    UrlEditor.ViewModel = ViewModel; // class
+})(UrlEditor || (UrlEditor = {})); // module
