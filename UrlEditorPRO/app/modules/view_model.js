@@ -32,7 +32,7 @@ var UrlEditor;
                     evt.preventDefault();
                 }
             });
-            this.updateFields();
+            this.updateFields(false /*setUriFromFields*/);
         }
         ViewModel.prototype.clickEventDispatcher = function (evt) {
             var elem = evt.target;
@@ -86,11 +86,14 @@ var UrlEditor;
             if (this.isTextFieldActive()) {
                 // clear error message
                 this.setErrorMessage("", elem);
-                this.setUriFromFields();
                 this.updateFields();
             }
         };
-        ViewModel.prototype.updateFields = function () {
+        ViewModel.prototype.updateFields = function (setUriFromFields) {
+            if (setUriFromFields === void 0) { setUriFromFields = true; }
+            if (setUriFromFields) {
+                this.setUriFromFields();
+            }
             var activeElem = this.doc.activeElement;
             var isTextFieldActive = this.isTextFieldActive();
             if (activeElem.id == "full_url" || !isTextFieldActive) {
@@ -189,7 +192,6 @@ var UrlEditor;
                 elem.previousElementSibling.nameElement.focus();
             }
             elem.parentElement.removeChild(elem);
-            this.setUriFromFields();
             this.updateFields();
         };
         ViewModel.prototype.isTextFieldActive = function () {
@@ -245,6 +247,18 @@ var UrlEditor;
                         }
                         else {
                             window.open(chrome.runtime.getURL("options.html"));
+                        }
+                    }
+                    break;
+                case 66:
+                    if (evt.ctrlKey && this.isTextFieldActive()) {
+                        var parent = evt.target.parentElement;
+                        // check if it is a param container element
+                        if (parent && parent.isParamContainer) {
+                            var input = evt.target;
+                            input.value = UrlEditor.isBase64Encoded(input.value) ? UrlEditor.b64DecodeUnicode(input.value) : UrlEditor.b64EncodeUnicode(input.value);
+                            this.updateFields();
+                            return true;
                         }
                     }
                     break;

@@ -1,5 +1,6 @@
 var UrlEditor;
 (function (UrlEditor) {
+    var base64Pattern = /^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{4}|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)$/;
     /**
      * It iterates over previous siblings and counts elements of given tag names (types)
      */
@@ -35,4 +36,16 @@ var UrlEditor;
         return document.getElementById(elementId);
     }
     UrlEditor.ge = ge;
+    function b64EncodeUnicode(str) {
+        return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function (match, p1) { return String.fromCharCode(parseInt("0x" + p1)); }));
+    }
+    UrlEditor.b64EncodeUnicode = b64EncodeUnicode;
+    function b64DecodeUnicode(str) {
+        return decodeURIComponent(Array.prototype.map.call(atob(str), function (c) { return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2); }).join(''));
+    }
+    UrlEditor.b64DecodeUnicode = b64DecodeUnicode;
+    function isBase64Encoded(val) {
+        return base64Pattern.test(val);
+    }
+    UrlEditor.isBase64Encoded = isBase64Encoded;
 })(UrlEditor || (UrlEditor = {}));

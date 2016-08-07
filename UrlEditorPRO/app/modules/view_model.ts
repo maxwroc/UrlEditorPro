@@ -46,7 +46,7 @@
                 }
             });
 
-            this.updateFields();
+            this.updateFields(false/*setUriFromFields*/);
         }
 
         private clickEventDispatcher(evt: MouseEvent) {
@@ -107,13 +107,16 @@
             if (this.isTextFieldActive()) {
                 // clear error message
                 this.setErrorMessage("", elem);
-
-                this.setUriFromFields();
+                
                 this.updateFields();
             }
         }
 
-        private updateFields() {
+        private updateFields(setUriFromFields = true) {
+            if (setUriFromFields) {
+                this.setUriFromFields();
+            }
+
             var activeElem = <HTMLElement>this.doc.activeElement;
             var isTextFieldActive = this.isTextFieldActive();
 
@@ -234,7 +237,6 @@
             }
             
             elem.parentElement.removeChild(elem);
-            this.setUriFromFields();
             this.updateFields();
         }
 
@@ -296,6 +298,19 @@
                         }
                         else {
                             window.open(chrome.runtime.getURL("options.html"));
+                        }
+                    }
+                    break;
+                case 66: // b
+                    if (evt.ctrlKey && this.isTextFieldActive()) {
+                        var parent = <IParamContainerElement>(<HTMLInputElement>evt.target).parentElement;
+                        // check if it is a param container element
+                        if (parent && parent.isParamContainer) {
+                            var input = <HTMLInputElement>evt.target;
+                            input.value = isBase64Encoded(input.value) ? b64DecodeUnicode(input.value) : b64EncodeUnicode(input.value);
+                            
+                            this.updateFields();
+                            return true;
                         }
                     }
                     break;
