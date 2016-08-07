@@ -20,7 +20,7 @@
 
         private formTextElements = ["INPUT", "TEXTAREA"];
 
-        constructor(url: Uri, doc: HTMLDocument, submit: (uri: Uri) => void) {
+        constructor(url: Uri, doc: HTMLDocument, settings: Settings, submit: (uri: Uri) => void) {
             this.url = url;
             this.doc = doc;
             this.submit = submit;
@@ -45,6 +45,10 @@
                     evt.preventDefault();
                 }
             });
+
+            if (settings.autoSortParams) {
+                this.sortParameters();
+            }
 
             this.updateFields(false/*setUriFromFields*/);
         }
@@ -314,6 +318,15 @@
                         }
                     }
                     break;
+                case 83:
+                    if (evt.ctrlKey) {
+                        this.sortParameters();
+
+                        // take focus of the input to trigger params refresh
+                        (<HTMLInputElement>evt.target).blur();
+                        this.updateFields(false/*setUriFromFields*/);
+                    }
+                    break;
             }
 
             var elem = <HTMLInputElement>evt.target;
@@ -369,6 +382,17 @@
             ge("params").appendChild(container);
 
             (<HTMLInputElement>container.firstElementChild).focus();
+        }
+
+        private sortParameters() {
+            var sortedParams: IMap<string[]> = {};
+            var currentParams = this.url.params();
+            Object.keys(currentParams).sort().forEach(name => {
+                // sort values as well
+                sortedParams[name] = currentParams[name].sort();
+            });
+
+            this.url.params(sortedParams);
         }
 
         private setUriFromFields() {

@@ -5,7 +5,7 @@ var UrlEditor;
     var maxClientWidth = 780;
     var paramsMarginSum = 86; //5 * 4 + 2 * 3 + 2 * 22 + 2 * 8;
     var ViewModel = (function () {
-        function ViewModel(url, doc, submit) {
+        function ViewModel(url, doc, settings, submit) {
             var _this = this;
             this.mapIdToFunction = {
                 "full_url": "url",
@@ -32,6 +32,9 @@ var UrlEditor;
                     evt.preventDefault();
                 }
             });
+            if (settings.autoSortParams) {
+                this.sortParameters();
+            }
             this.updateFields(false /*setUriFromFields*/);
         }
         ViewModel.prototype.clickEventDispatcher = function (evt) {
@@ -262,6 +265,14 @@ var UrlEditor;
                         }
                     }
                     break;
+                case 83:
+                    if (evt.ctrlKey) {
+                        this.sortParameters();
+                        // take focus of the input to trigger params refresh
+                        evt.target.blur();
+                        this.updateFields(false /*setUriFromFields*/);
+                    }
+                    break;
             }
             var elem = evt.target;
             if (evt.ctrlKey && [37, 38, 39, 40].indexOf(evt.keyCode) != -1) {
@@ -309,6 +320,15 @@ var UrlEditor;
             var container = this.createNewParamContainer();
             UrlEditor.ge("params").appendChild(container);
             container.firstElementChild.focus();
+        };
+        ViewModel.prototype.sortParameters = function () {
+            var sortedParams = {};
+            var currentParams = this.url.params();
+            Object.keys(currentParams).sort().forEach(function (name) {
+                // sort values as well
+                sortedParams[name] = currentParams[name].sort();
+            });
+            this.url.params(sortedParams);
         };
         ViewModel.prototype.setUriFromFields = function () {
             var _this = this;
