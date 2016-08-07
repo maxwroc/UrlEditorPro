@@ -32,7 +32,7 @@ var UrlEditor;
                     evt.preventDefault();
                 }
             });
-            this.populateInputFields(false /*forceUpdateParams*/, true /*setFocusOnLastParam*/);
+            this.updateFields();
         }
         ViewModel.prototype.clickEventDispatcher = function (evt) {
             var elem = evt.target;
@@ -61,10 +61,10 @@ var UrlEditor;
         };
         ViewModel.prototype.buttonClickHandler = function (elem) {
             // this handler is triggered for any button click on page
-            var paramName = elem.parentElement["param-name"];
-            if (paramName) {
+            var paramContainer = elem.parentElement;
+            if (paramContainer.isParamContainer) {
                 // this seems to be a delete param button so we're removing param
-                this.deleteParam(elem.parentElement);
+                this.deleteParam(paramContainer);
             }
             else {
                 switch (elem.id) {
@@ -94,14 +94,13 @@ var UrlEditor;
             var activeElem = this.doc.activeElement;
             var isTextFieldActive = this.isTextFieldActive();
             if (activeElem.id == "full_url" || !isTextFieldActive) {
-                this.populateInputFields();
+                this.populateInputFields(!isTextFieldActive);
             }
             if (activeElem.id != "full_url" || !isTextFieldActive) {
                 UrlEditor.ge("full_url").value = this.url.url();
             }
         };
-        ViewModel.prototype.populateInputFields = function (forceUpdateParams, setFocusOnLastParam) {
-            if (forceUpdateParams === void 0) { forceUpdateParams = false; }
+        ViewModel.prototype.populateInputFields = function (setFocusOnLastParam) {
             if (setFocusOnLastParam === void 0) { setFocusOnLastParam = false; }
             // iterate over elements which should be populatad
             var elements = this.doc.getElementsByTagName("input");
@@ -183,6 +182,7 @@ var UrlEditor;
             param.valueElement = param.nameElement.nextElementSibling;
             // encode element
             param.encodeElement = param.valueElement.nextElementSibling;
+            param.isParamContainer = true;
             return param;
         };
         ViewModel.prototype.deleteParam = function (elem) {
@@ -190,7 +190,7 @@ var UrlEditor;
             if (elem.previousElementSibling) {
                 elem.previousElementSibling.nameElement.focus();
             }
-            elem.parentElement.removeChild(elem.parentElement);
+            elem.parentElement.removeChild(elem);
             this.setUriFromFields();
             this.updateFields();
         };
@@ -231,7 +231,8 @@ var UrlEditor;
                     // delete current param
                     if (evt.ctrlKey) {
                         var parent = evt.target.parentElement;
-                        if (parent && parent["param-name"]) {
+                        // check if it is a param container element
+                        if (parent && parent.isParamContainer) {
                             UrlEditor.Tracking.trackEvent(UrlEditor.Tracking.Category.RemoveParam, "keyboard");
                             this.deleteParam(parent);
                             return true;
@@ -305,21 +306,18 @@ var UrlEditor;
                     this.url[func](currentInput.value);
                 }
                 else {
-                    // check if update only params
-                    if (currentInput.parentElement["param-name"]) {
-                        var params = {};
-                        var container = UrlEditor.ge("params");
-                        [].forEach.call(container.childNodes, function (child) {
-                            if (child.nameElement && child.nameElement.value != "") {
-                                // make sure it exists
-                                params[child.nameElement.value] = params[child.nameElement.value] || [];
-                                // add value to collection
-                                var value = child.encodeElement.checked ? encodeURIComponent(child.valueElement.value) : child.valueElement.value;
-                                params[child.nameElement.value].push(value);
-                            }
-                        });
-                        this.url.params(params);
-                    }
+                    var params = {};
+                    var container = UrlEditor.ge("params");
+                    [].forEach.call(container.childNodes, function (child) {
+                        if (child.nameElement && child.nameElement.value != "") {
+                            // make sure it exists
+                            params[child.nameElement.value] = params[child.nameElement.value] || [];
+                            // add value to collection
+                            var value = child.encodeElement.checked ? encodeURIComponent(child.valueElement.value) : child.valueElement.value;
+                            params[child.nameElement.value].push(value);
+                        }
+                    });
+                    this.url.params(params);
                 }
             } // if
         }; // function
