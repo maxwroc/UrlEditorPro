@@ -56,7 +56,7 @@ var UrlEditor;
                 valElem.value = decodeURIComponent(valElem.value);
             }
             else {
-                valElem.value = encodeURIComponent(valElem.value);
+                valElem.value = this.encodeURIComponent(valElem.value);
             }
         };
         ViewModel.prototype.buttonClickHandler = function (elem) {
@@ -132,6 +132,7 @@ var UrlEditor;
             var urlParams = this.url.params();
             for (var name in urlParams) {
                 urlParams[name].forEach(function (value, valueIndex) {
+                    name = decodeURIComponent(name);
                     param = _this.createNewParamContainer(name);
                     // check if param value is encoded
                     var isEncoded = paramEncodedPattern.test(value);
@@ -172,9 +173,6 @@ var UrlEditor;
         ViewModel.prototype.createNewParamContainer = function (name) {
             var param = document.createElement("div");
             param.className = "param";
-            // we need to encode param name as it may contain invalid chars for url
-            // the default value is specified to prevent from addiong this param to the url object
-            param["param-name"] = encodeURIComponent(name) || "--";
             param.innerHTML = '<input type="text" name="name" class="name" autocomplete="off" /> <input type="text" name="value" class="value" autocomplete="off" /> <input type="checkbox" title="Encode / decode" /> <input type="button" value="x" />';
             // parameter name field
             param.nameElement = param.firstElementChild;
@@ -299,6 +297,7 @@ var UrlEditor;
             container.firstElementChild.focus();
         };
         ViewModel.prototype.setUriFromFields = function () {
+            var _this = this;
             var currentInput = this.doc.activeElement;
             if (currentInput) {
                 var func = this.mapIdToFunction[currentInput.id];
@@ -310,17 +309,24 @@ var UrlEditor;
                     var container = UrlEditor.ge("params");
                     [].forEach.call(container.childNodes, function (child) {
                         if (child.nameElement && child.nameElement.value != "") {
+                            var paramName = _this.encodeURIComponent(child.nameElement.value);
                             // make sure it exists
-                            params[child.nameElement.value] = params[child.nameElement.value] || [];
+                            params[paramName] = params[paramName] || [];
                             // add value to collection
-                            var value = child.encodeElement.checked ? encodeURIComponent(child.valueElement.value) : child.valueElement.value;
-                            params[child.nameElement.value].push(value);
+                            var value = child.encodeElement.checked ? _this.encodeURIComponent(child.valueElement.value) : child.valueElement.value;
+                            params[paramName].push(value);
                         }
                     });
                     this.url.params(params);
                 }
             } // if
         }; // function
+        /**
+         * Does URI encoding but leaves "+"
+         */
+        ViewModel.prototype.encodeURIComponent = function (value) {
+            return encodeURIComponent(value).replace(/%2B/g, "+");
+        };
         return ViewModel;
     }());
     UrlEditor.ViewModel = ViewModel; // class

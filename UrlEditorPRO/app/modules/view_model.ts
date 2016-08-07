@@ -73,7 +73,7 @@
                 valElem.value = decodeURIComponent(valElem.value);
             }
             else {
-                valElem.value = encodeURIComponent(valElem.value);
+                valElem.value = this.encodeURIComponent(valElem.value);
             }
         }
 
@@ -163,6 +163,7 @@
             for (var name in urlParams) {
 
                 urlParams[name].forEach((value, valueIndex) => {
+                    name = decodeURIComponent(name);
                     param = this.createNewParamContainer(name);
                     // check if param value is encoded
                     var isEncoded = paramEncodedPattern.test(value);
@@ -211,9 +212,6 @@
         private createNewParamContainer(name?: string): IParamContainerElement {
             var param = <IParamContainerElement>document.createElement("div");
             param.className = "param";
-            // we need to encode param name as it may contain invalid chars for url
-            // the default value is specified to prevent from addiong this param to the url object
-            param["param-name"] = encodeURIComponent(name) || "--";
             param.innerHTML = '<input type="text" name="name" class="name" autocomplete="off" /> <input type="text" name="value" class="value" autocomplete="off" /> <input type="checkbox" title="Encode / decode" /> <input type="button" value="x" />';
 
             // parameter name field
@@ -373,12 +371,13 @@
 
                     [].forEach.call(container.childNodes, (child: IParamContainerElement) => {
                         if (child.nameElement && child.nameElement.value != "") {
+                            var paramName = this.encodeURIComponent(child.nameElement.value);
                             // make sure it exists
-                            params[child.nameElement.value] = params[child.nameElement.value] || [];
+                            params[paramName] = params[paramName] || [];
 
                             // add value to collection
-                            var value = child.encodeElement.checked ? encodeURIComponent(child.valueElement.value) : child.valueElement.value;
-                            params[child.nameElement.value].push(value);
+                            var value = child.encodeElement.checked ? this.encodeURIComponent(child.valueElement.value) : child.valueElement.value;
+                            params[paramName].push(value);
                         }
                     });
 
@@ -387,6 +386,13 @@
             } // if
             
         } // function
+
+        /**
+         * Does URI encoding but leaves "+"
+         */
+        private encodeURIComponent(value: string): string {
+            return encodeURIComponent(value).replace(/%2B/g, "+");
+        }
     } // class
 
     interface IParamContainerElement extends HTMLDivElement {
