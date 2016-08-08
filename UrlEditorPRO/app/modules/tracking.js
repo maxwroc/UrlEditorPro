@@ -10,6 +10,7 @@ var UrlEditor;
             Category[Category["AutoSuggest"] = 4] = "AutoSuggest";
             Category[Category["Settings"] = 5] = "Settings";
             Category[Category["Submit"] = 6] = "Submit";
+            Category[Category["Sort"] = 7] = "Sort";
         })(Tracking.Category || (Tracking.Category = {}));
         var Category = Tracking.Category;
         _gaq = window["_gaq"] = window["_gaq"] || [];

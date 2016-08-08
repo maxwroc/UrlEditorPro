@@ -310,6 +310,8 @@
                         var parent = <IParamContainerElement>(<HTMLInputElement>evt.target).parentElement;
                         // check if it is a param container element
                         if (parent && parent.isParamContainer) {
+                            Tracking.trackEvent(Tracking.Category.Encoding, "keyboard", "base64");
+
                             var input = <HTMLInputElement>evt.target;
                             input.value = isBase64Encoded(input.value) ? b64DecodeUnicode(input.value) : b64EncodeUnicode(input.value);
                             
@@ -320,6 +322,7 @@
                     break;
                 case 83:
                     if (evt.ctrlKey) {
+                        Tracking.trackEvent(Tracking.Category.Sort, "keyboard");
                         this.sortParameters();
 
                         // take focus of the input to trigger params refresh
