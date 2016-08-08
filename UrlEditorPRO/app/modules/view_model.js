@@ -258,6 +258,7 @@ var UrlEditor;
                         var parent = evt.target.parentElement;
                         // check if it is a param container element
                         if (parent && parent.isParamContainer) {
+                            UrlEditor.Tracking.trackEvent(UrlEditor.Tracking.Category.Encoding, "keyboard", "base64");
                             var input = evt.target;
                             input.value = UrlEditor.isBase64Encoded(input.value) ? UrlEditor.b64DecodeUnicode(input.value) : UrlEditor.b64EncodeUnicode(input.value);
                             this.updateFields();
@@ -267,6 +268,7 @@ var UrlEditor;
                     break;
                 case 83:
                     if (evt.ctrlKey) {
+                        UrlEditor.Tracking.trackEvent(UrlEditor.Tracking.Category.Sort, "keyboard");
                         this.sortParameters();
                         // take focus of the input to trigger params refresh
                         evt.target.blur();

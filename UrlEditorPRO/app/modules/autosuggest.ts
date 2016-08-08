@@ -18,7 +18,7 @@
 
         private baseUrl: Uri;
 
-        constructor(settings: Settings, doc: Document, baseUrl: Uri) {
+        constructor(settings: Settings, doc: Document, baseUrl: Uri, private isInIncognitoMode: boolean) {
             this.settings = settings;
             this.baseUrl = new Uri(baseUrl.url());
 
@@ -34,13 +34,14 @@
         }
 
         onSubmission(submittedUri: Uri) {
-
+        
             // check if we shouldn't save param data
             if (!this.settings.autoSuggestSaveNew ||
                 // check if auto-suggest was not triggered at least once
                 !this.parsedData ||
                 // check if host is not the same
-                this.baseUrl.hostname() != submittedUri.hostname()) {
+                this.baseUrl.hostname() != submittedUri.hostname() ||
+                (this.isInIncognitoMode && !this.settings.autoSuggestEnabledOnIncognito)) {
 
                 // not saving data
                 return;
@@ -97,7 +98,7 @@
         }
 
         private onDomEvent(elem: HTMLInputElement) {
-            if (elem.tagName == "INPUT" && elem.type == "text" && elem.parentElement["param-name"]) {
+            if (elem.tagName == "INPUT" && elem.type == "text" && (<IParamContainerElement>elem.parentElement).isParamContainer) {
                 var name, value;
                 switch (elem.name) {
                     case "name":
