@@ -437,7 +437,7 @@
         }
     } // class
 
-    interface IParamContainerElement extends HTMLDivElement {
+    export interface IParamContainerElement extends HTMLDivElement {
         nameElement?: HTMLInputElement;
         valueElement?: HTMLInputElement;
         encodeElement?: HTMLInputElement;

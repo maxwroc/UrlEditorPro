@@ -1,8 +1,9 @@
 var UrlEditor;
 (function (UrlEditor) {
     var AutoSuggest = (function () {
-        function AutoSuggest(settings, doc, baseUrl) {
+        function AutoSuggest(settings, doc, baseUrl, isInIncognitoMode) {
             var _this = this;
+            this.isInIncognitoMode = isInIncognitoMode;
             this.settings = settings;
             this.baseUrl = new UrlEditor.Uri(baseUrl.url());
             // initialize suggestions container
@@ -20,7 +21,8 @@ var UrlEditor;
                 // check if auto-suggest was not triggered at least once
                 !this.parsedData ||
                 // check if host is not the same
-                this.baseUrl.hostname() != submittedUri.hostname()) {
+                this.baseUrl.hostname() != submittedUri.hostname() ||
+                (this.isInIncognitoMode && !this.settings.autoSuggestEnabledOnIncognito)) {
                 // not saving data
                 return;
             }
@@ -67,7 +69,7 @@ var UrlEditor;
             this.baseUrl = new UrlEditor.Uri(submittedUri.url());
         };
         AutoSuggest.prototype.onDomEvent = function (elem) {
-            if (elem.tagName == "INPUT" && elem.type == "text" && elem.parentElement["param-name"]) {
+            if (elem.tagName == "INPUT" && elem.type == "text" && elem.parentElement.isParamContainer) {
                 var name, value;
                 switch (elem.name) {
                     case "name":

@@ -25,6 +25,10 @@ var UrlEditor;
             */
             this.autoSuggestSaveNew = true;
             /**
+            * Whether to save new parameters when on incognito mode
+            */
+            this.autoSuggestEnabledOnIncognito = false;
+            /**
             * Params suggestion data. We keep it as a string to prevent from parsing it on the initialization.
             */
             this.autoSuggestData = '{}';

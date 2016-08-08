@@ -23,7 +23,7 @@ module UrlEditor {
             var settings = new Settings(localStorage);
             var uri = new UrlEditor.Uri(tab.url);
 
-            var autosuggest = new AutoSuggest(settings, document, uri);
+            var autosuggest = new AutoSuggest(settings, document, uri, tab.incognito);
         
             new UrlEditor.ViewModel(uri, document, settings, uri => {
                 // redirect current tab
