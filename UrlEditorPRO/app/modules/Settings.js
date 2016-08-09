@@ -29,6 +29,10 @@ var UrlEditor;
             */
             this.autoSuggestEnabledOnIncognito = false;
             /**
+            * Whether to turn on tracking user events
+            */
+            this.trackingEnabled = true;
+            /**
             * Params suggestion data. We keep it as a string to prevent from parsing it on the initialization.
             */
             this.autoSuggestData = '{}';

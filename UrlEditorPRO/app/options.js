@@ -5,7 +5,7 @@ var UrlEditor;
         var settings = new UrlEditor.Settings(localStorage);
         var autoSuggestData;
         function initialize() {
-            UrlEditor.Tracking.init();
+            UrlEditor.Tracking.init(settings.trackingEnabled);
             document.body.addEventListener("change", function (evt) {
                 var elem = evt.target;
                 if (elem.tagName == "INPUT" && settings[elem.name] != undefined) {
