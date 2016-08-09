@@ -5,7 +5,7 @@ module UrlEditor.Options {
     var autoSuggestData: IAutoSuggestData;
     
     function initialize() {
-        Tracking.init();
+        Tracking.init(settings.trackingEnabled);
 
         document.body.addEventListener("change", evt => {
             var elem = <HTMLInputElement>evt.target;

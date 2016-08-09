@@ -14,9 +14,9 @@ var UrlEditor;
         return false;
     }
     function initialize() {
-        UrlEditor.Tracking.init();
+        var settings = new UrlEditor.Settings(localStorage);
+        UrlEditor.Tracking.init(settings.trackingEnabled);
         chrome.tabs.getSelected(null, function (tab) {
-            var settings = new UrlEditor.Settings(localStorage);
             var uri = new UrlEditor.Uri(tab.url);
             var autosuggest = new UrlEditor.AutoSuggest(settings, document, uri, tab.incognito);
             new UrlEditor.ViewModel(uri, document, settings, function (uri) {

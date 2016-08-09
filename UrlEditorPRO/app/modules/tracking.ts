@@ -18,9 +18,16 @@ module UrlEditor.Tracking {
     _gaq.push(['_trackPageview']);
 
     var enableLogOncePerSession = true;
+    var trackingEnabled = true;
     var logOncePerSession: IMap<boolean> = {};
 
-    export function init() {
+    export function init(_trackingEnabled: boolean) {
+        trackingEnabled = _trackingEnabled;
+
+        if (!trackingEnabled) {
+            return;
+        }
+
         var ga = document.createElement('script');
         ga.type = 'text/javascript';
         ga.async = true;
@@ -30,7 +37,9 @@ module UrlEditor.Tracking {
     }
 
     export function trackEvent(category: Category, action: string, label?: string, value?: string | number) {
-
+        if (!trackingEnabled) {
+            return;
+        }
 
         var eventData: Array<string | number> = ["_trackEvent", Category[category], action];
 

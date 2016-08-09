@@ -38,7 +38,7 @@ var UrlEditor;
                     // initilize collection whenever it is needed
                     paramsToSave = paramsToSave || {};
                     // take only values which were not saved previously
-                    paramsToSave[name] = submittedParams[name].filter(function (val) { return baseParams[name].indexOf(val) == -1; });
+                    paramsToSave[name] = submittedParams[name].filter(function (val) { return !baseParams[name] || baseParams[name].indexOf(val) == -1; });
                 }
             });
             if (paramsToSave) {

@@ -35,6 +35,11 @@
         public autoSuggestEnabledOnIncognito = false;
 
         /**
+        * Whether to turn on tracking user events
+        */
+        public trackingEnabled = true;
+
+        /**
         * Params suggestion data. We keep it as a string to prevent from parsing it on the initialization.
         */
         public autoSuggestData = '{}';

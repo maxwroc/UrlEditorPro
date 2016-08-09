@@ -16,11 +16,12 @@ module UrlEditor {
     }
 
     function initialize() {
-        Tracking.init();
+
+        var settings = new Settings(localStorage);
+        Tracking.init(settings.trackingEnabled);
 
         chrome.tabs.getSelected(null, function (tab) {
             
-            var settings = new Settings(localStorage);
             var uri = new UrlEditor.Uri(tab.url);
 
             var autosuggest = new AutoSuggest(settings, document, uri, tab.incognito);

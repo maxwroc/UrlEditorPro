@@ -17,8 +17,13 @@ var UrlEditor;
         _gaq.push(['_setAccount', 'UA-81916828-1']);
         _gaq.push(['_trackPageview']);
         var enableLogOncePerSession = true;
+        var trackingEnabled = true;
         var logOncePerSession = {};
-        function init() {
+        function init(_trackingEnabled) {
+            trackingEnabled = _trackingEnabled;
+            if (!trackingEnabled) {
+                return;
+            }
             var ga = document.createElement('script');
             ga.type = 'text/javascript';
             ga.async = true;
@@ -28,6 +33,9 @@ var UrlEditor;
         }
         Tracking.init = init;
         function trackEvent(category, action, label, value) {
+            if (!trackingEnabled) {
+                return;
+            }
             var eventData = ["_trackEvent", Category[category], action];
             addOptionalEventParam(eventData, label);
             addOptionalEventParam(eventData, value);
