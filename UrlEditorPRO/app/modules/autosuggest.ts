@@ -60,7 +60,7 @@
                     // initilize collection whenever it is needed
                     paramsToSave = paramsToSave || {};
                     // take only values which were not saved previously
-                    paramsToSave[name] = submittedParams[name].filter(val => baseParams[name].indexOf(val) == -1);
+                    paramsToSave[name] = submittedParams[name].filter(val => !baseParams[name] || baseParams[name].indexOf(val) == -1);
                 }
             });
 
