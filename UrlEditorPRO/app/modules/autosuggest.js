@@ -127,10 +127,13 @@ var UrlEditor;
     UrlEditor.AutoSuggest = AutoSuggest;
     var Suggestions = (function () {
         function Suggestions(doc) {
+            var _this = this;
             this.doc = doc;
             this.container = doc.createElement("ul");
             this.container.className = "suggestions";
             this.doc.body.appendChild(this.container);
+            // need to use mousedown as click event is triggered too late (after DOMFocusIn which is hidding suggestions)
+            this.container.addEventListener("mousedown", function (evt) { return _this.mouseEventHandler(evt); });
         }
         Suggestions.prototype.add = function (text) {
             var li = this.doc.createElement("li");
@@ -183,6 +186,13 @@ var UrlEditor;
                 this.elem = undefined;
             }
             this.active = undefined;
+        };
+        Suggestions.prototype.mouseEventHandler = function (evt) {
+            var elem = evt.target;
+            // check if suggestion was clicked
+            if (elem.parentElement == this.container) {
+                this.elem.value = elem.textContent;
+            }
         };
         Suggestions.prototype.keyboardNavigation = function (evt) {
             var _this = this;

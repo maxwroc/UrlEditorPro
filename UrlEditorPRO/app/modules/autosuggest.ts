@@ -182,6 +182,9 @@
             this.container = doc.createElement("ul");
             this.container.className = "suggestions";
             this.doc.body.appendChild(this.container);
+
+            // need to use mousedown as click event is triggered too late (after DOMFocusIn which is hidding suggestions)
+            this.container.addEventListener("mousedown", evt => this.mouseEventHandler(evt));
         }
 
         add(text: string) {
@@ -242,6 +245,14 @@
                 this.elem = undefined;
             }
             this.active = undefined;
+        }
+
+        private mouseEventHandler(evt: MouseEvent) {
+            var elem = <HTMLElement>evt.target;
+            // check if suggestion was clicked
+            if (elem.parentElement == this.container) {
+                this.elem.value = elem.textContent;
+            }
         }
 
         private keyboardNavigation(evt: KeyboardEvent) {
