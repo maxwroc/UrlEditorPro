@@ -32,18 +32,30 @@ var UrlEditor;
         return lastFound;
     }
     UrlEditor.findNthElementOfType = findNthElementOfType;
+    /**
+     * Wrapper for document.getElementById
+     */
     function ge(elementId) {
         return document.getElementById(elementId);
     }
     UrlEditor.ge = ge;
+    /**
+     * Encodes given string with Base64 algorythm
+     */
     function b64EncodeUnicode(str) {
         return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function (match, p1) { return String.fromCharCode(parseInt("0x" + p1)); }));
     }
     UrlEditor.b64EncodeUnicode = b64EncodeUnicode;
+    /**
+     * Decodes string using Base64 algorythm
+     */
     function b64DecodeUnicode(str) {
         return decodeURIComponent(Array.prototype.map.call(atob(str), function (c) { return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2); }).join(''));
     }
     UrlEditor.b64DecodeUnicode = b64DecodeUnicode;
+    /**
+     * Checks if given string can be Base64 encoded
+     */
     function isBase64Encoded(val) {
         return base64Pattern.test(val);
     }

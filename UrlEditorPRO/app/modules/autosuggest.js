@@ -237,10 +237,10 @@ var UrlEditor;
                 this.container.scrollTop = 0;
             }
             this.active = suggestionToSelect;
-            // put suggestion text into input elem
-            this.elem.value = this.active ? this.active.textContent : this.originalText;
             if (handled) {
                 evt.preventDefault();
+                // put suggestion text into input elem
+                this.elem.value = this.active ? this.active.textContent : this.originalText;
             }
             evt.stopPropagation();
             if (elementToFocus) {
