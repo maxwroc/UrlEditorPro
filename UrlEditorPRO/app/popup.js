@@ -19,9 +19,18 @@ var UrlEditor;
         chrome.tabs.getSelected(null, function (tab) {
             var uri = new UrlEditor.Uri(tab.url);
             var autosuggest = new UrlEditor.AutoSuggest(settings, document, uri, tab.incognito);
-            new UrlEditor.ViewModel(uri, document, settings, function (uri) {
-                // redirect current tab
-                chrome.tabs.update(tab.id, { url: uri.url() });
+            new UrlEditor.ViewModel(uri, document, settings, function (uri, openIn) {
+                switch (openIn) {
+                    case 0 /* CurrentTab */:
+                        chrome.tabs.update(tab.id, { url: uri.url() });
+                        break;
+                    case 1 /* NewTab */:
+                        chrome.tabs.create({ url: uri.url() });
+                        break;
+                    case 2 /* NewWindow */:
+                        chrome.windows.create({ url: uri.url() });
+                        break;
+                }
                 autosuggest.onSubmission(uri);
                 // check if we should close extension popup/action pane
                 if (settings.autoHide) {

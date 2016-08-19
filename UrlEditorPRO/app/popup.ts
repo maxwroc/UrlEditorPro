@@ -26,9 +26,19 @@ module UrlEditor {
 
             var autosuggest = new AutoSuggest(settings, document, uri, tab.incognito);
         
-            new UrlEditor.ViewModel(uri, document, settings, uri => {
-                // redirect current tab
-                chrome.tabs.update(tab.id, { url: uri.url() });
+            new UrlEditor.ViewModel(uri, document, settings, (uri, openIn) => {
+
+                switch (openIn) {
+                    case OpenIn.CurrentTab:
+                        chrome.tabs.update(tab.id, { url: uri.url() });
+                        break;
+                    case OpenIn.NewTab:
+                        chrome.tabs.create({ url: uri.url() });
+                        break;
+                    case OpenIn.NewWindow:
+                        chrome.windows.create({ url: uri.url() });
+                        break;
+                }
 
                 autosuggest.onSubmission(uri);
 

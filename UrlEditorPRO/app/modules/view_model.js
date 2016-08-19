@@ -4,18 +4,29 @@ var UrlEditor;
     var port80Pattern = /:80$/;
     var maxClientWidth = 780;
     var paramsMarginSum = 86; //5 * 4 + 2 * 3 + 2 * 22 + 2 * 8;
+    /**
+     * Returns following results for given params
+     * 0 (CurrentTab) <- false, false
+     * 1 (NewTab)     <- true,  false
+     * 2 (NewWindow)  <- false, true
+     * 2 (NewWindow)  <- true,  true
+     */
+    function whereToOpenUrl(o1, o2) {
+        // :)
+        return (1 * o1) + (2 * o2) - (o1 & o2);
+    }
     var ViewModel = (function () {
         function ViewModel(url, doc, settings, submit) {
             var _this = this;
+            this.url = url;
+            this.doc = doc;
+            this.submit = submit;
             this.mapIdToFunction = {
                 "full_url": "url",
                 "hostname": "host",
                 "path": "pathname"
             };
             this.formTextElements = ["INPUT", "TEXTAREA"];
-            this.url = url;
-            this.doc = doc;
-            this.submit = submit;
             this.measureElem = UrlEditor.ge("measure");
             // bind event handlers
             doc.body.addEventListener("click", function (evt) { return _this.clickEventDispatcher(evt); });
@@ -27,7 +38,7 @@ var UrlEditor;
                 }
                 if (_this.isTextFieldActive() && evt.keyCode == 13) {
                     UrlEditor.Tracking.trackEvent(UrlEditor.Tracking.Category.Submit, "keyboard");
-                    submit(_this.url);
+                    submit(_this.url, whereToOpenUrl(evt.ctrlKey, evt.shiftKey));
                     // we don't want a new line to be added in TEXTAREA
                     evt.preventDefault();
                 }
@@ -47,7 +58,7 @@ var UrlEditor;
                         this.checkboxClickHandler(inputElem);
                         break;
                     case "button":
-                        this.buttonClickHandler(inputElem);
+                        this.buttonClickHandler(inputElem, evt);
                         break;
                 }
             }
@@ -62,7 +73,7 @@ var UrlEditor;
                 valElem.value = this.encodeURIComponent(valElem.value);
             }
         };
-        ViewModel.prototype.buttonClickHandler = function (elem) {
+        ViewModel.prototype.buttonClickHandler = function (elem, evt) {
             // this handler is triggered for any button click on page
             var paramContainer = elem.parentElement;
             if (paramContainer.isParamContainer) {
@@ -78,7 +89,7 @@ var UrlEditor;
                     case "go":
                         // submit button
                         UrlEditor.Tracking.trackEvent(UrlEditor.Tracking.Category.Submit, "click");
-                        this.submit(this.url);
+                        this.submit(this.url, whereToOpenUrl(evt.ctrlKey, evt.shiftKey));
                         break;
                 }
             }

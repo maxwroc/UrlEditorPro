@@ -8,7 +8,8 @@
   "permissions": [
     "http://*/*",
     "https://*/*",
-    "activeTab"
+    "tabs",
+    "windows"
   ],
   "icons": {
     "16": "img/edit_16.png",
