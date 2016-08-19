@@ -20,7 +20,9 @@ module UrlEditor {
         var settings = new Settings(localStorage);
         Tracking.init(settings.trackingEnabled);
 
-        ge("version").textContent = "UrlEditor PRO v" + chrome.runtime.getManifest().version;
+        var versionElem = ge("version");
+        versionElem.textContent = "UrlEditor PRO v" + chrome.runtime.getManifest().version;
+        !settings.trackingEnabled && (versionElem.style.color = "red");
 
         chrome.tabs.getSelected(null, function (tab) {
             
