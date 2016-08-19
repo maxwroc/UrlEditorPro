@@ -7,7 +7,7 @@ var UrlEditor;
             this.settings = settings;
             this.baseUrl = new UrlEditor.Uri(baseUrl.url());
             // initialize suggestions container
-            this.suggestions = new Suggestions(doc);
+            this.suggestions = new Suggestions(doc, this);
             // bind event handlers
             document.body.addEventListener("DOMFocusOut", function (evt) {
                 _this.suggestions.hide();
@@ -68,6 +68,21 @@ var UrlEditor;
             // create new Uri object to avoid keeping same reference
             this.baseUrl = new UrlEditor.Uri(submittedUri.url());
         };
+        AutoSuggest.prototype.deleteSuggestion = function (paramName, paramValue) {
+            var pageName = this.baseUrl.hostname();
+            if (this.parsedData && this.parsedData[pageName]) {
+                if (paramValue != undefined) {
+                    if (this.parsedData[pageName][paramName]) {
+                        // remove suggestion from settings
+                        this.parsedData[pageName][paramName] = this.parsedData[pageName][paramName].filter(function (val) { return val != paramValue; });
+                    }
+                }
+                else {
+                    delete this.parsedData[pageName][paramName];
+                }
+                this.settings.setValue("autoSuggestData", JSON.stringify(this.parsedData));
+            }
+        };
         AutoSuggest.prototype.onDomEvent = function (elem) {
             if (elem.tagName == "INPUT" && elem.type == "text" && elem.parentElement.isParamContainer) {
                 var name, value;
@@ -126,9 +141,10 @@ var UrlEditor;
     }());
     UrlEditor.AutoSuggest = AutoSuggest;
     var Suggestions = (function () {
-        function Suggestions(doc) {
+        function Suggestions(doc, autoSuggest) {
             var _this = this;
             this.doc = doc;
+            this.autoSuggest = autoSuggest;
             this.container = doc.createElement("ul");
             this.container.className = "suggestions";
             this.doc.body.appendChild(this.container);
@@ -138,6 +154,14 @@ var UrlEditor;
         Suggestions.prototype.add = function (text) {
             var li = this.doc.createElement("li");
             li.textContent = text;
+            li.className = "suggestion";
+            li["suggestionText"] = text;
+            // delete button
+            var del = this.doc.createElement("span");
+            del.textContent = "x";
+            del.className = "delete";
+            del.title = "Press Ctrl+D to remove";
+            li.appendChild(del);
             this.container.appendChild(li);
         };
         Suggestions.prototype.bulkAdd = function (texts) {
@@ -172,26 +196,34 @@ var UrlEditor;
                 if (tooWide > 0) {
                     this.container.style.width = (this.container.offsetWidth - tooWide) + "px";
                 }
-                this.elem = elem;
-                this.originalText = this.elem.value;
+                this.inputElem = elem;
+                this.originalText = this.inputElem.value;
                 // we need to wrap it to be able to remove it later
                 this.handler = function (evt) { return _this.keyboardNavigation(evt); };
-                this.elem.addEventListener("keydown", this.handler, true);
+                this.inputElem.addEventListener("keydown", this.handler, true);
             }
         };
         Suggestions.prototype.hide = function () {
             this.container.style.display = "none";
-            if (this.elem) {
-                this.elem.removeEventListener("keydown", this.handler, true);
-                this.elem = undefined;
+            if (this.inputElem) {
+                this.inputElem.removeEventListener("keydown", this.handler, true);
+                this.inputElem = undefined;
             }
             this.active = undefined;
         };
         Suggestions.prototype.mouseEventHandler = function (evt) {
             var elem = evt.target;
-            // check if suggestion was clicked
-            if (elem.parentElement == this.container) {
-                this.elem.value = elem.textContent;
+            switch (elem.className) {
+                case "suggestion":
+                    this.inputElem.value = elem.suggestionText;
+                    break;
+                case "delete":
+                    this.deleteSuggestion(elem.parentElement);
+                    // prevent from triggering same event on suggestion
+                    evt.stopPropagation();
+                    // prevent from closing suggestions drawer
+                    evt.preventDefault();
+                    break;
             }
         };
         Suggestions.prototype.keyboardNavigation = function (evt) {
@@ -199,7 +231,7 @@ var UrlEditor;
             var handled;
             var elementToFocus;
             // allow user to navigate to other input elem
-            if (evt.ctrlKey) {
+            if (evt.ctrlKey && evt.keyCode != 68) {
                 return;
             }
             var suggestionToSelect;
@@ -216,8 +248,8 @@ var UrlEditor;
                 case 13:
                     if (this.active) {
                         handled = true;
-                        this.originalText = this.active.textContent;
-                        var nextInput = this.elem.nextElementSibling;
+                        this.originalText = this.active.suggestionText;
+                        var nextInput = this.inputElem.nextElementSibling;
                         if (nextInput.tagName == "INPUT" && nextInput.type == "text") {
                             elementToFocus = nextInput;
                         }
@@ -228,13 +260,19 @@ var UrlEditor;
                         UrlEditor.Tracking.trackEvent(UrlEditor.Tracking.Category.AutoSuggest, "used");
                         var e = new Event("updated");
                         e.initEvent("updated", true, true);
-                        this.elem.dispatchEvent(e);
+                        this.inputElem.dispatchEvent(e);
                     }
                     break;
                 case 27:
                     handled = true;
                     // delay hiding to properly execute remaining code
                     setTimeout(function () { return _this.hide(); }, 1);
+                    break;
+                case 68:
+                    if (evt.ctrlKey && this.active) {
+                        this.deleteSuggestion(this.active);
+                        handled = true;
+                    }
                     break;
             }
             this.active && this.active.classList.remove("hv");
@@ -250,7 +288,7 @@ var UrlEditor;
             if (handled) {
                 evt.preventDefault();
                 // put suggestion text into input elem
-                this.elem.value = this.active ? this.active.textContent : this.originalText;
+                this.inputElem.value = this.active ? this.active.suggestionText : this.originalText;
             }
             evt.stopPropagation();
             if (elementToFocus) {
@@ -267,6 +305,19 @@ var UrlEditor;
             else if (suggestionElemOffsetTop < containerScrollTop) {
                 this.container.scrollTop = suggestionElemOffsetTop;
             }
+        };
+        Suggestions.prototype.deleteSuggestion = function (suggestion) {
+            var paramElem = this.inputElem.parentElement;
+            // check if user wants to remove value suggestion
+            if (this.inputElem == paramElem.valueElement) {
+                this.autoSuggest.deleteSuggestion(paramElem.nameElement.value, suggestion.suggestionText);
+            }
+            else {
+                // removing param-name suggestion
+                this.autoSuggest.deleteSuggestion(suggestion.suggestionText);
+            }
+            // remove suggestion from DOM
+            suggestion.parentElement.removeChild(suggestion);
         };
         return Suggestions;
     }());

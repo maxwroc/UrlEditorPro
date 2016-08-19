@@ -8,6 +8,10 @@
         [paramName: string]: string[]
     }
 
+    interface ISuggestion extends HTMLLIElement {
+        suggestionText: string;
+    }
+
     export class AutoSuggest {
 
         private settings: Settings;
@@ -23,7 +27,7 @@
             this.baseUrl = new Uri(baseUrl.url());
 
             // initialize suggestions container
-            this.suggestions = new Suggestions(doc);
+            this.suggestions = new Suggestions(doc, this);
 
             // bind event handlers
             document.body.addEventListener("DOMFocusOut", evt => {
@@ -96,6 +100,25 @@
             // create new Uri object to avoid keeping same reference
             this.baseUrl = new Uri(submittedUri.url());
         }
+        
+        deleteSuggestion(paramName: string, paramValue?: string) {
+            var pageName = this.baseUrl.hostname();
+
+            if (this.parsedData && this.parsedData[pageName]) {
+
+                if (paramValue != undefined) { // removing value suggestion
+                    if (this.parsedData[pageName][paramName]) {
+                        // remove suggestion from settings
+                        this.parsedData[pageName][paramName] = this.parsedData[pageName][paramName].filter(val => val != paramValue);
+                    }
+                }
+                else { // removing param suggestion
+                    delete this.parsedData[pageName][paramName];
+                }
+                
+                this.settings.setValue("autoSuggestData", JSON.stringify(this.parsedData));
+            }
+        }
 
         private onDomEvent(elem: HTMLInputElement) {
             if (elem.tagName == "INPUT" && elem.type == "text" && (<IParamContainerElement>elem.parentElement).isParamContainer) {
@@ -158,27 +181,22 @@
                     this.suggestions.show(elem);
                 }
             }
-        }
-
-        private 
+        } 
     }
 
     class Suggestions {
 
         private container: HTMLUListElement;
 
-        private doc: Document;
-
-        private elem: HTMLInputElement;
+        private inputElem: HTMLInputElement;
 
         private handler;
 
-        private active: HTMLLIElement;
+        private active: ISuggestion;
 
         private originalText: string;
 
-        constructor(doc: Document) {
-            this.doc = doc;
+        constructor(private doc: Document, private autoSuggest: AutoSuggest) {
             this.container = doc.createElement("ul");
             this.container.className = "suggestions";
             this.doc.body.appendChild(this.container);
@@ -190,6 +208,16 @@
         add(text: string) {
             var li = this.doc.createElement("li");
             li.textContent = text;
+            li.className = "suggestion";
+            li["suggestionText"] = text;
+
+            // delete button
+            var del = this.doc.createElement("span");
+            del.textContent = "x";
+            del.className = "delete";
+            del.title = "Press Ctrl+D to remove";
+            li.appendChild(del);
+
             this.container.appendChild(li);
         }
 
@@ -228,30 +256,39 @@
                     this.container.style.width = (this.container.offsetWidth - tooWide) + "px";
                 }
 
-                this.elem = elem;
-                this.originalText = this.elem.value;
+                this.inputElem = elem;
+                this.originalText = this.inputElem.value;
 
                 // we need to wrap it to be able to remove it later
                 this.handler = (evt: KeyboardEvent) => this.keyboardNavigation(evt);
 
-                this.elem.addEventListener("keydown", this.handler, true);
+                this.inputElem.addEventListener("keydown", this.handler, true);
             }
         }
 
         hide() {
             this.container.style.display = "none";
-            if (this.elem) {
-                this.elem.removeEventListener("keydown", this.handler, true);
-                this.elem = undefined;
+            if (this.inputElem) {
+                this.inputElem.removeEventListener("keydown", this.handler, true);
+                this.inputElem = undefined;
             }
             this.active = undefined;
         }
 
         private mouseEventHandler(evt: MouseEvent) {
             var elem = <HTMLElement>evt.target;
-            // check if suggestion was clicked
-            if (elem.parentElement == this.container) {
-                this.elem.value = elem.textContent;
+
+            switch (elem.className) {
+                case "suggestion":
+                    this.inputElem.value = (<ISuggestion>elem).suggestionText;
+                    break;
+                case "delete":
+                    this.deleteSuggestion(<ISuggestion>elem.parentElement);
+                    // prevent from triggering same event on suggestion
+                    evt.stopPropagation();
+                    // prevent from closing suggestions drawer
+                    evt.preventDefault();
+                    break;
             }
         }
 
@@ -260,28 +297,28 @@
             var elementToFocus: HTMLInputElement;
 
             // allow user to navigate to other input elem
-            if (evt.ctrlKey) {
+            if (evt.ctrlKey && evt.keyCode != 68) {
                 return;
             }
 
-            var suggestionToSelect: HTMLLIElement;
+            var suggestionToSelect: ISuggestion;
 
             switch (evt.keyCode) {
                 case 38: // up
                     handled = true;
-                    suggestionToSelect = this.active ? <HTMLLIElement>this.active.previousElementSibling : <HTMLLIElement>this.container.lastElementChild;
+                    suggestionToSelect = this.active ? <ISuggestion>this.active.previousElementSibling : <ISuggestion>this.container.lastElementChild;
                     break;
                 case 40: // down
                     handled = true;
-                    suggestionToSelect = this.active ? <HTMLLIElement>this.active.nextElementSibling : <HTMLLIElement>this.container.firstElementChild;
+                    suggestionToSelect = this.active ? <ISuggestion>this.active.nextElementSibling : <ISuggestion>this.container.firstElementChild;
                     break;
                 case 9: // tab
                 case 13: // enter
                     if (this.active) {
                         handled = true;
-                        this.originalText = this.active.textContent;
+                        this.originalText = this.active.suggestionText;
 
-                        var nextInput = <HTMLInputElement>this.elem.nextElementSibling;
+                        var nextInput = <HTMLInputElement>this.inputElem.nextElementSibling;
                         if (nextInput.tagName == "INPUT" && nextInput.type == "text") {
                             elementToFocus = nextInput;
                         }
@@ -294,13 +331,19 @@
                         
                         var e = new Event("updated");
                         e.initEvent("updated", true, true);
-                        this.elem.dispatchEvent(e)
+                        this.inputElem.dispatchEvent(e)
                     }
                     break;
                 case 27: // escape
                     handled = true;
                     // delay hiding to properly execute remaining code
                     setTimeout(() => this.hide(), 1);
+                    break;
+                case 68: // D
+                    if (evt.ctrlKey && this.active) {
+                        this.deleteSuggestion(this.active);
+                        handled = true;
+                    }
                     break;
             }
 
@@ -322,7 +365,7 @@
                 evt.preventDefault();
 
                 // put suggestion text into input elem
-                this.elem.value = this.active ? this.active.textContent : this.originalText;
+                this.inputElem.value = this.active ? this.active.suggestionText : this.originalText;
             }
 
             evt.stopPropagation();
@@ -342,6 +385,22 @@
             else if (suggestionElemOffsetTop < containerScrollTop) {
                 this.container.scrollTop = suggestionElemOffsetTop;
             }
+        }
+
+        private deleteSuggestion(suggestion: ISuggestion) {
+            var paramElem = <IParamContainerElement>this.inputElem.parentElement;
+
+            // check if user wants to remove value suggestion
+            if (this.inputElem == paramElem.valueElement) {
+                this.autoSuggest.deleteSuggestion(paramElem.nameElement.value, suggestion.suggestionText);
+            }
+            else {
+                // removing param-name suggestion
+                this.autoSuggest.deleteSuggestion(suggestion.suggestionText);
+            }
+            
+            // remove suggestion from DOM
+            suggestion.parentElement.removeChild(suggestion);
         }
     }
 }
