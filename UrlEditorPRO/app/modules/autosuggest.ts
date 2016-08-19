@@ -362,13 +362,15 @@
             
 
             if (handled) {
+                // just in case any of handled key combinations would have some default action
                 evt.preventDefault();
+                // prevent from further handling
+                evt.stopPropagation();
 
                 // put suggestion text into input elem
                 this.inputElem.value = this.active ? this.active.suggestionText : this.originalText;
             }
 
-            evt.stopPropagation();
 
             if (elementToFocus) {
                 elementToFocus.focus();
