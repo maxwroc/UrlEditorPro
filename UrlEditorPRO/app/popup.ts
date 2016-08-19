@@ -20,6 +20,8 @@ module UrlEditor {
         var settings = new Settings(localStorage);
         Tracking.init(settings.trackingEnabled);
 
+        ge("version").textContent = "UrlEditor PRO v" + chrome.runtime.getManifest().version;
+
         chrome.tabs.getSelected(null, function (tab) {
             
             var uri = new UrlEditor.Uri(tab.url);

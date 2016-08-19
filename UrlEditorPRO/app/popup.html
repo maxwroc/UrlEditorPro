@@ -10,6 +10,15 @@
         min-width: 400px;
         overflow-x: hidden;
         background-color: #f6f6f6;
+        margin: 16px 8px 8px 8px;
+      }
+
+      #version {
+          position: absolute;
+          font-size: 10px;
+          color: #a5a5a5;
+          top: 0;
+          right: 8px;
       }
 
       input[type=text],
@@ -161,6 +170,7 @@
     <script src="popup.js"></script>
   </head>
   <body>
+      <div id="version"></div>
       <div class="container">
           <textarea id="full_url" rows="7"></textarea>
       </div>
