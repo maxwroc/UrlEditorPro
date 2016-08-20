@@ -15,7 +15,6 @@ module UrlEditor.Tracking {
 
     _gaq = window["_gaq"] = window["_gaq"] || [];
     _gaq.push(['_setAccount', 'UA-81916828-1']);
-    _gaq.push(['_trackPageview']);
 
     var enableLogOncePerSession = true;
     var trackingEnabled = true;
@@ -27,6 +26,8 @@ module UrlEditor.Tracking {
         if (!trackingEnabled) {
             return;
         }
+        
+        _gaq.push(['_trackPageview']);
 
         var ga = document.createElement('script');
         ga.type = 'text/javascript';
@@ -34,6 +35,15 @@ module UrlEditor.Tracking {
         ga.src = 'https://ssl.google-analytics.com/ga.js';
         var s = document.getElementsByTagName('script')[0];
         s.parentNode.insertBefore(ga, s);
+    }
+
+    export function trackUserVariable(name: string, value: string) {
+        _gaq.push(['_setCustomVar',
+            1,       // This custom var is set to slot #1.  Required parameter.
+            name,    // The name of the custom variable.  Required parameter.
+            value,   // The value of the custom variable.  Required parameter.
+            1        // Sets the scope to visitor-level.  Optional parameter.
+        ]); 
     }
 
     export function trackEvent(category: Category, action: string, label?: string, value?: string | number) {

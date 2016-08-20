@@ -16,12 +16,15 @@ module UrlEditor {
     }
 
     function initialize() {
-
+        var version = chrome.runtime.getManifest().version;
         var settings = new Settings(localStorage);
+
+        // it is better to set variable before page view event (init)
+        Tracking.trackUserVariable("Version", version);
         Tracking.init(settings.trackingEnabled);
 
         var versionElem = ge("version");
-        versionElem.textContent = "UrlEditor PRO v" + chrome.runtime.getManifest().version;
+        versionElem.textContent = "UrlEditor PRO v" + version;
         !settings.trackingEnabled && (versionElem.style.color = "red");
 
         chrome.tabs.getSelected(null, function (tab) {
