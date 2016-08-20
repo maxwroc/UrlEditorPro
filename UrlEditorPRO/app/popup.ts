@@ -16,9 +16,16 @@ module UrlEditor {
     }
 
     function initialize() {
-
+        var version = chrome.runtime.getManifest().version;
         var settings = new Settings(localStorage);
+
+        // it is better to set variable before page view event (init)
+        Tracking.trackUserVariable("Version", version);
         Tracking.init(settings.trackingEnabled);
+
+        var versionElem = ge("version");
+        versionElem.textContent = "UrlEditor PRO v" + version;
+        !settings.trackingEnabled && (versionElem.style.color = "red");
 
         chrome.tabs.getSelected(null, function (tab) {
             
@@ -26,9 +33,19 @@ module UrlEditor {
 
             var autosuggest = new AutoSuggest(settings, document, uri, tab.incognito);
         
-            new UrlEditor.ViewModel(uri, document, settings, uri => {
-                // redirect current tab
-                chrome.tabs.update(tab.id, { url: uri.url() });
+            new UrlEditor.ViewModel(uri, document, settings, (uri, openIn) => {
+
+                switch (openIn) {
+                    case OpenIn.CurrentTab:
+                        chrome.tabs.update(tab.id, { url: uri.url() });
+                        break;
+                    case OpenIn.NewTab:
+                        chrome.tabs.create({ url: uri.url() });
+                        break;
+                    case OpenIn.NewWindow:
+                        chrome.windows.create({ url: uri.url() });
+                        break;
+                }
 
                 autosuggest.onSubmission(uri);
 

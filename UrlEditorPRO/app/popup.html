@@ -10,6 +10,15 @@
         min-width: 400px;
         overflow-x: hidden;
         background-color: #f6f6f6;
+        margin: 16px 8px 8px 8px;
+      }
+
+      #version {
+          position: absolute;
+          font-size: 10px;
+          color: #a5a5a5;
+          top: 0;
+          right: 8px;
       }
 
       input[type=text],
@@ -103,6 +112,8 @@
           background-color: #ffa9a9;
           outline: none;
       }
+
+      .suggestions li:hover,
       .hv {
           background-color: #e8e8e8;
       }
@@ -122,6 +133,23 @@
       }
       .suggestions li {
           padding: 0 5px;
+          cursor: pointer;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          padding-right: 20px;
+      }
+      .suggestions li span {
+          position: absolute;
+          right: 0;
+          margin-top: -2px;
+          color: #cacaca;
+          width: 20px;
+          text-align: center;
+      }
+      .suggestions li span:hover {
+          color: #000;
+          font-weight: bold;
       }
 
     </style>
@@ -142,6 +170,7 @@
     <script src="popup.js"></script>
   </head>
   <body>
+      <div id="version"></div>
       <div class="container">
           <textarea id="full_url" rows="7"></textarea>
       </div>

@@ -4,10 +4,20 @@
     var port80Pattern = /:80$/;
     var maxClientWidth = 780;
     var paramsMarginSum = 86; //5 * 4 + 2 * 3 + 2 * 22 + 2 * 8;
+    
+    /**
+     * Returns following results for given params
+     * 0 (CurrentTab) <- false, false
+     * 1 (NewTab)     <- true,  false
+     * 2 (NewWindow)  <- false, true
+     * 2 (NewWindow)  <- true,  true
+     */
+    function whereToOpenUrl(o1: boolean, o2: boolean): OpenIn {
+        // :)
+        return (1 * <any>o1) + (2 * <any>o2) - (<any>o1 & <any>o2);
+    }
 
     export class ViewModel {
-        private url: Uri;
-        private doc: HTMLDocument;
 
         private mapIdToFunction: IStringMap = {
             "full_url": "url",
@@ -16,14 +26,10 @@
         };
 
         private measureElem: HTMLSpanElement;
-        private submit: (uri: Uri) => void;
 
         private formTextElements = ["INPUT", "TEXTAREA"];
 
-        constructor(url: Uri, doc: HTMLDocument, settings: Settings, submit: (uri: Uri) => void) {
-            this.url = url;
-            this.doc = doc;
-            this.submit = submit;
+        constructor(private url: Uri, private doc: HTMLDocument, settings: Settings, private submit: (uri: Uri, openIn: OpenIn) => void) {
 
 
             this.measureElem = <HTMLSpanElement>ge("measure");
@@ -40,7 +46,7 @@
 
                 if (this.isTextFieldActive() && evt.keyCode == 13) {
                     Tracking.trackEvent(Tracking.Category.Submit, "keyboard");
-                    submit(this.url);
+                    submit(this.url, whereToOpenUrl(evt.ctrlKey, evt.shiftKey));
                     // we don't want a new line to be added in TEXTAREA
                     evt.preventDefault();
                 }
@@ -63,7 +69,7 @@
                         this.checkboxClickHandler(inputElem);
                         break;
                     case "button":
-                        this.buttonClickHandler(inputElem);
+                        this.buttonClickHandler(inputElem, evt);
                         break;
                 }
             }
@@ -81,7 +87,7 @@
             }
         }
 
-        private buttonClickHandler(elem: HTMLInputElement) {
+        private buttonClickHandler(elem: HTMLInputElement, evt: MouseEvent) {
             // this handler is triggered for any button click on page
 
             var paramContainer = <IParamContainerElement>elem.parentElement;
@@ -98,7 +104,7 @@
                     case "go":
                         // submit button
                         Tracking.trackEvent(Tracking.Category.Submit, "click");
-                        this.submit(this.url);
+                        this.submit(this.url, whereToOpenUrl(evt.ctrlKey, evt.shiftKey));
                         break;
                 }
             }

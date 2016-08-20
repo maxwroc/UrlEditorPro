@@ -3,12 +3,13 @@
 
   "name": "Url Editor PRO",
   "description": "Url parser which makes editing complex URLs as easy as possible. Features: params decoding, auto-suggest, keyboard navigation..",
-  "version": "0.8.2.2",
+  "version": "0.8.3.0",
 
   "permissions": [
     "http://*/*",
     "https://*/*",
-    "activeTab"
+    "tabs",
+    "windows"
   ],
   "icons": {
     "16": "img/edit_16.png",
