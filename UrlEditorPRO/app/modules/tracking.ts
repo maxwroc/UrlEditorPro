@@ -13,8 +13,9 @@ module UrlEditor.Tracking {
         Sort
     }
 
-    _gaq = window["_gaq"] = window["_gaq"] || [];
-    _gaq.push(['_setAccount', 'UA-81916828-1']);
+    export class Dimension {
+        public static Version = "dimension1";
+    }
 
     var enableLogOncePerSession = true;
     var trackingEnabled = true;
@@ -26,24 +27,22 @@ module UrlEditor.Tracking {
         if (!trackingEnabled) {
             return;
         }
-        
-        _gaq.push(['_trackPageview']);
 
-        var ga = document.createElement('script');
-        ga.type = 'text/javascript';
-        ga.async = true;
-        ga.src = 'https://ssl.google-analytics.com/ga.js';
-        var s = document.getElementsByTagName('script')[0];
-        s.parentNode.insertBefore(ga, s);
+        // TODO extract ga to support custom dimensions
+        (function (i, s, o, g, r) {
+        i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
+            (i[r].q = i[r].q || []).push(arguments)
+        }, i[r].l = 1 * <any>new Date(); var a = s.createElement(o),
+            m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+        })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
+        
+        ga('create', 'UA-81916828-1', 'auto');
+        // TODO disable validation
+        ga('send', 'pageview');
     }
 
-    export function trackUserVariable(name: string, value: string) {
-        _gaq.push(['_setCustomVar',
-            1,       // This custom var is set to slot #1.  Required parameter.
-            name,    // The name of the custom variable.  Required parameter.
-            value,   // The value of the custom variable.  Required parameter.
-            1        // Sets the scope to visitor-level.  Optional parameter.
-        ]); 
+    export function setCustomDimension(name: string, value: string) {
+        //ga('set', name, value);
     }
 
     export function trackEvent(category: Category, action: string, label?: string, value?: string | number) {
@@ -51,17 +50,12 @@ module UrlEditor.Tracking {
             return;
         }
 
-        var eventData: Array<string | number> = ["_trackEvent", Category[category], action];
-
-        addOptionalEventParam(eventData, label);
-        addOptionalEventParam(eventData, value);
-
         // check if we should log this event
-        if (!isLoggingEnabled(eventData)) {
+        if (!isLoggingEnabled(Array.prototype.slice.call(arguments))) {
             return;
         }
-
-        _gaq.push(eventData);
+        
+        ga('send', 'event', Category[category], action, label, value);
     }
 
     function addOptionalEventParam(eventData: Array<string | number>, param: string | number) {
