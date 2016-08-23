@@ -21,6 +21,7 @@ module UrlEditor {
 
         // it is better to set variable before page view event (init)
         Tracking.setCustomDimension(Tracking.Dimension.Version, version);
+
         Tracking.init(settings.trackingEnabled);
 
         var versionElem = ge("version");
