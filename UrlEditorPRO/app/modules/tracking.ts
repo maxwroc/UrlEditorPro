@@ -13,12 +13,26 @@ module UrlEditor.Tracking {
         Sort
     }
 
-    _gaq = window["_gaq"] = window["_gaq"] || [];
-    _gaq.push(['_setAccount', 'UA-81916828-1']);
+    export class Dimension {
+        public static Version = "dimension1";
+    }
 
     var enableLogOncePerSession = true;
     var trackingEnabled = true;
     var logOncePerSession: IMap<boolean> = {};
+
+    // create global analytics object
+    (function internalInit(hostObject, propertyName) {
+        hostObject['GoogleAnalyticsObject'] = propertyName;
+        hostObject[propertyName] = hostObject[propertyName] || function () {
+            (hostObject[propertyName].q = hostObject[propertyName].q || []).push(arguments)
+        };
+        hostObject[propertyName].l = 1 * <any>new Date();
+    })(window, 'ga');
+
+    // initial tracking variavles setup
+    ga('create', 'UA-81916828-1', 'auto');
+    ga('set', 'checkProtocolTask', null); // Disables file protocol checking.
 
     export function init(_trackingEnabled: boolean) {
         trackingEnabled = _trackingEnabled;
@@ -26,24 +40,19 @@ module UrlEditor.Tracking {
         if (!trackingEnabled) {
             return;
         }
-        
-        _gaq.push(['_trackPageview']);
 
-        var ga = document.createElement('script');
-        ga.type = 'text/javascript';
-        ga.async = true;
-        ga.src = 'https://ssl.google-analytics.com/ga.js';
-        var s = document.getElementsByTagName('script')[0];
-        s.parentNode.insertBefore(ga, s);
+        // load Analytics library
+        var a = document.createElement("script");
+        a.async = true;
+        a.src = "https://www.google-analytics.com/analytics.js";
+        var m = document.getElementsByTagName("script")[0];
+        m.parentNode.insertBefore(a, m);
+
+        ga('send', 'pageview');
     }
 
-    export function trackUserVariable(name: string, value: string) {
-        _gaq.push(['_setCustomVar',
-            1,       // This custom var is set to slot #1.  Required parameter.
-            name,    // The name of the custom variable.  Required parameter.
-            value,   // The value of the custom variable.  Required parameter.
-            1        // Sets the scope to visitor-level.  Optional parameter.
-        ]); 
+    export function setCustomDimension(name: string, value: string) {
+        ga('set', name, value);
     }
 
     export function trackEvent(category: Category, action: string, label?: string, value?: string | number) {
@@ -51,17 +60,12 @@ module UrlEditor.Tracking {
             return;
         }
 
-        var eventData: Array<string | number> = ["_trackEvent", Category[category], action];
-
-        addOptionalEventParam(eventData, label);
-        addOptionalEventParam(eventData, value);
-
         // check if we should log this event
-        if (!isLoggingEnabled(eventData)) {
+        if (!isLoggingEnabled(Array.prototype.slice.call(arguments))) {
             return;
         }
-
-        _gaq.push(eventData);
+        
+        ga('send', 'event', Category[category], action, label, value);
     }
 
     function addOptionalEventParam(eventData: Array<string | number>, param: string | number) {
