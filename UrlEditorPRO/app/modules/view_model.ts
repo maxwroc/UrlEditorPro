@@ -4,6 +4,7 @@
     var port80Pattern = /:80$/;
     var maxClientWidth = 780;
     var paramsMarginSum = 86; //5 * 4 + 2 * 3 + 2 * 22 + 2 * 8;
+    var minInputWidth = 40;
     
     /**
      * Returns following results for given params
@@ -133,6 +134,11 @@
             if (activeElem.id == "full_url" || !isTextFieldActive) {
                 this.populateInputFields(!isTextFieldActive);
             }
+            else {
+                if (activeElem.id == "hostname") {
+                    this.adjustInputWidth(<HTMLInputElement>activeElem, activeElem.parentElement.offsetWidth / 2);
+                }
+            }
 
             if (activeElem.id != "full_url" || !isTextFieldActive) {
                 (<HTMLTextAreaElement>ge("full_url")).value = this.url.url();
@@ -147,6 +153,10 @@
                 if (elem.id && this.mapIdToFunction[elem.id]) {
                     // updating element value using a function name taken from mapping
                     this.setValueIfNotActive(elem, this.url[this.mapIdToFunction[elem.id]]());
+
+                    if (elem.id == "hostname") {
+                        this.adjustInputWidth(elem, elem.parentElement.offsetWidth / 2);
+                    }
                 }
             }
 
@@ -272,7 +282,20 @@
 
         private getTextWidth(text: string): number {
             this.measureElem.textContent = text;
+            // spaces have to be replaced otherwise they won't increase the width
+            this.measureElem.innerHTML = this.measureElem.innerHTML.replace(/ /g, "&nbsp;");
             return this.measureElem.offsetWidth;
+        }
+
+        private adjustInputWidth(elem: HTMLInputElement, maxWidth: number) {
+            var width = this.getTextWidth(elem.value) + 12/*margin+border*/;
+
+            // make sure it is not too big
+            width = width > maxWidth ? maxWidth : width;
+            // make sure it is not too small
+            width = width < minInputWidth ? minInputWidth : width;
+
+            elem.style.width = width + "px";
         }
 
         private keyboardNavigation(evt: KeyboardEvent): boolean {
