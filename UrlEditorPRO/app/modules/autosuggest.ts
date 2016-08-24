@@ -281,8 +281,18 @@
             switch (elem.className) {
                 case "suggestion":
                     this.inputElem.value = (<ISuggestion>elem).suggestionText;
+
+                    Tracking.trackEvent(Tracking.Category.AutoSuggest, "used");
+
+                    // trigger event which will update param in the url (via view model)
+                    var e = new Event("updated");
+                    e.initEvent("updated", true, true);
+                    this.inputElem.dispatchEvent(e)
                     break;
                 case "delete":
+
+                    Tracking.trackEvent(Tracking.Category.AutoSuggest, "delete");
+
                     this.deleteSuggestion(<ISuggestion>elem.parentElement);
                     // prevent from triggering same event on suggestion
                     evt.stopPropagation();
@@ -328,7 +338,8 @@
                         }
 
                         Tracking.trackEvent(Tracking.Category.AutoSuggest, "used");
-                        
+
+                    // trigger event which will update param in the url (via view model)
                         var e = new Event("updated");
                         e.initEvent("updated", true, true);
                         this.inputElem.dispatchEvent(e)

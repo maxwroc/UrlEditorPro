@@ -49,8 +49,8 @@ module UrlEditor {
     /**
      * Wrapper for document.getElementById
      */
-    export function ge(elementId: string): HTMLElement {
-        return document.getElementById(elementId);
+    export function ge<T extends HTMLElement>(elementId: string): T {
+        return <T>document.getElementById(elementId);
     }
 
     /**

@@ -33,7 +33,7 @@
         constructor(private url: Uri, private doc: HTMLDocument, settings: Settings, private submit: (uri: Uri, openIn: OpenIn) => void) {
 
 
-            this.measureElem = <HTMLSpanElement>ge("measure");
+            this.measureElem = ge<HTMLSpanElement>("measure");
 
             // bind event handlers
             doc.body.addEventListener("click", evt => this.clickEventDispatcher(evt));
@@ -141,7 +141,7 @@
             }
 
             if (activeElem.id != "full_url" || !isTextFieldActive) {
-                (<HTMLTextAreaElement>ge("full_url")).value = this.url.url();
+                ge<HTMLTextAreaElement>("full_url").value = this.url.url();
             }
         }
 
@@ -175,7 +175,7 @@
 
         private populateParams(setFocusOnLastOne: boolean = false) {
             var param: IParamContainerElement;
-            var params = ge("params");
+            var params = ge<HTMLDivElement>("params");
 
             // clean old set of params
             params.innerHTML = "";
@@ -227,8 +227,13 @@
                 this.doc.body.style.width = Math.min(longestBoth, maxClientWidth) + "px";
             }
 
-            if (setFocusOnLastOne && param) {
-                param.nameElement.focus();
+            if (setFocusOnLastOne) {
+                if (param) {
+                    param.nameElement.focus();
+                }
+                else {
+                    ge<HTMLInputElement>("hostname").focus();
+                }
             }
         }
 
@@ -267,7 +272,7 @@
 
         private setErrorMessage(err: string, elem?: HTMLElement) {
             // setting error message
-            ge("err").textContent = err ? "Error: " + err : "";
+            ge<HTMLDivElement>("err").textContent = err ? "Error: " + err : "";
 
             // if DOM element was passed we're setting or removing the error indicator color
             if (elem) {
