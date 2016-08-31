@@ -262,9 +262,10 @@
 
         private deleteParam(elem: IParamContainerElement) {
 
-            // set focus on previous param
-            if (elem.previousElementSibling) {
-                (<IParamContainerElement>elem.previousElementSibling).nameElement.focus();
+            // try to get next or previous param container
+            var paramToFocus = <IParamContainerElement>elem.nextElementSibling || <IParamContainerElement>elem.previousElementSibling;
+            if (paramToFocus) {
+                paramToFocus.nameElement.focus();
             }
             
             elem.parentElement.removeChild(elem);
