@@ -77,15 +77,21 @@
         }
 
         private checkboxClickHandler(elem: HTMLInputElement) {
-            var valElem = <HTMLInputElement>elem.previousElementSibling;
+            var paramContainer = <IParamContainerElement>elem.parentElement;
 
             // we have only one checkbox for encoding/decoding value
             if (elem.checked) {
-                valElem.value = decodeURIComponent(valElem.value);
+                paramContainer.valueElement.value = decodeURIComponent(paramContainer.valueElement.value);
             }
             else {
-                valElem.value = this.encodeURIComponent(valElem.value);
+                paramContainer.valueElement.value = this.encodeURIComponent(paramContainer.valueElement.value);
             }
+
+            // delay execution
+            setTimeout(() => {
+                this.updateFields(true/*setUriFromFields*/);
+                paramContainer.valueElement.focus();
+            }, 0);
         }
 
         private buttonClickHandler(elem: HTMLInputElement, evt: MouseEvent) {
@@ -131,7 +137,7 @@
             var activeElem = <HTMLElement>this.doc.activeElement;
             var isTextFieldActive = this.isTextFieldActive();
 
-            if (activeElem.id == "full_url" || !isTextFieldActive) {
+            if (activeElem.id == "full_url" || (!(<IParamContainerElement>activeElem.parentElement).isParamContainer && !isTextFieldActive)) {
                 this.populateInputFields(!isTextFieldActive);
             }
             else {
