@@ -9,6 +9,8 @@
         private onDomEvent(elem: HTMLElement) {
             if (Helpers.isTextFieldActive()) {
                 if ((<IParamContainerElement>this.doc.activeElement.parentElement).isParamContainer) {
+                    var fullUrl = <HTMLDivElement>Helpers.ge("full_url");
+                    fullUrl.innerHTML = fullUrl.textContent.replace(new RegExp());
                 }
             }
         }

@@ -117,5 +117,16 @@ module UrlEditor {
 
             this.anchor.href = url;
         }
+
+        getHighlightedUrl(cursorPos: number): string {
+            return this.url().replace(paramPattern, (match: string, paramName: string, paramValue: string, offset: number) => {
+                // check if we should higlight this param
+                if (cursorPos >= offset && cursorPos <= offset + paramName.length + paramValue.length + 1) {
+                    match = `{name}${paramName}{/name}={value}${paramValue}{/value}`;
+                }
+
+                return match;
+            });
+        }
     }
 }
