@@ -47,7 +47,7 @@
                 if (this.isTextFieldActive() && evt.keyCode == 13) {
                     Tracking.trackEvent(Tracking.Category.Submit, "keyboard");
                     submit(this.url, whereToOpenUrl(evt.ctrlKey, evt.shiftKey));
-                    // we don't want a new line to be added in TEXTAREA
+                    // we don't want a new line to be added in full_url input
                     evt.preventDefault();
                 }
             });
@@ -111,7 +111,7 @@
         }
 
         private keyboardEventDispatcher(evt: Event) {
-            // casting to the INPUT elem but it can be a TEXTAREA as well
+            // casting to the INPUT elem but it can be a div/full_url as well
             var elem = <HTMLInputElement>evt.target;
 
             if (this.isTextFieldActive()) {
@@ -135,7 +135,7 @@
             }
 
             if (activeElem.id != "full_url" || !isTextFieldActive) {
-                ge<HTMLTextAreaElement>("full_url").value = this.url.url();
+                ge<HTMLDivElement>("full_url").textContent = this.url.url();
             }
         }
 
@@ -256,8 +256,13 @@
         }
 
         private isTextFieldActive(): boolean {
+            return this.isTextField(this.doc.activeElement);
+        }
+
+        private isTextField(elem: Element): boolean {
             // check if tag is an INPUT or TEXTAREA, additionally check if the INPUT type is text
-            return this.formTextElements.indexOf(this.doc.activeElement.tagName) != -1 && (this.doc.activeElement["type"] == "textarea" || this.doc.activeElement["type"] == "text");
+            return (elem.tagName == "INPUT" && (<HTMLInputElement>elem).type == "text") ||
+                   (elem.tagName == "DIV" && elem.id == "full_url")
         }
 
         private setErrorMessage(err: string, elem?: HTMLElement) {
@@ -374,7 +379,7 @@
                 
                 evt.preventDefault();
 
-                if (nextElem && this.formTextElements.indexOf(nextElem.tagName) != -1) {
+                if (nextElem && this.isTextField(nextElem)) {
                     nextElem.focus();
                 }
                 
@@ -410,12 +415,12 @@
         }
 
         private setUriFromFields() {
-            var currentInput = <HTMLInputElement>this.doc.activeElement;
+            var currentInput = <HTMLElement>this.doc.activeElement;
 
             if (currentInput) {
                 var func = this.mapIdToFunction[currentInput.id];
                 if (func) {
-                    this.url[func](currentInput.value);
+                    this.url[func](currentInput.textContent);
                 }
                 else {
                     var params: IMap<string[]> = {};

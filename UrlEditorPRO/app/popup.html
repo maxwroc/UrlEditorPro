@@ -22,7 +22,7 @@
       }
 
       input[type=text],
-      textarea {
+      #full_url {
           background-color: #fff;
           border: 1px solid #cacaca;
           border-radius: 5px;
@@ -30,7 +30,7 @@
       }
 
       input[type=text]:focus:not(.error),
-      textarea:focus {
+      #full_url:focus {
           box-shadow: inset 0 0 0.5em rgba(0, 0, 0, 0.3) !important;
           outline: none;
       }
@@ -40,7 +40,8 @@
       }
 
       #measure,
-      input[type=text] {
+      input[type=text],
+      #full_url {
           font-size: 13px;
           font-family: Arial;
       }
@@ -172,7 +173,7 @@
   <body>
       <div id="version"></div>
       <div class="container">
-          <textarea id="full_url" rows="7"></textarea>
+          <div id="full_url" contenteditable="true"></div>
       </div>
       <div class="container">
           <span id="measure"></span>
