@@ -1,4 +1,5 @@
-﻿module UrlEditor {
+﻿/// <reference path="shared_interfaces.d.ts" />
+module UrlEditor {
 
     var paramEncodedPattern = /%[a-fA-F0-9]{2}/;
     var port80Pattern = /:80$/;
@@ -32,7 +33,7 @@
         constructor(private url: Uri, private doc: HTMLDocument, settings: Settings, private submit: (uri: Uri, openIn: OpenIn) => void) {
 
 
-            this.measureElem = ge<HTMLSpanElement>("measure");
+            this.measureElem = Helpers.ge<HTMLSpanElement>("measure");
 
             // bind event handlers
             doc.body.addEventListener("click", evt => this.clickEventDispatcher(evt));
@@ -44,7 +45,7 @@
                     return;
                 }
 
-                if (this.isTextFieldActive() && evt.keyCode == 13) {
+                if (Helpers.isTextFieldActive() && evt.keyCode == 13) {
                     Tracking.trackEvent(Tracking.Category.Submit, "keyboard");
                     submit(this.url, whereToOpenUrl(evt.ctrlKey, evt.shiftKey));
                     // we don't want a new line to be added in full_url input
@@ -114,7 +115,7 @@
             // casting to the INPUT elem but it can be a div/full_url as well
             var elem = <HTMLInputElement>evt.target;
 
-            if (this.isTextFieldActive()) {
+            if (Helpers.isTextFieldActive()) {
                 // clear error message
                 this.setErrorMessage("", elem);
                 
@@ -128,14 +129,14 @@
             }
 
             var activeElem = <HTMLElement>this.doc.activeElement;
-            var isTextFieldActive = this.isTextFieldActive();
+            var isTextFieldActive = Helpers.isTextFieldActive();
 
             if (activeElem.id == "full_url" || !isTextFieldActive) {
                 this.populateInputFields(!isTextFieldActive);
             }
 
             if (activeElem.id != "full_url" || !isTextFieldActive) {
-                ge<HTMLDivElement>("full_url").textContent = this.url.url();
+                Helpers.ge<HTMLDivElement>("full_url").textContent = this.url.url();
             }
         }
 
@@ -165,7 +166,7 @@
 
         private populateParams(setFocusOnLastOne: boolean = false) {
             var param: IParamContainerElement;
-            var params = ge<HTMLDivElement>("params");
+            var params = Helpers.ge<HTMLDivElement>("params");
 
             // clean old set of params
             params.innerHTML = "";
@@ -222,7 +223,7 @@
                     param.nameElement.focus();
                 }
                 else {
-                    ge<HTMLInputElement>("hostname").focus();
+                    Helpers.ge<HTMLInputElement>("hostname").focus();
                 }
             }
         }
@@ -255,19 +256,9 @@
             this.updateFields();
         }
 
-        private isTextFieldActive(): boolean {
-            return this.isTextField(this.doc.activeElement);
-        }
-
-        private isTextField(elem: Element): boolean {
-            // check if tag is an INPUT or TEXTAREA, additionally check if the INPUT type is text
-            return (elem.tagName == "INPUT" && (<HTMLInputElement>elem).type == "text") ||
-                   (elem.tagName == "DIV" && elem.id == "full_url")
-        }
-
         private setErrorMessage(err: string, elem?: HTMLElement) {
             // setting error message
-            ge<HTMLDivElement>("err").textContent = err ? "Error: " + err : "";
+            Helpers.ge<HTMLDivElement>("err").textContent = err ? "Error: " + err : "";
 
             // if DOM element was passed we're setting or removing the error indicator color
             if (elem) {
@@ -322,14 +313,14 @@
                     }
                     break;
                 case 66: // b
-                    if (evt.ctrlKey && this.isTextFieldActive()) {
+                    if (evt.ctrlKey && Helpers.isTextFieldActive()) {
                         var parent = <IParamContainerElement>(<HTMLInputElement>evt.target).parentElement;
                         // check if it is a param container element
                         if (parent && parent.isParamContainer) {
                             Tracking.trackEvent(Tracking.Category.Encoding, "keyboard", "base64");
 
                             var input = <HTMLInputElement>evt.target;
-                            input.value = isBase64Encoded(input.value) ? b64DecodeUnicode(input.value) : b64EncodeUnicode(input.value);
+                            input.value = Helpers.isBase64Encoded(input.value) ? Helpers.b64DecodeUnicode(input.value) : Helpers.b64EncodeUnicode(input.value);
                             
                             this.updateFields();
                             return true;
@@ -379,7 +370,7 @@
                 
                 evt.preventDefault();
 
-                if (nextElem && this.isTextField(nextElem)) {
+                if (nextElem && Helpers.isTextField(nextElem)) {
                     nextElem.focus();
                 }
                 
@@ -391,14 +382,14 @@
 
         private getElementInTheSameColumn<T>(currentElem: HTMLElement, container: HTMLElement): T {
             if (currentElem && container) {
-                var index = getIndexOfSiblingGivenType(currentElem, this.formTextElements);
-                return <any>findNthElementOfType(container, this.formTextElements, index);
+                var index = Helpers.getIndexOfSiblingGivenType(currentElem, this.formTextElements);
+                return <any>Helpers.findNthElementOfType(container, this.formTextElements, index);
             }
         }
 
         private addNewParamFields() {
             var container = this.createNewParamContainer()
-            ge("params").appendChild(container);
+            Helpers.ge("params").appendChild(container);
 
             (<HTMLInputElement>container.firstElementChild).focus();
         }
@@ -425,7 +416,7 @@
                 else {
                     var params: IMap<string[]> = {};
 
-                    var container = ge("params");
+                    var container = Helpers.ge("params");
 
                     [].forEach.call(container.childNodes, (child: IParamContainerElement) => {
                         if (child.nameElement && child.nameElement.value != "") {

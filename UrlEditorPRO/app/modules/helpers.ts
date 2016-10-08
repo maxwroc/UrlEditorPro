@@ -1,11 +1,13 @@
 ﻿
 module UrlEditor {
-
     export const enum OpenIn {
         CurrentTab,
         NewTab,
         NewWindow
     }
+}
+
+module UrlEditor.Helpers {
 
     var base64Pattern = /^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{4}|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)$/;
     
@@ -70,5 +72,17 @@ module UrlEditor {
      */
     export function isBase64Encoded(val: string) {
         return base64Pattern.test(val);
+    }
+
+    
+
+    export function isTextFieldActive(): boolean {
+        return isTextField(document.activeElement);
+    }
+
+    export function isTextField(elem: Element): boolean {
+        // check if tag is an INPUT or TEXTAREA, additionally check if the INPUT type is text
+        return (elem.tagName == "INPUT" && (<HTMLInputElement>elem).type == "text") ||
+            (elem.tagName == "DIV" && elem.id == "full_url")
     }
 }
