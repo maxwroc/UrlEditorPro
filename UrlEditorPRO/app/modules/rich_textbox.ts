@@ -10,7 +10,8 @@
             if (Helpers.isTextFieldActive()) {
                 if ((<IParamContainerElement>this.doc.activeElement.parentElement).isParamContainer) {
                     var fullUrl = <HTMLDivElement>Helpers.ge("full_url");
-                    fullUrl.innerHTML = fullUrl.textContent.replace(new RegExp());
+                    var uri = new Uri(fullUrl.textContent);
+                    fullUrl.innerHTML = uri.getHighlightedUrl(Math.random() * fullUrl.textContent.length).replace("&", "&amp;");
                 }
             }
         }
