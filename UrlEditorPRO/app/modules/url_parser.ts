@@ -119,14 +119,33 @@ module UrlEditor {
         }
 
         getHighlightedUrl(cursorPos: number): string {
-            return this.url().replace(paramPattern, (match: string, paramName: string, paramValue: string, offset: number) => {
-                // check if we should higlight this param
-                if (cursorPos >= offset && cursorPos <= offset + paramName.length + paramValue.length + 1) {
-                    match = `{name}${paramName}{/name}={value}${paramValue}{/value}`;
-                }
+            var fullUrl = this.url();
 
-                return match;
-            });
+            var queryLength = this.anchor.search.length;
+            var pathLength = this.anchor.pathname.length;
+            var hostLenght = this.anchor.href.length - queryLength - pathLength - this.anchor.hash.length;
+
+            if (cursorPos <= hostLenght) {
+                // cursor somewhere in the beginning of the url / host part
+                fullUrl = `<strong>${fullUrl.substr(0, hostLenght)}</strong>${fullUrl.substr(hostLenght)}`;
+            }
+            else if (cursorPos <= hostLenght + pathLength) {
+                // cursor somewhere in the path
+                fullUrl = `${fullUrl.substr(0, hostLenght)}<strong>${this.anchor.pathname}</strong>${fullUrl.substr(hostLenght + pathLength)}`;
+            }
+            else if (cursorPos <= hostLenght + pathLength + queryLength) {
+                // cursor somewhere in query area
+                fullUrl = fullUrl.replace(paramPattern, (match: string, paramName: string, paramValue: string, offset: number) => {
+                    // check if we should higlight this param
+                    if (cursorPos >= offset && cursorPos <= offset + paramName.length + paramValue.length + 1) {
+                        match = `<strong>${paramName}</strong>=<strong class="second">${paramValue}</strong>`;
+                    }
+
+                    return match;
+                });
+            }
+
+            return fullUrl;
         }
     }
 }

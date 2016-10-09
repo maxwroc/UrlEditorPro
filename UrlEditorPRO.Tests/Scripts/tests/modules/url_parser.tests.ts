@@ -45,12 +45,23 @@ module Tests {
 
         all("gets hit-highlighted param when calling getHighlightedUrl",
             [
-                ["http://something/dddd?param1=1&param|2=val2&param3=t", "http://something/dddd?param1=1&{name}param2{/name}={value}val2{/value}&param3=t"],
-                ["http://something/dddd?param1=1&param2=|val2&param3=t", "http://something/dddd?param1=1&{name}param2{/name}={value}val2{/value}&param3=t"],
-                ["http://something/dddd?param1=1&param2=val2|&param3=t", "http://something/dddd?param1=1&{name}param2{/name}={value}val2{/value}&param3=t"],
-                ["http://something/dddd?param1=1&|param2=val2&param3=t", "http://something/dddd?param1=1&{name}param2{/name}={value}val2{/value}&param3=t"],
-                ["http://something/dddd?param1=1&param2=val2&param3=t|", "http://something/dddd?param1=1&param2=val2&{name}param3{/name}={value}t{/value}"],
-                ["http://something/dddd?|param1=1&param2=val2&param3=t", "http://something/dddd?{name}param1{/name}={value}1{/value}&param2=val2&param3=t"],
+                // host
+                ["|http://something/dddd?param1=1&param2=val2&param3=t", "<strong>http://something</strong>/dddd?param1=1&param2=val2&param3=t"],
+                ["htt|p://something/dddd?param1=1&param2=val2&param3=t", "<strong>http://something</strong>/dddd?param1=1&param2=val2&param3=t"],
+                ["http:/|/something/dddd?param1=1&param2=val2&param3=t", "<strong>http://something</strong>/dddd?param1=1&param2=val2&param3=t"],
+                ["http://something|/dddd?param1=1&param2=val2&param3=t", "<strong>http://something</strong>/dddd?param1=1&param2=val2&param3=t"],
+                ["http://somethin|g/dddd?param1=1&param2=val2&param3=t", "<strong>http://something</strong>/dddd?param1=1&param2=val2&param3=t"],
+                // path
+                ["http://something/|dddd/r?param1=1&param2=val2&param3=t", "http://something<strong>/dddd/r</strong>?param1=1&param2=val2&param3=t"],
+                ["http://something/dddd|/r?param1=1&param2=val2&param3=t", "http://something<strong>/dddd/r</strong>?param1=1&param2=val2&param3=t"],
+                ["http://something/dddd/r|?param1=1&param2=val2&param3=t", "http://something<strong>/dddd/r</strong>?param1=1&param2=val2&param3=t"],
+                // params
+                ["http://something/dddd?param1=1&param|2=val2&param3=t", "http://something/dddd?param1=1&<strong>param2</strong>=<strong class=\"second\">val2</strong>&param3=t"],
+                ["http://something/dddd?param1=1&param2=|val2&param3=t", "http://something/dddd?param1=1&<strong>param2</strong>=<strong class=\"second\">val2</strong>&param3=t"],
+                ["http://something/dddd?param1=1&param2=val2|&param3=t", "http://something/dddd?param1=1&<strong>param2</strong>=<strong class=\"second\">val2</strong>&param3=t"],
+                ["http://something/dddd?param1=1&|param2=val2&param3=t", "http://something/dddd?param1=1&<strong>param2</strong>=<strong class=\"second\">val2</strong>&param3=t"],
+                ["http://something/dddd?param1=1&param2=val2&param3=t|", "http://something/dddd?param1=1&param2=val2&<strong>param3</strong>=<strong class=\"second\">t</strong>"],
+                ["http://something/dddd?|param1=1&param2=val2&param3=t", "http://something/dddd?<strong>param1</strong>=<strong class=\"second\">1</strong>&param2=val2&param3=t"],
             ],
             (url: string, expected: string) => {
             var uri = new UrlEditor.Uri(url.replace("|", ""));
