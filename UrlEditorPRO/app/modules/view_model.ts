@@ -137,6 +137,10 @@ module UrlEditor {
 
             if (activeElem.id != "full_url" || !isTextFieldActive) {
                 Helpers.ge<HTMLDivElement>("full_url").textContent = this.url.url();
+
+                if (activeElem.id == "hostname") {
+                    this.adjustElementWidthToItsContent(activeElem);
+                }
             }
         }
 
@@ -144,10 +148,16 @@ module UrlEditor {
             // iterate over elements which should be populatad
             var elements = this.doc.getElementsByTagName("input");
             for (var i = 0, elem; elem = <HTMLInputElement>elements[i]; i++) {
+                var funcName = this.mapIdToFunction[elem.id];
                 // check if element has ID set, the mapping exists 
-                if (elem.id && this.mapIdToFunction[elem.id]) {
+                if (elem.id && funcName) {
                     // updating element value using a function name taken from mapping
-                    this.setValueIfNotActive(elem, this.url[this.mapIdToFunction[elem.id]]());
+                    this.setValueIfNotActive(elem, this.url[funcName]());
+
+                    if (funcName == "host") {
+                        // measure width and set fixed size (to make more space for path)
+                        this.adjustElementWidthToItsContent(elem);
+                    }
                 }
             }
 
@@ -274,6 +284,11 @@ module UrlEditor {
         private getTextWidth(text: string): number {
             this.measureElem.textContent = text;
             return this.measureElem.offsetWidth;
+        }
+
+        private adjustElementWidthToItsContent(elem: HTMLElement) {
+            var width = this.getTextWidth((<HTMLInputElement>elem).value || elem.textContent) + 12; // + 10 padding and +2 border 
+            elem.style.width = width + "px";
         }
 
         private keyboardNavigation(evt: KeyboardEvent): boolean {

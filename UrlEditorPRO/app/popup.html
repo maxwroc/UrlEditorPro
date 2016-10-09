@@ -39,8 +39,14 @@
           outline: none;
       }
 
+      .value,
       .container > * {
-          flex: 1 100%;
+          flex: 1 0 auto;
+      }
+
+      #hostname {
+          flex: none;
+          max-width: 50%;
       }
 
       #measure,
@@ -60,10 +66,6 @@
           display: flex;
           position: relative;
           margin: 2px 0;
-      }
-      .value,
-      .container > * {
-          flex: 1;
       }
       .param input[type=text] {
           width: 150px;
