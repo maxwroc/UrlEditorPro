@@ -28,22 +28,8 @@
             let uri = new Uri(this.richText.getText());
             let pos = this.richText.getCursorPos();
 
-            let url = uri.getHighlightedUrl(pos);
-            let markerPos = url.indexOf(Uri.HighlightMarker);
-            let markerPositions: number[] = [];
-            while (markerPos != -1) {
-                markerPositions.push(markerPos - markerPositions.length);
-
-                // search for next marker
-                markerPos = url.indexOf(Uri.HighlightMarker, markerPos + 1);
-            }
-
-            markerPositions.forEach((pos, index) => {
-                // execute for every second
-                if (index % 2 == 1) {
-                    this.richText.highlight(markerPositions[index - 1], markerPositions[index]);
-                }
-            });
+            let markupPositions = uri.getHighlightMarkupPos(pos);
+            markupPositions.forEach(pos => this.richText.highlight(pos[0], pos[1]));
 
             // bring back original cursor pos
             this.richText.setCursorPos(pos);

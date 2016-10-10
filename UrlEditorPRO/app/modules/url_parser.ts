@@ -120,8 +120,9 @@ module UrlEditor {
             this.anchor.href = url;
         }
 
-        getHighlightedUrl(cursorPos: number): string {
+        getHighlightMarkupPos(cursorPos: number): number[][] {
             var fullUrl = this.url();
+            let result: number[][] = [];
 
             var queryLength = this.anchor.search.length;
             var pathLength = this.anchor.pathname.length;
@@ -129,25 +130,26 @@ module UrlEditor {
 
             if (cursorPos <= hostLenght) {
                 // cursor somewhere in the beginning of the url / host part
-                fullUrl = `${Uri.HighlightMarker}${fullUrl.substr(0, hostLenght)}${Uri.HighlightMarker}${fullUrl.substr(hostLenght)}`;
+                result.push([0, hostLenght]);
             }
             else if (cursorPos <= hostLenght + pathLength) {
                 // cursor somewhere in the path
-                fullUrl = `${fullUrl.substr(0, hostLenght)}${Uri.HighlightMarker}${this.anchor.pathname}${Uri.HighlightMarker}${fullUrl.substr(hostLenght + pathLength)}`;
+                result.push([hostLenght, hostLenght + pathLength]);
             }
             else if (cursorPos <= hostLenght + pathLength + queryLength) {
                 // cursor somewhere in query area
-                fullUrl = fullUrl.replace(paramPattern, (match: string, paramName: string, paramValue: string, offset: number) => {
+                fullUrl.replace(paramPattern, (match: string, paramName: string, paramValue: string, offset: number) => {
                     // check if we should higlight this param
                     if (cursorPos >= offset && cursorPos <= offset + paramName.length + paramValue.length + 1) {
-                        match = `${Uri.HighlightMarker}${paramName}${Uri.HighlightMarker}=${Uri.HighlightMarker}${paramValue}${Uri.HighlightMarker}`;
+                        result.push([offset, offset + paramName.length]);
+                        result.push([offset + paramName.length + 1, offset + paramName.length + 1 + paramValue.length]);
                     }
 
                     return match;
                 });
             }
 
-            return fullUrl;
+            return result;
         }
     }
 }

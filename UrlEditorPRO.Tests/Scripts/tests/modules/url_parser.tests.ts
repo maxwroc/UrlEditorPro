@@ -46,27 +46,27 @@ module Tests {
         all("gets hit-highlighted param when calling getHighlightedUrl",
             [
                 // host
-                ["|http://something/dddd?param1=1&param2=val2&param3=t", "|http://something|/dddd?param1=1&param2=val2&param3=t"],
-                ["htt|p://something/dddd?param1=1&param2=val2&param3=t", "|http://something|/dddd?param1=1&param2=val2&param3=t"],
-                ["http:/|/something/dddd?param1=1&param2=val2&param3=t", "|http://something|/dddd?param1=1&param2=val2&param3=t"],
-                ["http://something|/dddd?param1=1&param2=val2&param3=t", "|http://something|/dddd?param1=1&param2=val2&param3=t"],
-                ["http://somethin|g/dddd?param1=1&param2=val2&param3=t", "|http://something|/dddd?param1=1&param2=val2&param3=t"],
+                ["|http://something/dddd?param1=1&param2=val2&param3=t", [[0, 16]]],
+                ["htt|p://something/dddd?param1=1&param2=val2&param3=t", [[0, 16]]],
+                ["http:/|/something/dddd?param1=1&param2=val2&param3=t", [[0, 16]]],
+                ["http://something|/dddd?param1=1&param2=val2&param3=t", [[0, 16]]],
+                ["http://somethin|g/dddd?param1=1&param2=val2&param3=t", [[0, 16]]],
                 // path
-                ["http://something/|dddd/r?param1=1&param2=val2&param3=t", "http://something|/dddd/r|?param1=1&param2=val2&param3=t"],
-                ["http://something/dddd|/r?param1=1&param2=val2&param3=t", "http://something|/dddd/r|?param1=1&param2=val2&param3=t"],
-                ["http://something/dddd/r|?param1=1&param2=val2&param3=t", "http://something|/dddd/r|?param1=1&param2=val2&param3=t"],
+                ["http://something/|dddd/r?param1=1&param2=val2&param3=t", [[16, 23]]],
+                ["http://something/dddd|/r?param1=1&param2=val2&param3=t", [[16, 23]]],
+                ["http://something/dddd/r|?param1=1&param2=val2&param3=t", [[16, 23]]],
                 // params
-                ["http://something/dddd?param1=1&param|2=val2&param3=t", "http://something/dddd?param1=1&|param2|=|val2|&param3=t"],
-                ["http://something/dddd?param1=1&param2=|val2&param3=t", "http://something/dddd?param1=1&|param2|=|val2|&param3=t"],
-                ["http://something/dddd?param1=1&param2=val2|&param3=t", "http://something/dddd?param1=1&|param2|=|val2|&param3=t"],
-                ["http://something/dddd?param1=1&|param2=val2&param3=t", "http://something/dddd?param1=1&|param2|=|val2|&param3=t"],
-                ["http://something/dddd?param1=1&param2=val2&param3=t|", "http://something/dddd?param1=1&param2=val2&|param3|=|t|"],
-                ["http://something/dddd?|param1=1&param2=val2&param3=t", "http://something/dddd?|param1|=|1|&param2=val2&param3=t"],
+                ["http://something/dddd?param1=1&param|2=val2&param3=t", [[31, 37], [38, 42]]],
+                ["http://something/dddd?param1=1&param2=|val2&param3=t", [[31, 37], [38, 42]]],
+                ["http://something/dddd?param1=1&param2=val2|&param3=t", [[31, 37], [38, 42]]],
+                ["http://something/dddd?param1=1&|param2=val2&param3=t", [[31, 37], [38, 42]]],
+                ["http://something/dddd?param1=1&param2=val2&param3=t|", [[43, 49], [50, 51]]],
+                ["http://something/dddd?|param1=1&param2=val2&param3=t", [[22, 28], [29, 30]]],
             ],
-            (url: string, expected: string) => {
+            (url: string, expected: number[][]) => {
             var uri = new UrlEditor.Uri(url.replace("|", ""));
 
-            var result = uri.getHighlightedUrl(url.indexOf("|"));
+            var result = uri.getHighlightMarkupPos(url.indexOf("|"));
             expect(result).toEqual(expected);
         });
     });
