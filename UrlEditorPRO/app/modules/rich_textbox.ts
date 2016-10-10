@@ -28,12 +28,14 @@
             let uri = new Uri(this.richText.getText());
             let pos = this.richText.getCursorPos();
 
+            // remove previous markup
+            this.richText.removeFormatting();
+
             let markupPositions = uri.getHighlightMarkupPos(pos);
             markupPositions.forEach(pos => this.richText.highlight(pos[0], pos[1]));
 
             // bring back original cursor pos
             this.richText.setCursorPos(pos);
-
         }
     }
 
@@ -93,6 +95,7 @@
             var range = this.doc.createRange();
             var startNode: Node, endNode: Node;
 
+            // iterate over all nodes: text, element, etc
             for (let i = 0; i < this.elem.childNodes.length; i++) {
                 let node = this.elem.childNodes[i];
                 let currentNodeTextLength = node.textContent.length;
@@ -115,7 +118,8 @@
 
                 }
 
-                start -= currentNodeTextLength;
+                // change start value only if node hasn't been found yet
+                start -= startNode ? 0 : currentNodeTextLength;
                 end -= currentNodeTextLength;
             }
 
@@ -137,6 +141,11 @@
 
         getText(): string {
             return this.elem.textContent;
+        }
+
+        removeFormatting() {
+            this.select(0, this.elem.textContent.length);
+            this.doc.execCommand("removeFormat", false, "");
         }
     }
 }
