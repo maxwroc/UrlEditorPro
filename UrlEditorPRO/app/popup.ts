@@ -23,7 +23,7 @@ module UrlEditor {
         Tracking.setCustomDimension(Tracking.Dimension.Version, version);
 
         Tracking.init(settings.trackingEnabled);
-        new RichTextbox(document);
+        new RichTextboxViewModel(document);
 
         var versionElem = Helpers.ge("version");
         versionElem.textContent = "UrlEditor PRO v" + version;

@@ -9,6 +9,8 @@ module UrlEditor {
         private anchor: HTMLAnchorElement;
         private urlPrefix: string = ""; // like view-source:
 
+        public static HighlightMarker = "|";
+
         constructor(uri: string) {
             this.anchor = document.createElement('a');
             this.url(uri);
@@ -127,18 +129,18 @@ module UrlEditor {
 
             if (cursorPos <= hostLenght) {
                 // cursor somewhere in the beginning of the url / host part
-                fullUrl = `<strong>${fullUrl.substr(0, hostLenght)}</strong>${fullUrl.substr(hostLenght)}`;
+                fullUrl = `${Uri.HighlightMarker}${fullUrl.substr(0, hostLenght)}${Uri.HighlightMarker}${fullUrl.substr(hostLenght)}`;
             }
             else if (cursorPos <= hostLenght + pathLength) {
                 // cursor somewhere in the path
-                fullUrl = `${fullUrl.substr(0, hostLenght)}<strong>${this.anchor.pathname}</strong>${fullUrl.substr(hostLenght + pathLength)}`;
+                fullUrl = `${fullUrl.substr(0, hostLenght)}${Uri.HighlightMarker}${this.anchor.pathname}${Uri.HighlightMarker}${fullUrl.substr(hostLenght + pathLength)}`;
             }
             else if (cursorPos <= hostLenght + pathLength + queryLength) {
                 // cursor somewhere in query area
                 fullUrl = fullUrl.replace(paramPattern, (match: string, paramName: string, paramValue: string, offset: number) => {
                     // check if we should higlight this param
                     if (cursorPos >= offset && cursorPos <= offset + paramName.length + paramValue.length + 1) {
-                        match = `<strong>${paramName}</strong>=<strong class="second">${paramValue}</strong>`;
+                        match = `${Uri.HighlightMarker}${paramName}${Uri.HighlightMarker}=${Uri.HighlightMarker}${paramValue}${Uri.HighlightMarker}`;
                     }
 
                     return match;

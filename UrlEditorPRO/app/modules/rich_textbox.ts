@@ -1,53 +1,17 @@
 ﻿module UrlEditor {
+    
+    export class RichTextboxViewModel {
 
-    function getSelectionCharacterOffsetWithin(element) {
-        var start = 0;
-        var end = 0;
-        var doc = element.ownerDocument || element.document;
-        var win = doc.defaultView || doc.parentWindow;
-        var sel;
-        if (typeof win.getSelection != "undefined") {
-            sel = win.getSelection();
-            if (sel.rangeCount > 0) {
-                var range = win.getSelection().getRangeAt(0);
-                var preCaretRange = range.cloneRange();
-                preCaretRange.selectNodeContents(element);
-                preCaretRange.setEnd(range.startContainer, range.startOffset);
-                start = preCaretRange.toString().length;
-                preCaretRange.setEnd(range.endContainer, range.endOffset);
-                end = preCaretRange.toString().length;
-            }
-        } else if ((sel = doc.selection) && sel.type != "Control") {
-            var textRange = sel.createRange();
-            var preCaretTextRange = doc.body.createTextRange();
-            preCaretTextRange.moveToElementText(element);
-            preCaretTextRange.setEndPoint("EndToStart", textRange);
-            end = preCaretTextRange.text.length;
-            preCaretTextRange.setEndPoint("EndToEnd", textRange);
-            end = preCaretTextRange.text.length;
-        }
-        return { start: start, end: end };
-    }
-
-    function setCursorPos(el, pos) {
-        var range = document.createRange();
-        var sel = window.getSelection();
-        range.setStart(el.childNodes[0], pos);
-        range.collapse(true);
-        sel.removeAllRanges();
-        sel.addRange(range);
-    }
-
-    export class RichTextbox {
-
-        private fullUrl: HTMLDivElement;
+        private richText: RichTextBox;
 
         constructor(private doc: Document) {
-            doc.body.addEventListener("DOMFocusOut", evt => this.onDomEvent(<HTMLElement>evt.target));
-            doc.body.addEventListener("DOMFocusIn", evt => this.onDomEvent(<HTMLElement>evt.target));
+            //doc.body.addEventListener("DOMFocusOut", evt => this.onDomEvent(<HTMLElement>evt.target));
+            //doc.body.addEventListener("DOMFocusIn", evt => this.onDomEvent(<HTMLElement>evt.target));
 
-            this.fullUrl = <HTMLDivElement>Helpers.ge("full_url");
-            this.fullUrl.addEventListener("selectstart", (evt) => {
+            let fullUrl = <HTMLDivElement>Helpers.ge("full_url");
+            this.richText = new RichTextBox(fullUrl);
+
+            fullUrl.addEventListener("selectstart", (evt) => {
                 setTimeout(() => this.highlight(), 0);
             });
         }
@@ -61,10 +25,132 @@
         }
 
         private highlight() {
-            var uri = new Uri(this.fullUrl.textContent);
-            var pos = getSelectionCharacterOffsetWithin(this.fullUrl).start;
-            this.fullUrl.innerHTML = uri.getHighlightedUrl(pos).replace("&", "&amp;")
-            setCursorPos(this.fullUrl, pos);
+            let uri = new Uri(this.richText.getText());
+            let pos = this.richText.getCursorPos();
+
+            let url = uri.getHighlightedUrl(pos);
+            let markerPos = url.indexOf(Uri.HighlightMarker);
+            let markerPositions: number[] = [];
+            while (markerPos != -1) {
+                markerPositions.push(markerPos - markerPositions.length);
+
+                // search for next marker
+                markerPos = url.indexOf(Uri.HighlightMarker, markerPos + 1);
+            }
+
+            markerPositions.forEach((pos, index) => {
+                // execute for every second
+                if (index % 2 == 1) {
+                    this.richText.highlight(markerPositions[index - 1], markerPositions[index]);
+                }
+            });
+
+            // bring back original cursor pos
+            this.richText.setCursorPos(pos);
+
+        }
+    }
+
+    export class RichTextBox {
+
+        private elem: HTMLElement;
+        private doc: Document;
+        private window: Window;
+
+        constructor(elem: string | HTMLElement) {
+            if (typeof elem == "string") {
+                this.elem = Helpers.ge(<string>elem);
+            }
+            else {
+                this.elem = <HTMLElement>elem;
+            }
+            
+            this.doc = this.elem.ownerDocument;
+            this.window = this.doc.defaultView;
+        }
+
+        highlight(start: number, end: number) {
+            this.select(start, end);
+            this.doc.execCommand("foreColor", false, "red");
+        }
+
+        getCursorPos(selectionEnd = false): number {
+            var pos = 0;
+            var sel = this.window.getSelection();
+
+            if (sel.rangeCount > 0) {
+                var range = sel.getRangeAt(0);
+                var preCaretRange = range.cloneRange();
+                preCaretRange.selectNodeContents(this.elem);
+                preCaretRange.setEnd(range.startContainer, range.startOffset);
+                pos = preCaretRange.toString().length;
+
+                if (selectionEnd) {
+                    preCaretRange.setEnd(range.endContainer, range.endOffset);
+                    pos = preCaretRange.toString().length;
+                }
+            }
+
+            return pos;
+        }
+
+        setCursorPos(pos: number) {
+            this.select(pos, pos);
+        }
+
+        select(start, end) {
+            if (start > end) {
+                // gacefully fail
+                return;
+            }
+            
+            var range = this.doc.createRange();
+            var startNode: Node, endNode: Node;
+
+            for (let i = 0; i < this.elem.childNodes.length; i++) {
+                let node = this.elem.childNodes[i];
+                let currentNodeTextLength = node.textContent.length;
+
+                if (start < currentNodeTextLength || end <= currentNodeTextLength) {
+
+                    // if it is not text node we need to get the one inside
+                    if (node.nodeType != Node.TEXT_NODE) {
+                        node = node.childNodes[0];
+                    }
+
+                    if (!startNode) {
+                        startNode = node;
+                    }
+
+                    if (end <= currentNodeTextLength) {
+                        endNode = node;
+                        break;
+                    }
+
+                }
+
+                start -= currentNodeTextLength;
+                end -= currentNodeTextLength;
+            }
+
+            if (startNode && endNode) {
+                var sel = this.window.getSelection();
+
+                // set same pos for start and end
+                range.setStart(startNode, start);
+                range.setEnd(endNode, end);
+
+                sel.removeAllRanges();
+                sel.addRange(range);
+            }
+        }
+
+        focus(): void {
+            this.elem.focus;
+        }
+
+        getText(): string {
+            return this.elem.textContent;
         }
     }
 }
