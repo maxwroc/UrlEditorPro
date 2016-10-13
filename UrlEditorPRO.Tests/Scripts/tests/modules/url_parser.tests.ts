@@ -43,7 +43,7 @@ module Tests {
             expect(uri.url()).toEqual("http://something/?d=3&d=4");
         });
 
-        all("gets hit-highlighted param when calling getHighlightedUrl",
+        all("gets hit-highlighted param when calling getHighlightedUrl with cursor position",
             [
                 // host
                 ["|http://something/dddd?param1=1&param2=val2&param3=t", [[0, 16]]],
@@ -68,6 +68,19 @@ module Tests {
 
             var result = uri.getHighlightMarkupPos(url.indexOf("|"));
             expect(result).toEqual(expected);
-        });
+            });
+
+        all("gets hit-highlighted param when calling getHighlightedUrl with param position",
+            [
+                ["http://something/dddd?param1=1&param2=val2&param3=t", 0, [[22, 28], [29, 30]]],
+                ["http://something/dddd?param1=1&param2=val2&param3=t", 1, [[31, 37], [38, 42]]],
+                ["http://something/dddd?param1=1&param2=val2&param3=t", 2, [[43, 49], [50, 51]]],
+            ],
+            (url: string, pos: number, expected: number[][]) => {
+                var uri = new UrlEditor.Uri(url.replace("|", ""));
+
+                var result = uri.getHighlightMarkupPos(pos, false);
+                expect(result).toEqual(expected);
+            });
     });
 }

@@ -3,39 +3,68 @@
     export class RichTextboxViewModel {
 
         private richText: RichTextBox;
+        private processing = false;
 
         constructor(private doc: Document) {
-            //doc.body.addEventListener("DOMFocusOut", evt => this.onDomEvent(<HTMLElement>evt.target));
-            //doc.body.addEventListener("DOMFocusIn", evt => this.onDomEvent(<HTMLElement>evt.target));
+            let paramsContainer = <HTMLDivElement>Helpers.ge("params");
+            //paramsContainer.addEventListener("DOMFocusOut", evt => this.onDomEvent(<HTMLElement>evt.target));
+            paramsContainer.addEventListener("DOMFocusIn", evt => this.onDomEvent(<HTMLElement>evt.target));
 
             let fullUrl = <HTMLDivElement>Helpers.ge("full_url");
             this.richText = new RichTextBox(fullUrl);
 
             fullUrl.addEventListener("selectstart", (evt) => {
-                setTimeout(() => this.highlight(), 0);
+                setTimeout(() => {
+                    let cursorPos = this.richText.getCursorPos();
+                    this.highlight(cursorPos, true/*isCursorPos*/);
+                }, 0);
             });
         }
 
         private onDomEvent(elem: HTMLElement) {
             if (Helpers.isTextFieldActive()) {
-                if ((<IParamContainerElement>this.doc.activeElement.parentElement).isParamContainer) {
-                    
+                let paramContainer = <IParamContainerElement>this.doc.activeElement.parentElement;
+                if (paramContainer.isParamContainer) {
+                    let paramIndex = 0;
+                    // set param position/number
+                    while (paramContainer.previousElementSibling) {
+                        paramContainer = <IParamContainerElement>paramContainer.previousElementSibling;
+                        // increment only when previous sibling is a real param container
+                        paramIndex += paramContainer.isParamContainer ? 1 : 0;
+                    }
+
+                    this.highlight(paramIndex, false/*isCursorPos*/);
                 }
             }
         }
 
-        private highlight() {
+        private highlight(pos: number, isCursorPos: boolean) {
+            if (this.processing) {
+                return;
+            }
+
+            this.processing = true;
+
             let uri = new Uri(this.richText.getText());
-            let pos = this.richText.getCursorPos();
+            let currentActiveElem = <HTMLElement>this.doc.activeElement;
 
             // remove previous markup
             this.richText.removeFormatting();
 
-            let markupPositions = uri.getHighlightMarkupPos(pos);
+            let markupPositions = uri.getHighlightMarkupPos(pos, isCursorPos);
             markupPositions.forEach(pos => this.richText.highlight(pos[0], pos[1]));
 
-            // bring back original cursor pos
-            this.richText.setCursorPos(pos);
+            if (isCursorPos) {
+                // bring back original cursor pos
+                this.richText.setCursorPos(pos);
+            }
+
+            setTimeout(() => {
+                // bring back the focus to original elem
+                currentActiveElem.focus();
+
+                this.processing = false;
+            }, 5000);
         }
     }
 
