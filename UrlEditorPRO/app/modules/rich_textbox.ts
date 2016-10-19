@@ -3,12 +3,11 @@
     export class RichTextboxViewModel {
 
         private richText: RichTextBox;
-        private processing = false;
 
         constructor(private doc: Document) {
             let paramsContainer = <HTMLDivElement>Helpers.ge("params");
             //paramsContainer.addEventListener("DOMFocusOut", evt => this.onDomEvent(<HTMLElement>evt.target));
-            paramsContainer.addEventListener("DOMFocusIn", evt => this.onDomEvent(<HTMLElement>evt.target));
+            paramsContainer.addEventListener("click", evt => this.onDomEvent(<HTMLElement>evt.target));
 
             let fullUrl = <HTMLDivElement>Helpers.ge("full_url");
             this.richText = new RichTextBox(fullUrl);
@@ -39,32 +38,24 @@
         }
 
         private highlight(pos: number, isCursorPos: boolean) {
-            if (this.processing) {
-                return;
-            }
-
-            this.processing = true;
 
             let uri = new Uri(this.richText.getText());
             let currentActiveElem = <HTMLElement>this.doc.activeElement;
 
             // remove previous markup
-            this.richText.removeFormatting();
+            // this.richText.removeFormatting();
 
             let markupPositions = uri.getHighlightMarkupPos(pos, isCursorPos);
-            markupPositions.forEach(pos => this.richText.highlight(pos[0], pos[1]));
+            this.richText.highlight(markupPositions);
 
             if (isCursorPos) {
                 // bring back original cursor pos
-                this.richText.setCursorPos(pos);
+                //this.richText.setCursorPos(pos);
             }
-
-            setTimeout(() => {
-                // bring back the focus to original elem
-                currentActiveElem.focus();
-
-                this.processing = false;
-            }, 5000);
+            
+            // bring back the focus to original elem
+            //currentActiveElem.focus();
+            //UrlEditor.Helpers.ge("params").firstChild.firstChild["nextElementSibling"].focus();
         }
     }
 
@@ -86,9 +77,18 @@
             this.window = this.doc.defaultView;
         }
 
-        highlight(start: number, end: number) {
-            this.select(start, end);
-            this.doc.execCommand("foreColor", false, "red");
+        highlight(markupPos: number[][]) {
+            var originalText = this.elem.textContent;
+            var result = "";
+            let lastPos = 0;
+            markupPos.forEach((elemPos) => {
+                result += originalText.substr(lastPos, elemPos[0] - lastPos) + "<b>" + originalText.substr(elemPos[0], elemPos[1] - elemPos[0]) + "</b>";
+                lastPos = elemPos[1];
+            });
+
+            result += originalText.substr(lastPos, originalText.length - lastPos);
+
+            this.elem.innerHTML = result;
         }
 
         getCursorPos(selectionEnd = false): number {
@@ -173,8 +173,8 @@
         }
 
         removeFormatting() {
-            this.select(0, this.elem.textContent.length);
-            this.doc.execCommand("removeFormat", false, "");
+            // remove all html markup from element content
+            this.elem.textContent = this.elem.textContent;
         }
     }
 }
