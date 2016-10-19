@@ -1,4 +1,7 @@
-﻿interface String {
+﻿// use of deprecated function
+declare function escape(s: string): string;
+
+interface String {
     replaceAll(searchValue: string, replaceValue, ignoreCase?: boolean): string;
     htmlEncode(): string;
 }
@@ -96,6 +99,20 @@ module UrlEditor.Helpers {
     export function isTextField(elem: Element): boolean {
         // check if tag is an INPUT or TEXTAREA, additionally check if the INPUT type is text
         return (elem.tagName == "INPUT" && (<HTMLInputElement>elem).type == "text") ||
-            (elem.tagName == "DIV" && elem.id == "full_url")
+            (elem.tagName == "DIV" && elem.id == "full_url"));
+    }
+    
+    /**
+     * Encodes query parameters/components
+     *
+     * Should be used as a replacement for encodeURIComponent
+     */
+    export function encodeQueryParameter(queryParam: string): string {
+        // encodeURIComponent doesn't correcly encode all characters required by RFC 3986
+        // reference: http://stackoverflow.com/questions/18251399/why-doesnt-encodeuricomponent-encode-single-quotes-apostrophes
+        // additionaly, for query parameters it's allowed to use + instead of to %20, which gives a nicer looking URL
+        // %20 is only required when encoding in the path part of the URL, not the query part of the URL
+        // reference: http://stackoverflow.com/questions/1634271/url-encoding-the-space-character-or-20
+        return encodeURIComponent(queryParam).replace(/[!'()*]/g, escape).replace(/%20/g, "+");
     }
 }
