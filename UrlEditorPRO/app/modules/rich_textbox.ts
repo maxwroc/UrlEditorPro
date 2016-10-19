@@ -6,8 +6,7 @@
 
         constructor(private doc: Document) {
             let paramsContainer = <HTMLDivElement>Helpers.ge("params");
-            //paramsContainer.addEventListener("DOMFocusOut", evt => this.onDomEvent(<HTMLElement>evt.target));
-            paramsContainer.addEventListener("click", evt => this.onDomEvent(<HTMLElement>evt.target));
+            paramsContainer.addEventListener("DOMFocusIn", evt => this.onDomEvent(<HTMLElement>evt.target));
 
             let fullUrl = <HTMLDivElement>Helpers.ge("full_url");
             this.richText = new RichTextBox(fullUrl);
@@ -17,6 +16,11 @@
                     let cursorPos = this.richText.getCursorPos();
                     this.highlight(cursorPos, true/*isCursorPos*/);
                 }, 0);
+            });
+            fullUrl.addEventListener("input", (evt) => {
+                console.log("input ");
+                let cursorPos = this.richText.getCursorPos();
+                this.highlight(cursorPos, true/*isCursorPos*/);
             });
         }
 
@@ -42,20 +46,13 @@
             let uri = new Uri(this.richText.getText());
             let currentActiveElem = <HTMLElement>this.doc.activeElement;
 
-            // remove previous markup
-            // this.richText.removeFormatting();
-
             let markupPositions = uri.getHighlightMarkupPos(pos, isCursorPos);
             this.richText.highlight(markupPositions);
 
             if (isCursorPos) {
                 // bring back original cursor pos
-                //this.richText.setCursorPos(pos);
+                this.richText.setCursorPos(pos);
             }
-            
-            // bring back the focus to original elem
-            //currentActiveElem.focus();
-            //UrlEditor.Helpers.ge("params").firstChild.firstChild["nextElementSibling"].focus();
         }
     }
 
@@ -82,13 +79,16 @@
             var result = "";
             let lastPos = 0;
             markupPos.forEach((elemPos) => {
-                result += originalText.substr(lastPos, elemPos[0] - lastPos) + "<b>" + originalText.substr(elemPos[0], elemPos[1] - elemPos[0]) + "</b>";
+                result += originalText.substr(lastPos, elemPos[0] - lastPos).htmlEncode() + "<b>" + originalText.substr(elemPos[0], elemPos[1] - elemPos[0]).htmlEncode() + "</b>";
                 lastPos = elemPos[1];
             });
 
-            result += originalText.substr(lastPos, originalText.length - lastPos);
+            result += originalText.substr(lastPos, originalText.length - lastPos).htmlEncode();
 
-            this.elem.innerHTML = result;
+            // avoid updating DOM when it is not necessarry
+            if (this.elem.innerHTML != result) {
+                this.elem.innerHTML = result;
+            }
         }
 
         getCursorPos(selectionEnd = false): number {

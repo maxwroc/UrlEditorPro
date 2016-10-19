@@ -1,4 +1,17 @@
-﻿
+﻿interface String {
+    replaceAll(searchValue: string, replaceValue, ignoreCase?: boolean): string;
+    htmlEncode(): string;
+}
+// Seems to be the fastest way to replace all occurances of a string in a string
+// http://jsperf.com/htmlencoderegex/25
+String.prototype.replaceAll = function (searchValue, replaceValue, ignoreCase) {
+    return this.replace(new RegExp(searchValue.replace(/([\/\,\!\\\^\$\{\}\[\]\(\)\.\*\+\?\|\<\>\-\&])/g, "\\$&"), (ignoreCase ? "gi" : "g")), (typeof (replaceValue) == "string") ? replaceValue.replace(/\$/g, "$$$$") : replaceValue);
+};
+String.prototype.htmlEncode = function () {
+    return this.replaceAll("&", "&amp;").replace("\"", "&quot;").replace("'", "&#39;").replace("<", "&lt;").replace(">", "&gt;");
+};
+
+
 module UrlEditor {
     export const enum OpenIn {
         CurrentTab,
