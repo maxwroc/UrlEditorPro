@@ -429,7 +429,7 @@ module UrlEditor {
             if (currentInput) {
                 var func = this.mapIdToFunction[currentInput.id];
                 if (func) {
-                    this.url[func](currentInput.textContent);
+                    this.url[func](currentInput.tagName == "INPUT" ? (<HTMLInputElement>currentInput).value : currentInput.textContent);
                 }
                 else {
                     var params: IMap<string[]> = {};
