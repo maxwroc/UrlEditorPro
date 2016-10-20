@@ -461,11 +461,4 @@ module UrlEditor {
             return encodeURIComponent(value).replace(/%2B/g, "+");
         }
     } // class
-
-    export interface IParamContainerElement extends HTMLDivElement {
-        nameElement?: HTMLInputElement;
-        valueElement?: HTMLInputElement;
-        encodeElement?: HTMLInputElement;
-        isParamContainer?: boolean;
-    }
 } // module

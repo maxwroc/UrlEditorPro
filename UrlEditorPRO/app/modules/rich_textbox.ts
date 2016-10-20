@@ -1,4 +1,7 @@
-﻿module UrlEditor {
+﻿/// <reference path="helpers.ts" />
+/// <reference path="shared_interfaces.d.ts" />
+
+module UrlEditor {
     
     export class RichTextboxViewModel {
 
