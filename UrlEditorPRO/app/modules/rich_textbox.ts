@@ -11,16 +11,41 @@
             let fullUrl = <HTMLDivElement>Helpers.ge("full_url");
             this.richText = new RichTextBox(fullUrl);
 
+            // handle clicks and cursor position hanges in full url field
             fullUrl.addEventListener("selectstart", (evt) => {
+                // when the event is rised the element doesn't have focus yet so we need to delay reading cursor position
                 setTimeout(() => {
                     let cursorPos = this.richText.getCursorPos();
                     this.highlight(cursorPos, true/*isCursorPos*/);
+
+                    // bring back original cursor pos
+                    this.richText.setCursorPos(cursorPos);
                 }, 0);
             });
+
+            // handle typing in full url field
             fullUrl.addEventListener("input", (evt) => {
-                console.log("input ");
                 let cursorPos = this.richText.getCursorPos();
                 this.highlight(cursorPos, true/*isCursorPos*/);
+            });
+
+            // handle focusing in host and path fields
+            doc.body.addEventListener("DOMFocusIn", evt => {
+                let elem = <HTMLElement>evt.target;
+                let cursorPos = -1;
+
+                if (elem.id == "hostname" || elem.id == "path") {
+                    let uri = new Uri(this.richText.getText());
+                    cursorPos += uri.protocol().length + uri.host().length;
+
+                    if (elem.id == "path") {
+                        cursorPos += uri.pathname().length;
+                    }
+                }
+
+                if (cursorPos != -1) {
+                    this.highlight(cursorPos, true/*isCursorPos*/);
+                }
             });
         }
 
@@ -48,11 +73,6 @@
 
             let markupPositions = uri.getHighlightMarkupPos(pos, isCursorPos);
             this.richText.highlight(markupPositions);
-
-            if (isCursorPos) {
-                // bring back original cursor pos
-                this.richText.setCursorPos(pos);
-            }
         }
     }
 
