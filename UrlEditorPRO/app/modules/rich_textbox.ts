@@ -188,7 +188,7 @@ module UrlEditor {
         }
 
         focus(): void {
-            this.elem.focus;
+            this.elem.focus();
         }
 
         getText(): string {
