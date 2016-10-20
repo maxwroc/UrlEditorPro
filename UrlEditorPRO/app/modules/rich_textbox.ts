@@ -10,6 +10,10 @@ module UrlEditor {
         constructor(private doc: Document) {
             let paramsContainer = <HTMLDivElement>Helpers.ge("params");
             paramsContainer.addEventListener("DOMFocusIn", evt => this.onDomEvent(<HTMLElement>evt.target));
+            paramsContainer.addEventListener("input", evt => {
+                // delay handling - we need to wait when all fields will be updated (by ViewModel)
+                setTimeout(() => this.onDomEvent(<HTMLElement>evt.target), 0);
+            });
 
             let fullUrl = <HTMLDivElement>Helpers.ge("full_url");
             this.richText = new RichTextBox(fullUrl);
