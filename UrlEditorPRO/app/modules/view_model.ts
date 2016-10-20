@@ -5,7 +5,6 @@ module UrlEditor {
     var port80Pattern = /:80$/;
     var maxClientWidth = 780;
     var paramsMarginSum = 86; //5 * 4 + 2 * 3 + 2 * 22 + 2 * 8;
-    var minInputWidth = 40;
     
     /**
      * Returns following results for given params

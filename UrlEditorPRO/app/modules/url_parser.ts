@@ -9,8 +9,6 @@ module UrlEditor {
         private anchor: HTMLAnchorElement;
         private urlPrefix: string = ""; // like view-source:
 
-        public static HighlightMarker = "|";
-
         constructor(uri: string) {
             this.anchor = document.createElement('a');
             this.url(uri);
