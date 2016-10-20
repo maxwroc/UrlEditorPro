@@ -1,10 +1,10 @@
-﻿module UrlEditor {
+﻿/// <reference path="shared_interfaces.d.ts" />
+module UrlEditor {
 
     var paramEncodedPattern = /%[a-fA-F0-9]{2}/;
     var port80Pattern = /:80$/;
     var maxClientWidth = 780;
     var paramsMarginSum = 86; //5 * 4 + 2 * 3 + 2 * 22 + 2 * 8;
-    var minInputWidth = 40;
     
     /**
      * Returns following results for given params
@@ -33,7 +33,7 @@
         constructor(private url: Uri, private doc: HTMLDocument, settings: Settings, private submit: (uri: Uri, openIn: OpenIn) => void) {
 
 
-            this.measureElem = ge<HTMLSpanElement>("measure");
+            this.measureElem = Helpers.ge<HTMLSpanElement>("measure");
 
             // bind event handlers
             doc.body.addEventListener("click", evt => this.clickEventDispatcher(evt));
@@ -45,10 +45,10 @@
                     return;
                 }
 
-                if (this.isTextFieldActive() && evt.keyCode == 13) {
+                if (Helpers.isTextFieldActive() && evt.keyCode == 13) {
                     Tracking.trackEvent(Tracking.Category.Submit, "keyboard");
                     submit(this.url, whereToOpenUrl(evt.ctrlKey, evt.shiftKey));
-                    // we don't want a new line to be added in TEXTAREA
+                    // we don't want a new line to be added in full_url input
                     evt.preventDefault();
                 }
             });
@@ -112,10 +112,10 @@
         }
 
         private keyboardEventDispatcher(evt: Event) {
-            // casting to the INPUT elem but it can be a TEXTAREA as well
+            // casting to the INPUT elem but it can be a div/full_url as well
             var elem = <HTMLInputElement>evt.target;
 
-            if (this.isTextFieldActive()) {
+            if (Helpers.isTextFieldActive()) {
                 // clear error message
                 this.setErrorMessage("", elem);
                 
@@ -129,19 +129,18 @@
             }
 
             var activeElem = <HTMLElement>this.doc.activeElement;
-            var isTextFieldActive = this.isTextFieldActive();
+            var isTextFieldActive = Helpers.isTextFieldActive();
 
             if (activeElem.id == "full_url" || !isTextFieldActive) {
                 this.populateInputFields(!isTextFieldActive);
             }
-            else {
-                if (activeElem.id == "hostname") {
-                    this.adjustInputWidth(<HTMLInputElement>activeElem, activeElem.parentElement.offsetWidth / 2);
-                }
-            }
 
             if (activeElem.id != "full_url" || !isTextFieldActive) {
-                ge<HTMLTextAreaElement>("full_url").value = this.url.url();
+                Helpers.ge<HTMLDivElement>("full_url").textContent = this.url.url();
+
+                if (activeElem.id == "hostname") {
+                    this.adjustElementWidthToItsContent(activeElem);
+                }
             }
         }
 
@@ -149,13 +148,15 @@
             // iterate over elements which should be populatad
             var elements = this.doc.getElementsByTagName("input");
             for (var i = 0, elem; elem = <HTMLInputElement>elements[i]; i++) {
+                var funcName = this.mapIdToFunction[elem.id];
                 // check if element has ID set, the mapping exists 
-                if (elem.id && this.mapIdToFunction[elem.id]) {
+                if (elem.id && funcName) {
                     // updating element value using a function name taken from mapping
-                    this.setValueIfNotActive(elem, this.url[this.mapIdToFunction[elem.id]]());
+                    this.setValueIfNotActive(elem, this.url[funcName]());
 
-                    if (elem.id == "hostname") {
-                        this.adjustInputWidth(elem, elem.parentElement.offsetWidth / 2);
+                    if (funcName == "host") {
+                        // measure width and set fixed size (to make more space for path)
+                        this.adjustElementWidthToItsContent(elem);
                     }
                 }
             }
@@ -175,7 +176,7 @@
 
         private populateParams(setFocusOnLastOne: boolean = false) {
             var param: IParamContainerElement;
-            var params = ge<HTMLDivElement>("params");
+            var params = Helpers.ge<HTMLDivElement>("params");
 
             // clean old set of params
             params.innerHTML = "";
@@ -232,7 +233,7 @@
                     param.nameElement.focus();
                 }
                 else {
-                    ge<HTMLInputElement>("hostname").focus();
+                    Helpers.ge<HTMLInputElement>("hostname").focus();
                 }
             }
         }
@@ -265,14 +266,9 @@
             this.updateFields();
         }
 
-        private isTextFieldActive(): boolean {
-            // check if tag is an INPUT or TEXTAREA, additionally check if the INPUT type is text
-            return this.formTextElements.indexOf(this.doc.activeElement.tagName) != -1 && (this.doc.activeElement["type"] == "textarea" || this.doc.activeElement["type"] == "text");
-        }
-
         private setErrorMessage(err: string, elem?: HTMLElement) {
             // setting error message
-            ge<HTMLDivElement>("err").textContent = err ? "Error: " + err : "";
+            Helpers.ge<HTMLDivElement>("err").textContent = err ? "Error: " + err : "";
 
             // if DOM element was passed we're setting or removing the error indicator color
             if (elem) {
@@ -292,14 +288,8 @@
             return this.measureElem.offsetWidth;
         }
 
-        private adjustInputWidth(elem: HTMLInputElement, maxWidth: number) {
-            var width = this.getTextWidth(elem.value) + 12/*margin+border*/;
-
-            // make sure it is not too big
-            width = width > maxWidth ? maxWidth : width;
-            // make sure it is not too small
-            width = width < minInputWidth ? minInputWidth : width;
-
+        private adjustElementWidthToItsContent(elem: HTMLElement) {
+            var width = this.getTextWidth((<HTMLInputElement>elem).value || elem.textContent) + 12; // + 10 padding and +2 border 
             elem.style.width = width + "px";
         }
 
@@ -340,14 +330,14 @@
                     }
                     break;
                 case 66: // b
-                    if (evt.ctrlKey && this.isTextFieldActive()) {
+                    if (evt.ctrlKey && Helpers.isTextFieldActive()) {
                         var parent = <IParamContainerElement>(<HTMLInputElement>evt.target).parentElement;
                         // check if it is a param container element
                         if (parent && parent.isParamContainer) {
                             Tracking.trackEvent(Tracking.Category.Encoding, "keyboard", "base64");
 
                             var input = <HTMLInputElement>evt.target;
-                            input.value = isBase64Encoded(input.value) ? b64DecodeUnicode(input.value) : b64EncodeUnicode(input.value);
+                            input.value = Helpers.isBase64Encoded(input.value) ? Helpers.b64DecodeUnicode(input.value) : Helpers.b64EncodeUnicode(input.value);
                             
                             this.updateFields();
                             return true;
@@ -397,7 +387,7 @@
                 
                 evt.preventDefault();
 
-                if (nextElem && this.formTextElements.indexOf(nextElem.tagName) != -1) {
+                if (nextElem && Helpers.isTextField(nextElem)) {
                     nextElem.focus();
                 }
                 
@@ -409,14 +399,14 @@
 
         private getElementInTheSameColumn<T>(currentElem: HTMLElement, container: HTMLElement): T {
             if (currentElem && container) {
-                var index = getIndexOfSiblingGivenType(currentElem, this.formTextElements);
-                return <any>findNthElementOfType(container, this.formTextElements, index);
+                var index = Helpers.getIndexOfSiblingGivenType(currentElem, this.formTextElements);
+                return <any>Helpers.findNthElementOfType(container, this.formTextElements, index);
             }
         }
 
         private addNewParamFields() {
             var container = this.createNewParamContainer()
-            ge("params").appendChild(container);
+            Helpers.ge("params").appendChild(container);
 
             (<HTMLInputElement>container.firstElementChild).focus();
         }
@@ -433,17 +423,17 @@
         }
 
         private setUriFromFields() {
-            var currentInput = <HTMLInputElement>this.doc.activeElement;
+            var currentInput = <HTMLElement>this.doc.activeElement;
 
             if (currentInput) {
                 var func = this.mapIdToFunction[currentInput.id];
                 if (func) {
-                    this.url[func](currentInput.value);
+                    this.url[func](currentInput.tagName == "INPUT" ? (<HTMLInputElement>currentInput).value : currentInput.textContent);
                 }
                 else {
                     var params: IMap<string[]> = {};
 
-                    var container = ge("params");
+                    var container = Helpers.ge("params");
 
                     [].forEach.call(container.childNodes, (child: IParamContainerElement) => {
                         if (child.nameElement && child.nameElement.value != "") {
@@ -470,11 +460,4 @@
             return encodeURIComponent(value).replace(/%2B/g, "+");
         }
     } // class
-
-    export interface IParamContainerElement extends HTMLDivElement {
-        nameElement?: HTMLInputElement;
-        valueElement?: HTMLInputElement;
-        encodeElement?: HTMLInputElement;
-        isParamContainer?: boolean;
-    }
 } // module

@@ -7,7 +7,7 @@
         box-sizing: border-box;
       }
       body {
-        min-width: 400px;
+        width: 400px;
         overflow-x: hidden;
         background-color: #f6f6f6;
         margin: 16px 8px 8px 8px;
@@ -21,8 +21,12 @@
           right: 8px;
       }
 
+      #full_url {
+          max-width: 100%;
+      }
+
       input[type=text],
-      textarea {
+      #full_url {
           background-color: #fff;
           border: 1px solid #cacaca;
           border-radius: 5px;
@@ -30,13 +34,23 @@
       }
 
       input[type=text]:focus:not(.error),
-      textarea:focus {
+      #full_url:focus {
           box-shadow: inset 0 0 0.5em rgba(0, 0, 0, 0.3) !important;
           outline: none;
       }
 
+      .value,
       .container > * {
-          flex: 1 100%;
+          flex: 1 0 auto;
+      }
+
+      #hostname {
+          flex: none;
+          max-width: 50%;
+      }
+
+      .container #hostname {
+          flex: none;
       }
 
       .container #hostname {
@@ -44,7 +58,8 @@
       }
 
       #measure,
-      input[type=text] {
+      input[type=text],
+      #full_url {
           font-size: 13px;
           font-family: Arial;
       }
@@ -59,10 +74,6 @@
           display: flex;
           position: relative;
           margin: 2px 0;
-      }
-      .value,
-      .container > * {
-          flex: 1;
       }
       .param input[type=text] {
           width: 150px;
@@ -171,12 +182,13 @@
     <script src="modules/autosuggest.js"></script>
     <script src="modules/url_parser.js"></script>
     <script src="modules/view_model.js"></script>
+    <script src="modules/rich_textbox.js"></script>
     <script src="popup.js"></script>
   </head>
   <body>
       <div id="version"></div>
       <div class="container">
-          <textarea id="full_url" rows="7"></textarea>
+          <div id="full_url" contenteditable="true" spellcheck="false"></div>
       </div>
       <div class="container">
           <span id="measure"></span>

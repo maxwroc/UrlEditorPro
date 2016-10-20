@@ -1,13 +1,29 @@
 ﻿// use of deprecated function
 declare function escape(s: string): string;
 
-module UrlEditor {
+interface String {
+    replaceAll(searchValue: string, replaceValue, ignoreCase?: boolean): string;
+    htmlEncode(): string;
+}
+// Seems to be the fastest way to replace all occurances of a string in a string
+// http://jsperf.com/htmlencoderegex/25
+String.prototype.replaceAll = function (searchValue, replaceValue, ignoreCase) {
+    return this.replace(new RegExp(searchValue.replace(/([\/\,\!\\\^\$\{\}\[\]\(\)\.\*\+\?\|\<\>\-\&])/g, "\\$&"), (ignoreCase ? "gi" : "g")), (typeof (replaceValue) == "string") ? replaceValue.replace(/\$/g, "$$$$") : replaceValue);
+};
+String.prototype.htmlEncode = function () {
+    return this.replaceAll("&", "&amp;").replace("\"", "&quot;").replace("'", "&#39;").replace("<", "&lt;").replace(">", "&gt;");
+};
 
+
+module UrlEditor {
     export const enum OpenIn {
         CurrentTab,
         NewTab,
         NewWindow
     }
+}
+
+module UrlEditor.Helpers {
 
     var base64Pattern = /^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{4}|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)$/;
     
@@ -74,6 +90,18 @@ module UrlEditor {
         return base64Pattern.test(val);
     }
 
+    
+
+    export function isTextFieldActive(): boolean {
+        return isTextField(document.activeElement);
+    }
+
+    export function isTextField(elem: Element): boolean {
+        // check if tag is an INPUT or TEXTAREA, additionally check if the INPUT type is text
+        return (elem.tagName == "INPUT" && (<HTMLInputElement>elem).type == "text") ||
+            (elem.tagName == "DIV" && elem.id == "full_url"));
+    }
+    
     /**
      * Encodes query parameters/components
      *
