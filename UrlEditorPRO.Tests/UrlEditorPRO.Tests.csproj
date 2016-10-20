@@ -71,6 +71,7 @@
     <Content Include="Scripts\jasmine\jasmine.js" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="Scripts\tests\modules\rich_textbox.tests.ts" />
     <TypeScriptCompile Include="Scripts\tests\modules\url_parser.tests.ts" />
     <TypeScriptCompile Include="Scripts\typings\jasmine\jasmine.d.ts" />
   </ItemGroup>
