@@ -1,5 +1,6 @@
 ﻿{
     "References": [
-        { "Path": "../UrlEditorPRO/app/modules", "Includes": ["**.js"], "Excludes": ["**Resource*"] }
+        { "Path": "../UrlEditorPRO/app/modules", "Includes": ["**.js"], "Excludes": ["**Resource*"] },
+        { "Path": "scripts/helpers/", "Includes": ["**.js"], "Excludes": ["**Resource*"] }
     ]
 }

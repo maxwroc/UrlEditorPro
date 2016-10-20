@@ -16,3 +16,10 @@ interface IParsedUrl {
     host: string;       // => "example.com:3000"
     params: IStringMap;
 }
+
+interface IParamContainerElement extends HTMLDivElement {
+    nameElement?: HTMLInputElement;
+    valueElement?: HTMLInputElement;
+    encodeElement?: HTMLInputElement;
+    isParamContainer?: boolean;
+}

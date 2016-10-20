@@ -117,5 +117,41 @@ module UrlEditor {
 
             this.anchor.href = url;
         }
+
+        getHighlightMarkupPos(position: number, isCursorPosition = true): number[][] {
+            var fullUrl = this.url();
+            let result: number[][] = [];
+
+            var queryLength = this.anchor.search.length;
+            var pathLength = this.anchor.pathname.length;
+            var hostLenght = this.anchor.href.length - queryLength - pathLength - this.anchor.hash.length;
+
+            if (isCursorPosition && position <= hostLenght) {
+                // cursor somewhere in the beginning of the url / host part
+                result.push([0, hostLenght]);
+            }
+            else if (isCursorPosition && position <= hostLenght + pathLength) {
+                // cursor somewhere in the path
+                result.push([hostLenght, hostLenght + pathLength]);
+            }
+            else if (!isCursorPosition || position <= hostLenght + pathLength + queryLength) {
+                var paramIndex = 0;
+                // cursor somewhere in query area
+                fullUrl.replace(paramPattern, (match: string, paramName: string, paramValue: string, offset: number) => {
+                    // check if we should higlight this param
+                    if ((!isCursorPosition && paramIndex == position) ||
+                        (position >= offset && position <= offset + paramName.length + paramValue.length + 1)) {
+                        result.push([offset, offset + paramName.length]);
+                        result.push([offset + paramName.length + 1, offset + paramName.length + 1 + paramValue.length]);
+                    }
+
+                    paramIndex++;
+
+                    return match;
+                });
+            }
+
+            return result;
+        }
     }
 }
