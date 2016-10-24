@@ -100,7 +100,29 @@ module UrlEditor {
             var paramContainer = <IParamContainerElement>elem.parentElement;
             if (paramContainer.isParamContainer) {
                 // this seems to be a delete param button so we're removing param
-                this.deleteParam(paramContainer);
+                //this.deleteParam(paramContainer);
+                let menuElem = Helpers.ge("paramMenu");
+                if (!menuElem) {
+                    menuElem = this.doc.createElement("ul");
+                    menuElem.setAttribute("id", "paramMenu");
+                }
+                else {
+                    menuElem.innerHTML = "";
+                }
+
+                menuElem.innerHTML = `
+                    <li>
+                        <label for="url_encode"><input type="checkbox" name="param_urlEncode" ${paramContainer.urlEncoded ? "checked" : ""}/>Url encode</label>
+                    </li>
+                    <li>
+                        <label><input type="checkbox" name="param_base64Encode" ${paramContainer.base64Encoded ? "checked" : ""}/>Base64 encode</label>
+                    </li>
+                    <li>
+                        <input type="button" value="Delete" name="param_delete" />
+                    </li>
+                `;
+
+                this.doc.body.appendChild(menuElem);
             }
             else {
                 switch (elem.id) {
