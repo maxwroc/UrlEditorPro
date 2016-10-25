@@ -60,6 +60,7 @@
   <ItemGroup>
     <TypeScriptCompile Include="app\modules\autosuggest.ts" />
     <TypeScriptCompile Include="app\modules\helpers.ts" />
+    <TypeScriptCompile Include="app\modules\param_options.ts" />
     <TypeScriptCompile Include="app\modules\rich_textbox.ts" />
     <TypeScriptCompile Include="app\modules\settings.ts" />
     <TypeScriptCompile Include="app\modules\tracking.ts" />

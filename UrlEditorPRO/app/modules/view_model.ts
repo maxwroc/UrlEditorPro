@@ -101,28 +101,7 @@ module UrlEditor {
             if (paramContainer.isParamContainer) {
                 // this seems to be a delete param button so we're removing param
                 //this.deleteParam(paramContainer);
-                let menuElem = Helpers.ge("paramMenu");
-                if (!menuElem) {
-                    menuElem = this.doc.createElement("ul");
-                    menuElem.setAttribute("id", "paramMenu");
-                }
-                else {
-                    menuElem.innerHTML = "";
-                }
-
-                menuElem.innerHTML = `
-                    <li>
-                        <label for="url_encode"><input type="checkbox" name="param_urlEncode" ${paramContainer.urlEncoded ? "checked" : ""}/>Url encode</label>
-                    </li>
-                    <li>
-                        <label><input type="checkbox" name="param_base64Encode" ${paramContainer.base64Encoded ? "checked" : ""}/>Base64 encode</label>
-                    </li>
-                    <li>
-                        <input type="button" value="Delete" name="param_delete" />
-                    </li>
-                `;
-
-                this.doc.body.appendChild(menuElem);
+                ParamOptions.show(paramContainer, elem);
             }
             else {
                 switch (elem.id) {
@@ -275,8 +254,6 @@ module UrlEditor {
             param.nameElement = <HTMLInputElement>param.firstElementChild;
             // parameter value field
             param.valueElement = <HTMLInputElement>param.nameElement.nextElementSibling;
-            // encode element
-            param.encodeElement = <HTMLInputElement>param.valueElement.nextElementSibling;
 
             param.isParamContainer = true;
 
@@ -471,7 +448,7 @@ module UrlEditor {
                             params[paramName] = params[paramName] || [];
 
                             // add value to collection
-                            var value = child.encodeElement.checked ? this.encodeURIComponent(child.valueElement.value) : child.valueElement.value;
+                            var value = child.urlEncoded ? this.encodeURIComponent(child.valueElement.value) : child.valueElement.value;
                             params[paramName].push(value);
                         }
                     });
