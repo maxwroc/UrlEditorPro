@@ -58,6 +58,9 @@ module UrlEditor {
             }
 
             this.updateFields(false/*setUriFromFields*/);
+
+            // initialize param options
+            ParamOptions.init(document, (paramContainer) => this.deleteParam(paramContainer), (paramContainer, base64) => this.encodeDecodeParamValue(paramContainer, base64));
         }
 
         private clickEventDispatcher(evt: MouseEvent) {
@@ -66,8 +69,6 @@ module UrlEditor {
                 var inputElem = <HTMLInputElement>elem;
                 switch (inputElem.type) {
                     case "checkbox":
-                        Tracking.trackEvent(Tracking.Category.Encoding, "click", inputElem.checked.toString());
-                        this.checkboxClickHandler(inputElem);
                         break;
                     case "button":
                         this.buttonClickHandler(inputElem, evt);
@@ -76,15 +77,24 @@ module UrlEditor {
             }
         }
 
-        private checkboxClickHandler(elem: HTMLInputElement) {
-            var paramContainer = <IParamContainerElement>elem.parentElement;
+        private encodeDecodeParamValue(paramContainer: IParamContainerElement, base64: boolean) {
+            let value = paramContainer.valueElement.value;
+            if (base64) {
+                let wasEncoded = Helpers.isBase64Encoded(value);
+                    paramContainer.valueElement.value = wasEncoded ? Helpers.b64DecodeUnicode(value) : Helpers.b64EncodeUnicode(value);
 
-            // we have only one checkbox for encoding/decoding value
-            if (elem.checked) {
-                paramContainer.valueElement.value = decodeURIComponent(paramContainer.valueElement.value);
+                    paramContainer.base64Encoded = !wasEncoded;
             }
             else {
-                paramContainer.valueElement.value = this.encodeURIComponent(paramContainer.valueElement.value);
+                // if it is encoded already we should decode it
+                if (paramContainer.urlEncoded) {
+                    paramContainer.valueElement.value = decodeURIComponent(value);
+                }
+                else {
+                    paramContainer.valueElement.value = this.encodeURIComponent(value);
+                }
+
+                paramContainer.urlEncoded = !paramContainer.urlEncoded;
             }
 
             // delay execution
