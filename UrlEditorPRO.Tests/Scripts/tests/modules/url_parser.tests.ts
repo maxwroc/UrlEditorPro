@@ -55,6 +55,7 @@ module Tests {
                 ["http://something/|dddd/r?param1=1&param2=val2&param3=t", [[16, 23]]],
                 ["http://something/dddd|/r?param1=1&param2=val2&param3=t", [[16, 23]]],
                 ["http://something/dddd/r|?param1=1&param2=val2&param3=t", [[16, 23]]],
+                ["http://192.168.2.104:8080/m|#/Floorplans", [[25, 27]]],
                 // params
                 ["http://something/dddd?param1=1&param|2=val2&param3=t", [[31, 37], [38, 42]]],
                 ["http://something/dddd?param1=1&param2=|val2&param3=t", [[31, 37], [38, 42]]],
