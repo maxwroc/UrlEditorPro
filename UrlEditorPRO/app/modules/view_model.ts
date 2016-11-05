@@ -245,7 +245,7 @@ module UrlEditor {
         private createNewParamContainer(name?: string): IParamContainerElement {
             var param = <IParamContainerElement>document.createElement("div");
             param.className = "param";
-            param.innerHTML = '<input type="text" name="name" class="name" autocomplete="off" /> <input type="text" name="value" class="value" autocomplete="off" /> <input type="checkbox" title="Encode / decode" /> <input type="button" value="x" />';
+            param.innerHTML = '<input type="text" name="name" class="name" autocomplete="off" spellcheck="false" /> <input type="text" name="value" class="value" autocomplete="off" spellcheck="false" /> <input type="checkbox" title="Encode / decode" /> <input type="button" value="x" />';
 
             // parameter name field
             param.nameElement = <HTMLInputElement>param.firstElementChild;
