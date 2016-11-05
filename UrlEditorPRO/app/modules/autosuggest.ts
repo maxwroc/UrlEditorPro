@@ -415,7 +415,11 @@
             }
             
             // remove suggestion from DOM
-            suggestion.parentElement.removeChild(suggestion);
+            this.container.removeChild(suggestion);
+
+            if (this.container.childElementCount == 0) {
+                this.hide();
+            }
         }
     }
 }
