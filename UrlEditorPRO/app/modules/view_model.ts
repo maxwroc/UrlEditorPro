@@ -60,7 +60,7 @@ module UrlEditor {
             this.updateFields(false/*setUriFromFields*/);
 
             // initialize param options
-            ParamOptions.init(document, (paramContainer) => this.deleteParam(paramContainer), (paramContainer, base64) => this.encodeDecodeParamValue(paramContainer, base64));
+            ParamOptions.init(document, (paramContainer) => this.deleteParam(paramContainer), () => this.updateFields(true));
         }
 
         private clickEventDispatcher(evt: MouseEvent) {
@@ -99,8 +99,8 @@ module UrlEditor {
 
             // delay execution
             setTimeout(() => {
-                this.updateFields(true/*setUriFromFields*/);
                 paramContainer.valueElement.focus();
+                this.updateFields(true/*setUriFromFields*/);
             }, 0);
         }
 
