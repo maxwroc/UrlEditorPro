@@ -28,8 +28,6 @@ module UrlEditor {
 
         private measureElem: HTMLSpanElement;
 
-        private formTextElements = ["INPUT", "TEXTAREA"];
-
         constructor(private url: Uri, private doc: HTMLDocument, settings: Settings, private submit: (uri: Uri, openIn: OpenIn) => void) {
 
 
@@ -258,7 +256,7 @@ module UrlEditor {
         private createNewParamContainer(name?: string): IParamContainerElement {
             var param = <IParamContainerElement>document.createElement("div");
             param.className = "param";
-            param.innerHTML = '<input type="text" name="name" class="name" autocomplete="off" /> <input type="text" name="value" class="value" autocomplete="off" /> <input type="checkbox" title="Encode / decode" /> <input type="button" value="x" />';
+            param.innerHTML = '<input type="text" name="name" class="name" autocomplete="off" spellcheck="false" /> <input type="text" name="value" class="value" autocomplete="off" spellcheck="false" /> <input type="checkbox" title="Encode / decode" /> <input type="button" value="x" />';
 
             // parameter name field
             param.nameElement = <HTMLInputElement>param.firstElementChild;
@@ -383,7 +381,20 @@ module UrlEditor {
                         if (elem.parentElement.parentElement.id == "params" && !nextContainer) {
                             nextContainer = elem.parentElement.parentElement.previousElementSibling;
                         }
+
                         nextElem = this.getElementInTheSameColumn<HTMLInputElement>(elem, <HTMLElement>nextContainer);
+
+                        // if on full url field loop to the last available field on the bottom
+                        if (!nextElem) {
+                            let lastParamContainer = <IParamContainerElement>Helpers.ge("params").lastElementChild;
+                            if (lastParamContainer) {
+                                nextElem = lastParamContainer.nameElement;
+                            }
+                            else {
+                                nextElem = Helpers.ge<HTMLInputElement>("hostname");
+                            }
+                        }
+
                         break;
                     case 40: // down
                         var nextContainer = elem.parentElement.nextElementSibling;
@@ -392,6 +403,13 @@ module UrlEditor {
                             nextContainer = nextContainer.firstElementChild;
                         }
                         nextElem = this.getElementInTheSameColumn<HTMLInputElement>(elem, <HTMLElement>nextContainer);
+
+                        // if on last param then loop to host or full url field
+                        if (!nextElem) {
+                            // take full url field if the current one is hostname
+                            nextElem = Helpers.ge<HTMLInputElement>(elem.id == "hostname" ? "full_url" : "hostname");
+                        }
+
                         break;
                     case 37: // left
                         nextElem = <HTMLInputElement>elem.previousElementSibling;
@@ -415,8 +433,9 @@ module UrlEditor {
 
         private getElementInTheSameColumn<T>(currentElem: HTMLElement, container: HTMLElement): T {
             if (currentElem && container) {
-                var index = Helpers.getIndexOfSiblingGivenType(currentElem, this.formTextElements);
-                return <any>Helpers.findNthElementOfType(container, this.formTextElements, index);
+                let textFieldElements = ["INPUT", "DIV"];
+                let index = Helpers.getIndexOfSiblingGivenType(currentElem, textFieldElements);
+                return <any>Helpers.findNthElementOfType(container, textFieldElements, index);
             }
         }
 

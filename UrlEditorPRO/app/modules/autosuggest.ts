@@ -263,6 +263,8 @@
                 this.handler = (evt: KeyboardEvent) => this.keyboardNavigation(evt);
 
                 this.inputElem.addEventListener("keydown", this.handler, true);
+
+                this.ensureIsVisible(this.container, this.doc.body, window.innerHeight);
             }
         }
 
@@ -363,7 +365,7 @@
             if (suggestionToSelect) {
                 Tracking.trackEvent(Tracking.Category.AutoSuggest, "selected");
                 suggestionToSelect.classList.add("hv");
-                this.ensureIsVisible(suggestionToSelect);
+                this.ensureIsVisible(suggestionToSelect, this.container, this.container.offsetHeight);
             }
             else {
                 this.container.scrollTop = 0;
@@ -388,15 +390,15 @@
             }
         }
 
-        private ensureIsVisible(suggestionElem: HTMLElement) {
-            var containerScrollTop = this.container.scrollTop;
-            var suggestionElemOffsetTop = suggestionElem.offsetTop;
-            var offsetBottom = suggestionElemOffsetTop + suggestionElem.offsetHeight;
-            if (offsetBottom > containerScrollTop + this.container.offsetHeight) {
-                this.container.scrollTop = offsetBottom - this.container.offsetHeight + 2; // increase due to border size
+        private ensureIsVisible(elem: HTMLElement, container: HTMLElement, containerHeight: number) {
+            var containerScrollTop = container.scrollTop;
+            var suggestionElemOffsetTop = elem.offsetTop;
+            var offsetBottom = suggestionElemOffsetTop + elem.offsetHeight;
+            if (offsetBottom > containerScrollTop + containerHeight) {
+                container.scrollTop = offsetBottom - containerHeight + 2; // increase due to border size
             }
             else if (suggestionElemOffsetTop < containerScrollTop) {
-                this.container.scrollTop = suggestionElemOffsetTop;
+                container.scrollTop = suggestionElemOffsetTop;
             }
         }
 
@@ -413,7 +415,11 @@
             }
             
             // remove suggestion from DOM
-            suggestion.parentElement.removeChild(suggestion);
+            this.container.removeChild(suggestion);
+
+            if (this.container.childElementCount == 0) {
+                this.hide();
+            }
         }
     }
 }

@@ -71,18 +71,16 @@ module UrlEditor {
         }
 
         private highlightHostOrPath(elem: HTMLElement) {
-            let cursorPos = -1;
+            let cursorPos = 0;
             
             let uri = new Uri(this.richText.getText());
-            cursorPos += uri.protocol().length + uri.host().length;
+            cursorPos += uri.protocol().length + uri.host().length + 2; // 2 - for double slash after protocol
 
             if (elem.id == "path") {
                 cursorPos += uri.pathname().length;
             }
-
-            if (cursorPos != -1) {
-                this.highlight(cursorPos, true/*isCursorPos*/);
-            }
+            
+            this.highlight(cursorPos, true/*isCursorPos*/);
         }
 
         private highlightParams(elem: HTMLElement) {
