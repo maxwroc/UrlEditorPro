@@ -5,7 +5,7 @@
     let menuElem: IParamOptionsContainer;
     let paramContainer: IParamContainerElement;
     let deleteParam: (paramContainer: IParamContainerElement) => void;
-    let updateFullUrl: (paramContainer: IParamContainerElement, base64: boolean) => void;
+    let updateFullUrl: () => void;
 
     export function init(
         _doc: Document,
@@ -72,11 +72,17 @@
         for (let i = 0, input: HTMLInputElement; input = <HTMLInputElement>inputs[i]; i++) {
             switch (input.name) {
                 case "param_urlEncode":
-                    input["clickAction"] = () => updateFullUrl(paramContainer, false/*base64*/);
+                    input["clickAction"] = () => {
+                        paramContainer.urlEncoded = menuElem.urlEncodeElem.checked;
+                        updateFullUrl();
+                    }
                     menuElem.urlEncodeElem = input;
                     break;
                 case "param_base64Encode":
-                    input["clickAction"] = () => updateFullUrl(paramContainer, true/*base64*/);
+                    input["clickAction"] = () => {
+                        paramContainer.base64Encoded = menuElem.base64EncodeElem.checked;
+                        updateFullUrl();
+                    }
                     menuElem.base64EncodeElem = input;
                     break;
                 case "param_delete":
