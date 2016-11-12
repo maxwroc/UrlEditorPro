@@ -461,26 +461,39 @@ module UrlEditor {
         }
 
         private setUriFromFields() {
-            var currentInput = <HTMLElement>this.doc.activeElement;
+            let currentInput = <HTMLElement>this.doc.activeElement;
 
             if (currentInput) {
-                var func = this.mapIdToFunction[currentInput.id];
+                let func = this.mapIdToFunction[currentInput.id];
                 if (func) {
                     this.url[func](currentInput.tagName == "INPUT" ? (<HTMLInputElement>currentInput).value : currentInput.textContent);
                 }
                 else {
-                    var params: IMap<string[]> = {};
+                    let params: IMap<string[]> = {};
 
-                    var container = Helpers.ge("params");
+                    let paramsWrapper = Helpers.ge("params");
 
-                    [].forEach.call(container.childNodes, (child: IParamContainerElement) => {
-                        if (child.nameElement && child.nameElement.value != "") {
-                            var paramName = this.encodeURIComponent(child.nameElement.value);
+                    [].forEach.call(paramsWrapper.childNodes, (container: IParamContainerElement) => {
+                        if (container.nameElement && container.nameElement.value != "") {
+                            let paramName = this.encodeURIComponent(container.nameElement.value);
                             // make sure it exists
                             params[paramName] = params[paramName] || [];
+                            
+                            let value = container.valueElement.value;
 
-                            // add value to collection
-                            var value = child.urlEncoded ? this.encodeURIComponent(child.valueElement.value) : child.valueElement.value;
+                            // check if we should encode it
+                            if (container.urlEncoded) {
+                                value = this.encodeURIComponent(value);
+                            }
+                            else if (container.base64Encoded) {
+                                if (Helpers.isBase64Encoded(value)) {
+                                    container.valueElement.value = Helpers.b64DecodeUnicode(value);
+                                }
+                                else {
+                                    value = Helpers.b64EncodeUnicode(value);
+                                }
+                            }
+
                             params[paramName].push(value);
                         }
                     });
