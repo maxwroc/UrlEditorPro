@@ -440,7 +440,10 @@ module UrlEditor {
         }
 
         private addNewParamFields() {
-            var container = this.createNewParamContainer()
+            var container = this.createNewParamContainer();
+            // by default all new params are encoded
+            container.urlEncoded = true;
+
             Helpers.ge("params").appendChild(container);
 
             (<HTMLInputElement>container.firstElementChild).focus();
