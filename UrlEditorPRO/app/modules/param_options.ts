@@ -35,6 +35,14 @@
         menuElem.base64EncodeElem.checked = paramContainer.base64Encoded;
 
         menuElem.style.display = "block";
+
+        // move menu to proper position
+        var pos = pressedButton.getBoundingClientRect();
+        // pos doesn't contain scroll value so we need to add it
+        var posTop = pos.bottom + document.body.scrollTop - 3;
+        menuElem.style.top = posTop + "px";
+        let posRight = menuElem.parentElement.offsetWidth - pos.right;
+        menuElem.style.right = posRight + "px";
     }
 
     export function hide() {
