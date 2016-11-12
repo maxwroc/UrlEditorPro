@@ -37,12 +37,14 @@
         menuElem.style.display = "block";
 
         // move menu to proper position
-        var pos = pressedButton.getBoundingClientRect();
+        let pos = pressedButton.getBoundingClientRect();
         // pos doesn't contain scroll value so we need to add it
-        var posTop = pos.bottom + document.body.scrollTop - 3;
+        let posTop = pos.top + doc.body.scrollTop - 8 - 2; // 8px body margin; 2px border
         menuElem.style.top = posTop + "px";
-        let posRight = menuElem.parentElement.offsetWidth - pos.right;
+        let posRight = pos.right - menuElem.parentElement.offsetWidth + 2; // 2px for border
         menuElem.style.right = posRight + "px";
+
+        Helpers.ensureIsVisible(menuElem, doc.body, window.innerHeight);
     }
 
     export function hide() {

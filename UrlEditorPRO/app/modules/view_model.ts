@@ -62,13 +62,19 @@ module UrlEditor {
         }
 
         private clickEventDispatcher(evt: MouseEvent) {
-            var elem = <HTMLElement>evt.target;
+            let handled: boolean;
+            let elem = <HTMLElement>evt.target;
+
+            // make sure ParamOptions menu is closed
+            ParamOptions.hide();
+
             if (elem.tagName == "INPUT") {
                 var inputElem = <HTMLInputElement>elem;
                 switch (inputElem.type) {
                     case "checkbox":
                         break;
                     case "button":
+                        handled = true;
                         this.buttonClickHandler(inputElem, evt);
                         break;
                 }
