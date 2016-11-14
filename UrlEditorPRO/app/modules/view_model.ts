@@ -395,7 +395,7 @@ module UrlEditor {
                 
                 evt.preventDefault();
 
-                if (nextElem && Helpers.isTextField(nextElem)) {
+                if (nextElem) {
                     nextElem.focus();
                 }
                 
