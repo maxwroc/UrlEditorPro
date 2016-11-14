@@ -59,10 +59,10 @@
         menuElem.setAttribute("id", "paramMenu");
         menuElem.innerHTML = `
                     <li>
-                        <label><input type="checkbox" name="param_urlEncode" />Url encode</label>
+                        <label><input type="checkbox" name="param_urlEncode" /><span>Url encode</span></label>
                     </li>
                     <li>
-                        <label><input type="checkbox" name="param_base64Encode" />Base64 encode</label>
+                        <label><input type="checkbox" name="param_base64Encode" /><span>Base64 encode</span></label>
                     </li>
                     <li>
                         <input type="button" value="Delete" name="param_delete" />
