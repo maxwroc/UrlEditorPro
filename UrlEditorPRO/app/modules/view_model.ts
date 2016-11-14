@@ -205,22 +205,16 @@ module UrlEditor {
 
                 urlParams[name].forEach((value, valueIndex) => {
                     name = decodeURIComponent(name);
-                    param = this.createNewParamContainer(name);
-                    // check if param value is encoded
-                    var isEncoded = paramEncodedPattern.test(value);
+                    param = this.createNewParamContainer(name); 
 
                     // parameter name field
                     param.nameElement.value = name;
+                    
+                    param.urlEncoded = paramEncodedPattern.test(value);
 
                     // parameter value field
-                    param.valueElement.value = isEncoded ? decodeURIComponent(value) : value;
+                    param.valueElement.value = param.urlEncoded ? decodeURIComponent(value) : value;
                     param.valueElement["param-value-position"] = valueIndex;
-
-                    // parameter encoded checkbox
-                    if (isEncoded) {
-                        var paramEncoded = <HTMLInputElement>param.valueElement.nextElementSibling;
-                        paramEncoded.checked = true;
-                    }
 
                     // measuring
                     var nameWidth = this.getTextWidth(name);
