@@ -62,7 +62,6 @@ module UrlEditor {
         }
 
         private clickEventDispatcher(evt: MouseEvent) {
-            let handled: boolean;
             let elem = <HTMLElement>evt.target;
 
             // make sure ParamOptions menu is closed
@@ -71,10 +70,7 @@ module UrlEditor {
             if (elem.tagName == "INPUT") {
                 var inputElem = <HTMLInputElement>elem;
                 switch (inputElem.type) {
-                    case "checkbox":
-                        break;
                     case "button":
-                        handled = true;
                         this.buttonClickHandler(inputElem, evt);
                         break;
                 }
@@ -209,22 +205,16 @@ module UrlEditor {
 
                 urlParams[name].forEach((value, valueIndex) => {
                     name = decodeURIComponent(name);
-                    param = this.createNewParamContainer(name);
-                    // check if param value is encoded
-                    var isEncoded = paramEncodedPattern.test(value);
+                    param = this.createNewParamContainer(name); 
 
                     // parameter name field
                     param.nameElement.value = name;
+                    
+                    param.urlEncoded = paramEncodedPattern.test(value);
 
                     // parameter value field
-                    param.valueElement.value = isEncoded ? decodeURIComponent(value) : value;
+                    param.valueElement.value = param.urlEncoded ? decodeURIComponent(value) : value;
                     param.valueElement["param-value-position"] = valueIndex;
-
-                    // parameter encoded checkbox
-                    if (isEncoded) {
-                        var paramEncoded = <HTMLInputElement>param.valueElement.nextElementSibling;
-                        paramEncoded.checked = true;
-                    }
 
                     // measuring
                     var nameWidth = this.getTextWidth(name);
@@ -262,7 +252,7 @@ module UrlEditor {
         private createNewParamContainer(name?: string): IParamContainerElement {
             var param = <IParamContainerElement>document.createElement("div");
             param.className = "param";
-            param.innerHTML = '<input type="text" name="name" class="name" autocomplete="off" spellcheck="false" /> <input type="text" name="value" class="value" autocomplete="off" spellcheck="false" /> <input type="checkbox" title="Encode / decode" /> <input type="button" value="x" />';
+            param.innerHTML = '<input type="text" name="name" class="name" autocomplete="off" spellcheck="false" /> <input type="text" name="value" class="value" autocomplete="off" spellcheck="false" /> <input type="button" value="x" />';
 
             // parameter name field
             param.nameElement = <HTMLInputElement>param.firstElementChild;
@@ -427,7 +417,7 @@ module UrlEditor {
                 
                 evt.preventDefault();
 
-                if (nextElem && Helpers.isTextField(nextElem)) {
+                if (nextElem) {
                     nextElem.focus();
                 }
                 
