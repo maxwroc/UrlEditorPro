@@ -84,6 +84,7 @@
                 case "param_urlEncode":
                     input["clickAction"] = () => {
                         paramContainer.urlEncoded = menuElem.urlEncodeElem.checked;
+                        paramContainer.base64Encoded = paramContainer.base64Encoded ? !paramContainer.urlEncoded : false;
                         updateFullUrl();
                     }
                     menuElem.urlEncodeElem = input;
@@ -91,6 +92,7 @@
                 case "param_base64Encode":
                     input["clickAction"] = () => {
                         paramContainer.base64Encoded = menuElem.base64EncodeElem.checked;
+                        paramContainer.urlEncoded = paramContainer.urlEncoded ? !paramContainer.base64Encoded : false;
                         updateFullUrl();
                     }
                     menuElem.base64EncodeElem = input;

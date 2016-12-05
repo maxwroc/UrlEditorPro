@@ -481,7 +481,7 @@ module UrlEditor {
                             if (container.urlEncoded) {
                                 value = this.encodeURIComponent(value);
                             }
-                            else if (container.base64Encoded) {
+                            if (container.base64Encoded) {
                                 if (Helpers.isBase64Encoded(value)) {
                                     container.valueElement.value = Helpers.b64DecodeUnicode(value);
                                 }
