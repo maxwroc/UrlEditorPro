@@ -55,7 +55,7 @@ module UrlEditor {
                         if (paramContainer.isParamContainer) {
                             action = () => this.highlightParams(elem);
                             // delay handling - we need to wait when all fields will be updated (by ViewModel)
-                            delay = evtType == "input";
+                            delay = true;
                         }
                 }
 
