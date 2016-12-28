@@ -111,7 +111,7 @@ module UrlEditor {
             if (paramContainer.isParamContainer) {
                 // this seems to be a delete param button so we're removing param
                 //this.deleteParam(paramContainer);
-                ParamOptions.show(paramContainer, elem);
+                ParamOptions.show(paramContainer, elem, /*openingByKeyboard*/evt.clientX == 0 && evt.clientY == 0);
             }
             else {
                 switch (elem.id) {
