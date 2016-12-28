@@ -477,6 +477,11 @@ module UrlEditor {
                             
                             let value = container.valueElement.value;
 
+                            // force url-encoding if value contins ampersand
+                            if (value.indexOf("&") && !container.base64Encoded) {
+                                container.urlEncoded = true;
+                            }
+
                             // check if we should encode it
                             if (container.urlEncoded) {
                                 value = this.encodeURIComponent(value);
