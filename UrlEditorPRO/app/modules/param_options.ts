@@ -84,7 +84,13 @@
                 `;
 
         menuElem.addEventListener("click", evt => {
+
             evt.stopPropagation();
+
+            // There is additional click event triggered for the checkbox - when it state changes.
+            if (!isVisible()) {
+                return;
+            }
 
             let elem = <HTMLElement>evt.target;
             while (!elem[clickAction] && elem != menuElem) {
