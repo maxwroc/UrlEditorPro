@@ -58,7 +58,7 @@ module UrlEditor {
             this.updateFields(false/*setUriFromFields*/);
 
             // initialize param options
-            ParamOptions.init(document, (paramContainer) => this.deleteParam(paramContainer), () => this.updateFields(true));
+            ParamOptions.init(document);
         }
 
         private clickEventDispatcher(evt: MouseEvent) {
@@ -109,9 +109,8 @@ module UrlEditor {
 
             var paramContainer = <IParamContainerElement>elem.parentElement;
             if (paramContainer.isParamContainer) {
-                // this seems to be a delete param button so we're removing param
-                //this.deleteParam(paramContainer);
-                ParamOptions.show(paramContainer, elem, /*openingByKeyboard*/evt.clientX == 0 && evt.clientY == 0);
+
+                ParamOptions.show(this.getParamOptions(paramContainer), elem, /*openingByKeyboard*/evt.clientX == 0 && evt.clientY == 0);
             }
             else {
                 switch (elem.id) {
@@ -126,6 +125,10 @@ module UrlEditor {
                         break;
                 }
             }
+        }
+
+        private getParamOptions(container: IParamContainerElement): IMap<ParamOptions.IParamOption> {
+            return {};
         }
 
         private keyboardEventDispatcher(evt: Event) {
