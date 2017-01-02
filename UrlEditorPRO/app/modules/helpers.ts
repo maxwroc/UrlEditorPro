@@ -115,4 +115,16 @@ module UrlEditor.Helpers {
         // reference: http://stackoverflow.com/questions/1634271/url-encoding-the-space-character-or-20
         return encodeURIComponent(queryParam).replace(/[!'()*]/g, escape).replace(/%20/g, "+");
     }
+    
+    export function ensureIsVisible(elem: HTMLElement, container: HTMLElement, containerHeight: number) {
+        var containerScrollTop = container.scrollTop;
+        var suggestionElemOffsetTop = elem.offsetTop;
+        var offsetBottom = suggestionElemOffsetTop + elem.offsetHeight;
+        if (offsetBottom > containerScrollTop + containerHeight) {
+            container.scrollTop = offsetBottom - containerHeight;
+        }
+        else if (suggestionElemOffsetTop < containerScrollTop) {
+            container.scrollTop = suggestionElemOffsetTop;
+        }
+    }
 }

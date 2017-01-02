@@ -264,7 +264,8 @@
 
                 this.inputElem.addEventListener("keydown", this.handler, true);
 
-                this.ensureIsVisible(this.container, this.doc.body, window.innerHeight);
+                 // increase by 2px due to border size
+                Helpers.ensureIsVisible(this.container, this.doc.body, window.innerHeight + 2);
             }
         }
 
@@ -365,7 +366,8 @@
             if (suggestionToSelect) {
                 Tracking.trackEvent(Tracking.Category.AutoSuggest, "selected");
                 suggestionToSelect.classList.add("hv");
-                this.ensureIsVisible(suggestionToSelect, this.container, this.container.offsetHeight);
+                 // increase by 2px due to border size
+                Helpers.ensureIsVisible(suggestionToSelect, this.container, this.container.offsetHeight + 2);
             }
             else {
                 this.container.scrollTop = 0;
@@ -387,18 +389,6 @@
 
             if (elementToFocus) {
                 elementToFocus.focus();
-            }
-        }
-
-        private ensureIsVisible(elem: HTMLElement, container: HTMLElement, containerHeight: number) {
-            var containerScrollTop = container.scrollTop;
-            var suggestionElemOffsetTop = elem.offsetTop;
-            var offsetBottom = suggestionElemOffsetTop + elem.offsetHeight;
-            if (offsetBottom > containerScrollTop + containerHeight) {
-                container.scrollTop = offsetBottom - containerHeight + 2; // increase due to border size
-            }
-            else if (suggestionElemOffsetTop < containerScrollTop) {
-                container.scrollTop = suggestionElemOffsetTop;
             }
         }
 
