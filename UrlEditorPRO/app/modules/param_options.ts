@@ -151,6 +151,7 @@
                 evt.preventDefault();
                 break;
             case 27: // esc
+                hide();
                 evt.preventDefault();
                 break;
         }
