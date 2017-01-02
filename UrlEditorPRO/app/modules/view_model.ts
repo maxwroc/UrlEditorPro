@@ -478,7 +478,7 @@ module UrlEditor {
                             let value = container.valueElement.value;
 
                             // force url-encoding if value contins ampersand
-                            if (value.indexOf("&") && !container.base64Encoded) {
+                            if (value.indexOf("&") != -1 && !container.base64Encoded) {
                                 container.urlEncoded = true;
                             }
 
@@ -488,7 +488,13 @@ module UrlEditor {
                             }
                             if (container.base64Encoded) {
                                 if (Helpers.isBase64Encoded(value)) {
-                                    container.valueElement.value = Helpers.b64DecodeUnicode(value);
+                                    // sometimes string can only look like a base64 encoded and in such cases exception can be thrown
+                                    try {
+                                        container.valueElement.value = Helpers.b64DecodeUnicode(value);
+                                    }
+                                    catch (e) {
+                                        value = Helpers.b64EncodeUnicode(value);
+                                    }
                                 }
                                 else {
                                     value = Helpers.b64EncodeUnicode(value);
