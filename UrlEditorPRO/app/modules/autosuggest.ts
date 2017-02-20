@@ -1,4 +1,7 @@
-﻿module UrlEditor {
+﻿/// <reference path="settings.ts" />
+/// <reference path="shared_interfaces.d.ts" />
+
+module UrlEditor {
 
     export interface IAutoSuggestData {
         [pageHostName: string]: IAutoSuggestPageData;

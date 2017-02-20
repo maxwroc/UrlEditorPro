@@ -1,4 +1,6 @@
-﻿module UrlEditor.ParamOptions {
+﻿/// <reference path="shared_interfaces.d.ts" />
+
+module UrlEditor.ParamOptions {
     let clickAction = "clickAction";
 
     let doc: Document;
@@ -12,6 +14,15 @@
         doc = _doc;
 
         _doc.body.addEventListener("keydown", evt => isVisible() && handleKeyboard(evt), true);
+    }
+
+    export function registerOption(
+        text: string,
+        action: (container: IParamContainerElement) => void,
+        isSelected: (container: IParamContainerElement) => boolean,
+        order = 0) {
+
+
     }
 
     export function show(options: IMap<IParamOption>, pressedButton: HTMLElement, openingByKeyboard = false) {

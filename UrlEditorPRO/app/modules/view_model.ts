@@ -1,4 +1,8 @@
 ﻿/// <reference path="shared_interfaces.d.ts" />
+/// <reference path="helpers.ts" />
+/// <reference path="param_options.ts" />
+/// <reference path="settings.ts" />
+
 module UrlEditor {
 
     var paramEncodedPattern = /%[a-fA-F0-9]{2}/;
@@ -128,6 +132,7 @@ module UrlEditor {
         }
 
         private getParamOptions(container: IParamContainerElement): IMap<ParamOptions.IParamOption> {
+            
             return {};
         }
 
