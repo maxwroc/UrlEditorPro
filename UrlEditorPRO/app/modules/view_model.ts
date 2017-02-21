@@ -2,6 +2,7 @@
 /// <reference path="helpers.ts" />
 /// <reference path="param_options.ts" />
 /// <reference path="settings.ts" />
+/// <reference path="tracking.ts" />
 
 module UrlEditor {
 
@@ -108,16 +109,16 @@ module UrlEditor {
             }, 0);
         }
 
-        private buttonClickHandler(elem: HTMLInputElement, evt: MouseEvent) {
+        private buttonClickHandler(pressedButton: HTMLInputElement, evt: MouseEvent) {
             // this handler is triggered for any button click on page
 
-            var paramContainer = <IParamContainerElement>elem.parentElement;
+            var paramContainer = <IParamContainerElement>pressedButton.parentElement;
             if (paramContainer.isParamContainer) {
 
-                ParamOptions.show(this.getParamOptions(paramContainer), elem, /*openingByKeyboard*/evt.clientX == 0 && evt.clientY == 0);
+                ParamOptions.show(paramContainer, pressedButton, /*openingByKeyboard*/evt.clientX == 0 && evt.clientY == 0);
             }
             else {
-                switch (elem.id) {
+                switch (pressedButton.id) {
                     case "add_param":
                         Tracking.trackEvent(Tracking.Category.AddParam, "click");
                         this.addNewParamFields();
@@ -129,11 +130,6 @@ module UrlEditor {
                         break;
                 }
             }
-        }
-
-        private getParamOptions(container: IParamContainerElement): IMap<ParamOptions.IParamOption> {
-            
-            return {};
         }
 
         private keyboardEventDispatcher(evt: Event) {

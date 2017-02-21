@@ -1,13 +1,14 @@
 ﻿/// <reference path="shared_interfaces.d.ts" />
 
 module UrlEditor.ParamOptions {
-    let clickAction = "clickAction";
+    const clickAction = "clickAction";
+    const setActiveState = "setActiveState";
 
     let doc: Document;
     let menuElem: IParamOptionsContainer;
     let deleteParam: (paramContainer: IParamContainerElement) => void;
     let updateFullUrl: () => void;
-    let paramOptions: IMap<IParamOptionInitialized>;
+    let paramOptions: IParamOption[] = [];
 
     export function init(
         _doc: Document) {
@@ -16,19 +17,23 @@ module UrlEditor.ParamOptions {
         _doc.body.addEventListener("keydown", evt => isVisible() && handleKeyboard(evt), true);
     }
 
-    export function registerOption(
-        text: string,
-        action: (container: IParamContainerElement) => void,
-        isSelected: (container: IParamContainerElement) => boolean,
-        order = 0) {
-
-
+    export function registerOption(option: IParamOption) {
+        paramOptions.push(option);
+        paramOptions = paramOptions.sort((o1, o2) => o1.order - o2.order);
     }
 
-    export function show(options: IMap<IParamOption>, pressedButton: HTMLElement, openingByKeyboard = false) {
+    export function show(container: IParamContainerElement, pressedButton: HTMLElement, openingByKeyboard = false) {
 
-        if (!paramOptions) {
-            paramOptions = initializeOptions(options);
+        if (menuElem) {
+            // update isActive states
+            for (let i = 0; i < menuElem.children.length; i++) {
+                // check if handler exists (present only on fields which supports it)
+                if (menuElem.children[i][setActiveState]) {
+                    menuElem.children[i][setActiveState](container);
+                }
+            }
+        } else {
+            initializeOptions(container);
         }
 
         menuElem.style.display = "block";
@@ -43,6 +48,7 @@ module UrlEditor.ParamOptions {
 
         Helpers.ensureIsVisible(menuElem, doc.body, window.innerHeight);
 
+        // when opened by keyboard select first option
         if (openingByKeyboard) {
             menuElem.getElementsByTagName("li")[0].classList.add("hv");
         }
@@ -62,30 +68,33 @@ module UrlEditor.ParamOptions {
         return menuElem && menuElem.style.display != "none";
     }
 
-    function initializeOptions(options: IMap<IParamOptionInitialized>): IMap<IParamOptionInitialized> {
+    function initializeOptions(container: IParamContainerElement): void {
         
         menuElem = doc.createElement("ul");
         menuElem.setAttribute("id", "paramMenu");
 
-        Object.keys(options).forEach(id => {
+        paramOptions.forEach((option, index) => {
             let li = doc.createElement("li");
-            li.id = id;
+            li.id = "mpo_" + index;
 
             let span = doc.createElement("span");
-            span.textContent = options[id].text;
+            span.textContent = option.text;
 
-            if (options[id].isActive != undefined) {
+            var isActive = option.isActive(container);
+            if (isActive != undefined) {
 
                 let label = doc.createElement("label");
                 label.appendChild(span);
 
                 let checkbox = doc.createElement("input");
                 checkbox.type = "checkbox";
-                checkbox.checked = options[id].isActive;
+                checkbox.checked = isActive;
                 label.appendChild(checkbox);
 
-                options[id].checkboxElem = checkbox;
                 li.appendChild(label);
+
+                // prepare handler for updating the field state
+                li[setActiveState] = (c: IParamContainerElement) => checkbox.checked = option.isActive(c);
             }
             else {
                 li.appendChild(span);
@@ -93,14 +102,12 @@ module UrlEditor.ParamOptions {
 
             li.addEventListener("click", evt => {
                 evt.stopPropagation();
-                options[id].action();
+                option.action(container);
                 hide();
             }, true);
             
             menuElem.appendChild(li);
         });
-
-        return options;
     }
 
     function handleKeyboard(evt: KeyboardEvent): void {
@@ -175,11 +182,8 @@ module UrlEditor.ParamOptions {
 
     export interface IParamOption {
         text: string;
-        action: () => void;
-        isActive?: boolean;
-    }
-
-    interface IParamOptionInitialized extends IParamOption {
-        checkboxElem?: HTMLInputElement;
+        action: (container: IParamContainerElement) => void;
+        isActive: (container: IParamContainerElement) => boolean;
+        order?: number;
     }
 }
