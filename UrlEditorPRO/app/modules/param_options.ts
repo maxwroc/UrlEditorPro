@@ -108,6 +108,8 @@ module UrlEditor.ParamOptions {
             
             menuElem.appendChild(li);
         });
+
+        doc.body.appendChild(menuElem);
     }
 
     function handleKeyboard(evt: KeyboardEvent): void {

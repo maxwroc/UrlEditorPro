@@ -64,6 +64,12 @@ module UrlEditor {
 
             // initialize param options
             ParamOptions.init(document);
+            ParamOptions.registerOption({
+                text: "Url encoding",
+                action: container => null,
+                isActive: container => undefined,
+                order: 1
+            });
         }
 
         private clickEventDispatcher(evt: MouseEvent) {
