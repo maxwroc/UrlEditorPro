@@ -66,8 +66,14 @@ module UrlEditor {
             ParamOptions.init(document);
             ParamOptions.registerOption({
                 text: "Url encoding",
-                action: container => null,
-                isActive: container => undefined,
+                action: container => this.encodeDecodeParamValue(container, false),
+                isActive: container => container.urlEncoded,
+                order: 1
+            });
+            ParamOptions.registerOption({
+                text: "Base64 encoding",
+                action: container => this.encodeDecodeParamValue(container, true),
+                isActive: container => !!container.base64Encoded,
                 order: 1
             });
         }
