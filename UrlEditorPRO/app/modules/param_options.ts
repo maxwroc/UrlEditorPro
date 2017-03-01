@@ -95,12 +95,17 @@ module UrlEditor.ParamOptions {
 
                 // prepare handler for updating the field state
                 li[setActiveState] = (c: IParamContainerElement) => checkbox.checked = option.isActive(c);
+                li[clickAction] = () => {
+                    option.action(container);
+                    hide();
+                }
             }
             else {
                 li.appendChild(span);
             }
 
-            li.addEventListener("click", evt => {
+            // using mouseup event as "click" one is triggered as well whenever input checkbox state changes (do avoid double action execution)
+            li.addEventListener("mouseup", evt => {
                 evt.stopPropagation();
                 option.action(container);
                 hide();
@@ -126,7 +131,7 @@ module UrlEditor.ParamOptions {
             case 13: // enter
                 let selectedOption = getSelectedOption();
                 if (selectedOption != undefined) {
-                    paramOptions[selectedOption.id] && paramOptions[selectedOption.id].action();
+                    selectedOption[clickAction]();
                 }
                 hide();
                 evt.preventDefault();

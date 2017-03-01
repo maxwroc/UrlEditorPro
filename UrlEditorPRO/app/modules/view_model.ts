@@ -225,8 +225,9 @@ module UrlEditor {
 
                     // parameter name field
                     param.nameElement.value = name;
-                    
-                    param.urlEncoded = paramEncodedPattern.test(value);
+
+                    // always encode/decode params by default
+                    param.urlEncoded = true;
 
                     // parameter value field
                     param.valueElement.value = param.urlEncoded ? decodeURIComponent(value) : value;
