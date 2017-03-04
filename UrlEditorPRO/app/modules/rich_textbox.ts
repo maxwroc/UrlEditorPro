@@ -34,7 +34,7 @@ module UrlEditor {
                         let isEventTriggeredByClick = evtType == "selectstart";
                         action = () => {
                             let cursorPos = this.richText.getCursorPos();
-                            this.highlight(cursorPos, true/*isCursorPos*/);
+                            this.highlight(cursorPos, undefined);
 
                             if (isEventTriggeredByClick) {
                                 // bring back original cursor pos
@@ -80,7 +80,7 @@ module UrlEditor {
                 cursorPos += uri.pathname().length;
             }
             
-            this.highlight(cursorPos, true/*isCursorPos*/);
+            this.highlight(cursorPos, undefined);
         }
 
         private highlightParams(elem: HTMLElement) {
@@ -94,16 +94,16 @@ module UrlEditor {
                     paramIndex += paramContainer.isParamContainer ? 1 : 0;
                 }
 
-                this.highlight(paramIndex, false/*isCursorPos*/);
+                this.highlight(undefined, paramIndex);
             }
         }
 
-        private highlight(pos: number, isCursorPos: boolean) {
+        private highlight(pos: number, paramIndex: number) {
 
             let uri = new Uri(this.richText.getText());
             let currentActiveElem = <HTMLElement>this.doc.activeElement;
 
-            let markupPositions = uri.getHighlightMarkupPos(pos, isCursorPos);
+            let markupPositions = uri.getHighlightMarkupPos(pos, paramIndex);
             this.richText.highlight(markupPositions);
         }
     }

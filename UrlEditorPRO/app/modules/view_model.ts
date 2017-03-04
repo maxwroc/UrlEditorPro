@@ -1,4 +1,9 @@
 ﻿/// <reference path="shared_interfaces.d.ts" />
+/// <reference path="helpers.ts" />
+/// <reference path="param_options.ts" />
+/// <reference path="settings.ts" />
+/// <reference path="tracking.ts" />
+
 module UrlEditor {
 
     var paramEncodedPattern = /%[a-fA-F0-9]{2}/;
@@ -58,7 +63,19 @@ module UrlEditor {
             this.updateFields(false/*setUriFromFields*/);
 
             // initialize param options
-            ParamOptions.init(document, (paramContainer) => this.deleteParam(paramContainer), () => this.updateFields(true));
+            ParamOptions.init(document);
+            ParamOptions.registerOption({
+                text: "Url encoding",
+                action: container => this.encodeDecodeParamValue(container, false),
+                isActive: container => container.urlEncoded,
+                order: 1
+            });
+            ParamOptions.registerOption({
+                text: "Base64 encoding",
+                action: container => this.encodeDecodeParamValue(container, true),
+                isActive: container => !!container.base64Encoded,
+                order: 1
+            });
         }
 
         private clickEventDispatcher(evt: MouseEvent) {
@@ -80,21 +97,23 @@ module UrlEditor {
         private encodeDecodeParamValue(paramContainer: IParamContainerElement, base64: boolean) {
             let value = paramContainer.valueElement.value;
             if (base64) {
-                let wasEncoded = Helpers.isBase64Encoded(value);
-                    paramContainer.valueElement.value = wasEncoded ? Helpers.b64DecodeUnicode(value) : Helpers.b64EncodeUnicode(value);
+                // TODO this check is not perfect as string may just look like encoded
+                let isEncoded = Helpers.isBase64Encoded(value);
 
-                    paramContainer.base64Encoded = !wasEncoded;
+                if (isEncoded) {
+                    paramContainer.valueElement.value = Helpers.b64DecodeUnicode(paramContainer.valueElement.value);
+                }
+
+                paramContainer.base64Encoded = !paramContainer.base64Encoded;
+
+                // we always need to urlencode base64 values (because of the '=' chars)
+                if (paramContainer.base64Encoded) {
+                    paramContainer.urlEncoded = true;
+                }
             }
             else {
-                // if it is encoded already we should decode it
-                if (paramContainer.urlEncoded) {
-                    paramContainer.valueElement.value = decodeURIComponent(value);
-                }
-                else {
-                    paramContainer.valueElement.value = this.encodeURIComponent(value);
-                }
-
-                paramContainer.urlEncoded = !paramContainer.urlEncoded;
+                // we always need to urlencode base64 values (because of the '=' chars)
+                paramContainer.urlEncoded = paramContainer.base64Encoded || !paramContainer.urlEncoded;
             }
 
             // delay execution
@@ -104,17 +123,16 @@ module UrlEditor {
             }, 0);
         }
 
-        private buttonClickHandler(elem: HTMLInputElement, evt: MouseEvent) {
+        private buttonClickHandler(pressedButton: HTMLInputElement, evt: MouseEvent) {
             // this handler is triggered for any button click on page
 
-            var paramContainer = <IParamContainerElement>elem.parentElement;
+            var paramContainer = <IParamContainerElement>pressedButton.parentElement;
             if (paramContainer.isParamContainer) {
-                // this seems to be a delete param button so we're removing param
-                //this.deleteParam(paramContainer);
-                ParamOptions.show(paramContainer, elem, /*openingByKeyboard*/evt.clientX == 0 && evt.clientY == 0);
+
+                ParamOptions.show(paramContainer, pressedButton, /*openingByKeyboard*/evt.clientX == 0 && evt.clientY == 0);
             }
             else {
-                switch (elem.id) {
+                switch (pressedButton.id) {
                     case "add_param":
                         Tracking.trackEvent(Tracking.Category.AddParam, "click");
                         this.addNewParamFields();
@@ -209,8 +227,9 @@ module UrlEditor {
 
                     // parameter name field
                     param.nameElement.value = name;
-                    
-                    param.urlEncoded = paramEncodedPattern.test(value);
+
+                    // always encode/decode params by default
+                    param.urlEncoded = true;
 
                     // parameter value field
                     param.valueElement.value = param.urlEncoded ? decodeURIComponent(value) : value;
@@ -483,9 +502,6 @@ module UrlEditor {
                             }
 
                             // check if we should encode it
-                            if (container.urlEncoded) {
-                                value = this.encodeURIComponent(value);
-                            }
                             if (container.base64Encoded) {
                                 if (Helpers.isBase64Encoded(value)) {
                                     // sometimes string can only look like a base64 encoded and in such cases exception can be thrown
@@ -499,6 +515,11 @@ module UrlEditor {
                                 else {
                                     value = Helpers.b64EncodeUnicode(value);
                                 }
+                            }
+
+                            // we always need to urlencode base64 values (because of the '=' chars)
+                            if (container.urlEncoded || container.base64Encoded) {
+                                value = this.encodeURIComponent(value);
                             }
 
                             params[paramName].push(value);

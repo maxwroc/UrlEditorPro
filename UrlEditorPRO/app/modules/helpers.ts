@@ -87,6 +87,7 @@ module UrlEditor.Helpers {
      * Checks if given string can be Base64 encoded
      */
     export function isBase64Encoded(val: string) {
+        // TODO whenever test passes we can try to decode and check if there are only valid string chars
         return base64Pattern.test(val);
     }
 
@@ -99,7 +100,7 @@ module UrlEditor.Helpers {
     export function isTextField(elem: Element): boolean {
         // check if tag is an INPUT or TEXTAREA, additionally check if the INPUT type is text
         return (elem.tagName == "INPUT" && (<HTMLInputElement>elem).type == "text") ||
-            (elem.tagName == "DIV" && elem.id == "full_url"));
+            (elem.tagName == "DIV" && elem.id == "full_url");
     }
     
     /**

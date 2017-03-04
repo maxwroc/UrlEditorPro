@@ -1,40 +1,38 @@
-﻿module UrlEditor.ParamOptions {
-    let clickAction = "clickAction";
+﻿/// <reference path="shared_interfaces.d.ts" />
+
+module UrlEditor.ParamOptions {
+    const clickAction = "clickAction";
+    const setActiveState = "setActiveState";
 
     let doc: Document;
     let menuElem: IParamOptionsContainer;
-    let paramContainer: IParamContainerElement;
-    let deleteParam: (paramContainer: IParamContainerElement) => void;
-    let updateFullUrl: () => void;
+    let paramOptions: IParamOption[] = [];
 
     export function init(
-        _doc: Document,
-        deleteParamAction: (paramContainer: IParamContainerElement) => void,
-        updateFullUrlAction: () => void) {
+        _doc: Document) {
         doc = _doc;
-        deleteParam = deleteParamAction;
-        updateFullUrl = () => {
-            setTimeout(() => {
-                paramContainer.valueElement.focus();
-                updateFullUrlAction();
-            }, 0);
-        }
 
         _doc.body.addEventListener("keydown", evt => isVisible() && handleKeyboard(evt), true);
     }
 
-    export function show(paramContainerElem: IParamContainerElement, pressedButton: HTMLElement, openingByKeyboard = false) {
+    export function registerOption(option: IParamOption) {
+        paramOptions.push(option);
+        paramOptions = paramOptions.sort((o1, o2) => o1.order - o2.order);
+    }
 
+    export function show(container: IParamContainerElement, pressedButton: HTMLElement, openingByKeyboard = false) {
 
-        // update local variable required by event handline
-        paramContainer = paramContainerElem;
-
-        if (!menuElem) {
-            initializeContainer();
+        if (menuElem) {
+            // update isActive states
+            for (let i = 0; i < menuElem.children.length; i++) {
+                // check if handler exists (present only on fields which supports it)
+                if (menuElem.children[i][setActiveState]) {
+                    menuElem.children[i][setActiveState](container);
+                }
+            }
+        } else {
+            initializeOptions(container);
         }
-
-        menuElem.urlEncodeElem.checked = paramContainer.urlEncoded;
-        menuElem.base64EncodeElem.checked = paramContainer.base64Encoded;
 
         menuElem.style.display = "block";
 
@@ -48,6 +46,7 @@
 
         Helpers.ensureIsVisible(menuElem, doc.body, window.innerHeight);
 
+        // when opened by keyboard select first option
         if (openingByKeyboard) {
             menuElem.getElementsByTagName("li")[0].classList.add("hv");
         }
@@ -67,67 +66,52 @@
         return menuElem && menuElem.style.display != "none";
     }
 
-    function initializeContainer() {
-        // for some reason TS compiler doesn't like such cast in case of UL elements
+    function initializeOptions(container: IParamContainerElement): void {
+        
         menuElem = doc.createElement("ul");
         menuElem.setAttribute("id", "paramMenu");
-        menuElem.innerHTML = `
-                    <li id="param_urlEncode">
-                        <label><span>Url encode</span><input type="checkbox" name="param_urlEncode" /></label>
-                    </li>
-                    <li id="param_base64Encode">
-                        <label><span>Base64 encode</span><input type="checkbox" name="param_base64Encode" /></label>
-                    </li>
-                    <li id="param_delete">
-                        Delete
-                    </li>
-                `;
 
-        menuElem.addEventListener("click", evt => {
+        paramOptions.forEach((option, index) => {
+            let li = doc.createElement("li");
+            li.id = "mpo_" + index;
 
-            evt.stopPropagation();
+            let span = doc.createElement("span");
+            span.textContent = option.text;
 
-            // There is additional click event triggered for the checkbox - when it state changes.
-            if (!isVisible()) {
-                return;
+            var isActive = option.isActive(container);
+            if (isActive != undefined) {
+
+                let label = doc.createElement("label");
+                label.appendChild(span);
+
+                let checkbox = doc.createElement("input");
+                checkbox.type = "checkbox";
+                checkbox.checked = isActive;
+                label.appendChild(checkbox);
+
+                li.appendChild(label);
+
+                // prepare handler for updating the field state
+                li[setActiveState] = (c: IParamContainerElement) => checkbox.checked = option.isActive(c);
+                li[clickAction] = () => {
+                    option.action(container);
+                    hide();
+                }
+            }
+            else {
+                li.appendChild(span);
             }
 
-            let elem = <HTMLElement>evt.target;
-            while (!elem[clickAction] && elem != menuElem) {
-                elem = elem.parentElement;
-            }
+            // using mouseup event as "click" one is triggered as well whenever input checkbox state changes (do avoid double action execution)
+            li.addEventListener("mouseup", evt => {
+                evt.stopPropagation();
+                option.action(container);
+                hide();
+            }, true);
+            
+            menuElem.appendChild(li);
+        });
 
-            elem[clickAction] && elem[clickAction]();
-
-            hide();
-        }, true);
-
-        let options = menuElem.getElementsByTagName("li");
-        for (let i = 0, option: HTMLLIElement; option = <HTMLLIElement>options[i]; i++) {
-            switch (option.id) {
-                case "param_urlEncode":
-                    option[clickAction] = () => {
-                        paramContainer.urlEncoded = !paramContainer.urlEncoded;
-                        paramContainer.base64Encoded = paramContainer.base64Encoded ? !paramContainer.urlEncoded : false;
-                        updateFullUrl();
-                    }
-                    menuElem.urlEncodeElem = option.getElementsByTagName("input")[0];
-                    break;
-                case "param_base64Encode":
-                    option[clickAction] = () => {
-                        paramContainer.base64Encoded = !paramContainer.base64Encoded;
-                        paramContainer.urlEncoded = paramContainer.urlEncoded ? !paramContainer.base64Encoded : false;
-                        updateFullUrl();
-                    }
-                    menuElem.base64EncodeElem = option.getElementsByTagName("input")[0];
-                    break;
-                case "param_delete":
-                    option[clickAction] = () => deleteParam(paramContainer);
-                    break;
-            }
-        }
-
-        
         doc.body.appendChild(menuElem);
     }
 
@@ -145,7 +129,7 @@
             case 13: // enter
                 let selectedOption = getSelectedOption();
                 if (selectedOption != undefined) {
-                    selectedOption[clickAction] && selectedOption[clickAction]();
+                    selectedOption[clickAction]();
                 }
                 hide();
                 evt.preventDefault();
@@ -199,5 +183,12 @@
     interface IParamOptionsContainer extends HTMLUListElement {
         urlEncodeElem?: HTMLInputElement;
         base64EncodeElem?: HTMLInputElement;
+    }
+
+    export interface IParamOption {
+        text: string;
+        action: (container: IParamContainerElement) => void;
+        isActive: (container: IParamContainerElement) => boolean;
+        order?: number;
     }
 }
