@@ -6,8 +6,6 @@ module UrlEditor.ParamOptions {
 
     let doc: Document;
     let menuElem: IParamOptionsContainer;
-    let deleteParam: (paramContainer: IParamContainerElement) => void;
-    let updateFullUrl: () => void;
     let paramOptions: IParamOption[] = [];
 
     export function init(
