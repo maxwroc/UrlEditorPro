@@ -94,13 +94,17 @@ module UrlEditor {
             }
         }
 
-        private encodeDecodeParamValue(paramContainer: IParamContainerElement, base64: boolean) {
+        private encodeDecodeParamValue(paramContainer: IParamContainerElement, base64: boolean, force) {
             let value = paramContainer.valueElement.value;
             if (base64) {
-                let wasEncoded = Helpers.isBase64Encoded(value);
-                    paramContainer.valueElement.value = wasEncoded ? Helpers.b64DecodeUnicode(value) : Helpers.b64EncodeUnicode(value);
+                // TODO this check is not perfect as string may just look like encoded
+                let isEncoded = Helpers.isBase64Encoded(value);
 
-                    paramContainer.base64Encoded = !wasEncoded;
+                if (isEncoded) {
+                    paramContainer.valueElement.value = Helpers.b64DecodeUnicode(paramContainer.valueElement.value);
+                }
+
+                paramContainer.base64Encoded = !paramContainer.base64Encoded;
             }
             else {
                 // if it is encoded already we should decode it

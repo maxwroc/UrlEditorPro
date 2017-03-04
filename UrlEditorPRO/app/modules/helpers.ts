@@ -87,6 +87,7 @@ module UrlEditor.Helpers {
      * Checks if given string can be Base64 encoded
      */
     export function isBase64Encoded(val: string) {
+        // TODO whenever test passes we can try to decode and check if there are only valid string chars
         return base64Pattern.test(val);
     }
 
