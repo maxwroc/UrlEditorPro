@@ -271,7 +271,7 @@ module UrlEditor {
         private createNewParamContainer(name?: string): IParamContainerElement {
             var param = <IParamContainerElement>document.createElement("div");
             param.className = "param";
-            param.innerHTML = '<input type="text" name="name" class="name" autocomplete="off" spellcheck="false" /> <input type="text" name="value" class="value" autocomplete="off" spellcheck="false" /> <input type="button" value="x" />';
+            param.innerHTML = '<input type="text" name="name" class="name" autocomplete="off" spellcheck="false" /> <input type="text" name="value" class="value" autocomplete="off" spellcheck="false" /> <input type="button" value="&#x270E;" />';
 
             // parameter name field
             param.nameElement = <HTMLInputElement>param.firstElementChild;
