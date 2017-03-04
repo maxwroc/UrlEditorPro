@@ -94,7 +94,7 @@ module UrlEditor {
             }
         }
 
-        private encodeDecodeParamValue(paramContainer: IParamContainerElement, base64: boolean, force) {
+        private encodeDecodeParamValue(paramContainer: IParamContainerElement, base64: boolean) {
             let value = paramContainer.valueElement.value;
             if (base64) {
                 // TODO this check is not perfect as string may just look like encoded
@@ -105,17 +105,15 @@ module UrlEditor {
                 }
 
                 paramContainer.base64Encoded = !paramContainer.base64Encoded;
+
+                // we always need to urlencode base64 values (because of the '=' chars)
+                if (paramContainer.base64Encoded) {
+                    paramContainer.urlEncoded = true;
+                }
             }
             else {
-                // if it is encoded already we should decode it
-                if (paramContainer.urlEncoded) {
-                    paramContainer.valueElement.value = decodeURIComponent(value);
-                }
-                else {
-                    paramContainer.valueElement.value = this.encodeURIComponent(value);
-                }
-
-                paramContainer.urlEncoded = !paramContainer.urlEncoded;
+                // we always need to urlencode base64 values (because of the '=' chars)
+                paramContainer.urlEncoded = paramContainer.base64Encoded || !paramContainer.urlEncoded;
             }
 
             // delay execution
@@ -504,9 +502,6 @@ module UrlEditor {
                             }
 
                             // check if we should encode it
-                            if (container.urlEncoded) {
-                                value = this.encodeURIComponent(value);
-                            }
                             if (container.base64Encoded) {
                                 if (Helpers.isBase64Encoded(value)) {
                                     // sometimes string can only look like a base64 encoded and in such cases exception can be thrown
@@ -520,6 +515,11 @@ module UrlEditor {
                                 else {
                                     value = Helpers.b64EncodeUnicode(value);
                                 }
+                            }
+
+                            // we always need to urlencode base64 values (because of the '=' chars)
+                            if (container.urlEncoded || container.base64Encoded) {
+                                value = this.encodeURIComponent(value);
                             }
 
                             params[paramName].push(value);
