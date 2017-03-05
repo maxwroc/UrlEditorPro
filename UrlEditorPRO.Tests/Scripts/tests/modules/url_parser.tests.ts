@@ -55,6 +55,7 @@ module Tests {
                 ["http://something/|dddd/r?param1=1&param2=val2&param3=t", [[16, 23]]],
                 ["http://something/dddd|/r?param1=1&param2=val2&param3=t", [[16, 23]]],
                 ["http://something/dddd/r|?param1=1&param2=val2&param3=t", [[16, 23]]],
+                ["http://192.168.2.104:8080/m|#/Floorplans", [[25, 27]]],
                 // params
                 ["http://something/dddd?param1=1&param|2=val2&param3=t", [[31, 37], [38, 42]]],
                 ["http://something/dddd?param1=1&param2=|val2&param3=t", [[31, 37], [38, 42]]],
@@ -62,6 +63,10 @@ module Tests {
                 ["http://something/dddd?param1=1&|param2=val2&param3=t", [[31, 37], [38, 42]]],
                 ["http://something/dddd?param1=1&param2=val2&param3=t|", [[43, 49], [50, 51]]],
                 ["http://something/dddd?|param1=1&param2=val2&param3=t", [[22, 28], [29, 30]]],
+                // with hash
+                ["http://something/dddd?param1=1&param2=val2&param3=t|#something&", [[43, 49], [50, 51]]],
+                ["http://something/dddd?param1=1&param2=val2&param3=t#|something&", [[51, 62]]],
+                ["http://something/dddd?param1=1&param2=val2&param3=t#something&|", [[51, 62]]],
             ],
             (url: string, expected: number[][]) => {
             var uri = new UrlEditor.Uri(url.replace("|", ""));
@@ -70,7 +75,7 @@ module Tests {
             expect(result).toEqual(expected);
             });
 
-        all("gets hit-highlighted param when calling getHighlightedUrl with param position",
+        all("gets hit-highlighted param when calling getHighlightedUrl with param index position",
             [
                 ["http://something/dddd?param1=1&param2=val2&param3=t", 0, [[22, 28], [29, 30]]],
                 ["http://something/dddd?param1=1&param2=val2&param3=t", 1, [[31, 37], [38, 42]]],
@@ -79,7 +84,7 @@ module Tests {
             (url: string, pos: number, expected: number[][]) => {
                 var uri = new UrlEditor.Uri(url.replace("|", ""));
 
-                var result = uri.getHighlightMarkupPos(pos, false);
+                var result = uri.getHighlightMarkupPos(undefined, pos);
                 expect(result).toEqual(expected);
             });
     });

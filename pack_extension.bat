@@ -2,7 +2,8 @@
 set extDir=""
 set packer="%~dp0..\WinScripts\batch\ExtensionPacker.bat"
 
-rem if not "%1%"=="" set extDir=%1
+if "%1" neq "" set extDir=%1
+
 if not exist %extDir% (
   set extDir="UrlEditorPRO\UrlEditorPRO\app"
 )

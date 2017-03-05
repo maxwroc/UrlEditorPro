@@ -35,7 +35,7 @@
 
       input[type=text]:focus:not(.error),
       #full_url:focus {
-          box-shadow: inset 0 0 0.5em rgba(0, 0, 0, 0.3) !important;
+          border-color: #129FEA;
           outline: none;
       }
 
@@ -47,6 +47,10 @@
       #hostname {
           flex: none;
           max-width: 50%;
+      }
+
+      .container #hostname {
+          flex: none;
       }
 
       .container #hostname {
@@ -83,24 +87,33 @@
           border-radius: 0 5px 5px 0;
           border-left: none;
       }
+      .param input[type=text]:nth-of-type(2):focus,
+      .container input[type=text]:nth-of-type(2):focus {
+          margin-left: -1px;
+          border-left: 1px solid #129FEA;
+      }
       .param input:first-child {
           width: 15%;
           min-width: 80px;
       }
 
       #add_param,
-      .param input[type=button],
-      .param input[type=checkbox] {
+      .param input[type=button] {
           width: 22px;
           height: 22px;
-          border-radius:5px;
-          background-color: #cacaca;
           flex: none;
       }
 
+      #add_param,
       .param input[type=button] {
-          margin-top: 2px;
-          background-color: #e7e7e7;
+          height: 23px;
+          width: 23px;
+      }
+
+      .param input[type=button] {
+          margin: 2px 0 0 4px;
+          font-size: 14px;
+          padding: 0;
       }
       
       .container {
@@ -123,22 +136,24 @@
           background-color: #ffa9a9;
           outline: none;
       }
-
-      .suggestions li:hover,
-      .hv {
-          background-color: #e8e8e8;
+      
+      .hv,
+      #paramMenu li:hover,
+      .suggestions li:hover {
+          background-color: #0078e7;
+          color: #fff;
       }
 
       .suggestions {
           position: absolute; 
           margin: 0; 
           background-color: white; 
-          border: 1px solid #cacaca; 
+          border: 1px solid #129FEA; 
           display: none; 
           list-style: none; 
           padding: 0;
           border-radius: 0 0 5px 5px;
-          box-shadow: 0 0 10px rgba(0, 0, 0, 0.3) !important;
+          box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3) !important;
           overflow-y: auto;
           overflow-x: hidden;
       }
@@ -163,6 +178,48 @@
           font-weight: bold;
       }
 
+      input[type=button] {
+          background-color: #0078e7;
+          border-radius: 3px;
+          color: #fff;
+          border: 1px solid;
+          padding: 3px;
+      }
+      input[type=button]:hover {
+          background-image: linear-gradient(transparent,rgba(0,0,0,.05) 40%,rgba(0,0,0,.1));
+      }
+      input[type=button]:active {
+          box-shadow: 0 0 0 1px rgba(0,0,0,.15) inset,0 0 6px rgba(0,0,0,.2) inset;
+      }
+
+      #full_url b {
+          color: rgb(0, 120, 231);
+          font-weight: normal;
+          text-shadow: 1px 1px rgba(0, 120, 231, 0.25);
+      }
+
+      #paramMenu {
+          position: absolute;
+          background-color: #f6f6f6;
+          border: 1px solid #129FEA;
+          padding: 0;
+          list-style: none;
+      }
+      #paramMenu li {
+          padding: 4px 10px;
+      }
+      #paramMenu input[type=button] {
+          font-size: 10px;
+          width: 100%;
+      }
+      #paramMenu label input[type=checkbox] {
+          margin: 0 0 0 4px;
+          vertical-align: sub;
+      }
+      #paramMenu {
+          line-height: 19px;
+      }
+
     </style>
 
     <!--
@@ -179,6 +236,7 @@
     <script src="modules/url_parser.js"></script>
     <script src="modules/view_model.js"></script>
     <script src="modules/rich_textbox.js"></script>
+    <script src="modules/param_options.js"></script>
     <script src="popup.js"></script>
   </head>
   <body>
@@ -188,8 +246,8 @@
       </div>
       <div class="container">
           <span id="measure"></span>
-          <input id="hostname" type="text" />
-          <input id="path" type="text" />
+          <input id="hostname" type="text" spellcheck="false" />
+          <input id="path" type="text" spellcheck="false" />
       </div>
       <div id="params">
       </div>

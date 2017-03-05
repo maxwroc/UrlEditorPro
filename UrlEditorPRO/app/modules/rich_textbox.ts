@@ -8,73 +8,102 @@ module UrlEditor {
         private richText: RichTextBox;
 
         constructor(private doc: Document) {
-            let paramsContainer = <HTMLDivElement>Helpers.ge("params");
-            paramsContainer.addEventListener("DOMFocusIn", evt => this.onDomEvent(<HTMLElement>evt.target));
 
             let fullUrl = <HTMLDivElement>Helpers.ge("full_url");
             this.richText = new RichTextBox(fullUrl);
 
+            doc.body.addEventListener("input", evt => this.onDomEvent(<HTMLElement>evt.target, evt.type));
+            doc.body.addEventListener("DOMFocusIn", evt => this.onDomEvent(<HTMLElement>evt.target, evt.type));
+            
             // handle clicks and cursor position hanges in full url field
-            fullUrl.addEventListener("selectstart", (evt) => {
-                // when the event is rised the element doesn't have focus yet so we need to delay reading cursor position
-                setTimeout(() => {
-                    let cursorPos = this.richText.getCursorPos();
-                    this.highlight(cursorPos, true/*isCursorPos*/);
-
-                    // bring back original cursor pos
-                    this.richText.setCursorPos(cursorPos);
-                }, 0);
-            });
-
-            // handle typing in full url field
-            fullUrl.addEventListener("input", (evt) => {
-                let cursorPos = this.richText.getCursorPos();
-                this.highlight(cursorPos, true/*isCursorPos*/);
-            });
-
-            // handle focusing in host and path fields
-            doc.body.addEventListener("DOMFocusIn", evt => {
-                let elem = <HTMLElement>evt.target;
-                let cursorPos = -1;
-
-                if (elem.id == "hostname" || elem.id == "path") {
-                    let uri = new Uri(this.richText.getText());
-                    cursorPos += uri.protocol().length + uri.host().length;
-
-                    if (elem.id == "path") {
-                        cursorPos += uri.pathname().length;
-                    }
-                }
-
-                if (cursorPos != -1) {
-                    this.highlight(cursorPos, true/*isCursorPos*/);
-                }
-            });
+            fullUrl.addEventListener("selectstart", (evt) => this.onDomEvent(<HTMLElement>evt.currentTarget, evt.type));
         }
 
-        private onDomEvent(elem: HTMLElement) {
+        private onDomEvent(elem: HTMLElement, evtType: string) {
             if (Helpers.isTextFieldActive()) {
-                let paramContainer = <IParamContainerElement>this.doc.activeElement.parentElement;
-                if (paramContainer.isParamContainer) {
-                    let paramIndex = 0;
-                    // set param position/number
-                    while (paramContainer.previousElementSibling) {
-                        paramContainer = <IParamContainerElement>paramContainer.previousElementSibling;
-                        // increment only when previous sibling is a real param container
-                        paramIndex += paramContainer.isParamContainer ? 1 : 0;
-                    }
+                let action: Function;
+                let delay = false;
 
-                    this.highlight(paramIndex, false/*isCursorPos*/);
+                switch (elem.id) {
+                    case "full_url":
+                        if (evtType == "DOMFocusIn") {
+                            // we dont need to handle it
+                            return;
+                        }
+
+                        let isEventTriggeredByClick = evtType == "selectstart";
+                        action = () => {
+                            let cursorPos = this.richText.getCursorPos();
+                            this.highlight(cursorPos, undefined);
+
+                            if (isEventTriggeredByClick) {
+                                // bring back original cursor pos
+                                this.richText.setCursorPos(cursorPos);
+                            }
+                        }
+                        // when the click event is rised the element doesn't have focus yet so we need to delay reading cursor position
+                        delay = isEventTriggeredByClick;
+                        break;
+                    case "hostname":
+                    case "path":
+                        action = () => this.highlightHostOrPath(elem);
+                        // delay handling - we need to wait when all fields will be updated (by ViewModel)
+                        delay = evtType == "input";
+                        break;
+                    default:
+                        let paramContainer = <IParamContainerElement>this.doc.activeElement.parentElement;
+                        if (paramContainer.isParamContainer) {
+                            action = () => this.highlightParams(elem);
+                            // delay handling - we need to wait when all fields will be updated (by ViewModel)
+                            delay = true;
+                        }
+                }
+
+                if (action) {
+                    if (delay) {
+                        setTimeout(() => action(), 0);
+                    }
+                    else {
+                        action();
+                    }
                 }
             }
         }
 
-        private highlight(pos: number, isCursorPos: boolean) {
+        private highlightHostOrPath(elem: HTMLElement) {
+            let cursorPos = 0;
+            
+            let uri = new Uri(this.richText.getText());
+            cursorPos += uri.protocol().length + uri.host().length + 2; // 2 - for double slash after protocol
+
+            if (elem.id == "path") {
+                cursorPos += uri.pathname().length;
+            }
+            
+            this.highlight(cursorPos, undefined);
+        }
+
+        private highlightParams(elem: HTMLElement) {
+            let paramContainer = <IParamContainerElement>this.doc.activeElement.parentElement;
+            if (paramContainer.isParamContainer) {
+                let paramIndex = 0;
+                // set param position/number
+                while (paramContainer.previousElementSibling) {
+                    paramContainer = <IParamContainerElement>paramContainer.previousElementSibling;
+                    // increment only when previous sibling is a real param container
+                    paramIndex += paramContainer.isParamContainer ? 1 : 0;
+                }
+
+                this.highlight(undefined, paramIndex);
+            }
+        }
+
+        private highlight(pos: number, paramIndex: number) {
 
             let uri = new Uri(this.richText.getText());
             let currentActiveElem = <HTMLElement>this.doc.activeElement;
 
-            let markupPositions = uri.getHighlightMarkupPos(pos, isCursorPos);
+            let markupPositions = uri.getHighlightMarkupPos(pos, paramIndex);
             this.richText.highlight(markupPositions);
         }
     }

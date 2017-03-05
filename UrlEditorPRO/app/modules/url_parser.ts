@@ -2,7 +2,7 @@
 
 module UrlEditor {
 
-    var paramPattern = /([^\?=&]+)=([^\?&]*)/g; // consider to change it to /(?:\?|&(?:amp;)?)([^=&#]+)(?:=?([^&#]*))/g
+    var paramPattern = /([^\?=&#]+)=([^\?&#]*)/g; // consider to change it to /(?:\?|&(?:amp;)?)([^=&#]+)(?:=?([^&#]*))/g
     var prefixPattern = /^([a-zA-Z0-9-]+:)http/;
 
     export class Uri {
@@ -118,7 +118,9 @@ module UrlEditor {
             this.anchor.href = url;
         }
 
-        getHighlightMarkupPos(position: number, isCursorPosition = true): number[][] {
+        getHighlightMarkupPos(position: number, paramIndex: number = undefined): number[][] {
+            let isCursorPositionAvailable = position != undefined;
+
             var fullUrl = this.url();
             let result: number[][] = [];
 
@@ -126,29 +128,36 @@ module UrlEditor {
             var pathLength = this.anchor.pathname.length;
             var hostLenght = this.anchor.href.length - queryLength - pathLength - this.anchor.hash.length;
 
-            if (isCursorPosition && position <= hostLenght) {
+            if (isCursorPositionAvailable && position <= hostLenght) {
                 // cursor somewhere in the beginning of the url / host part
                 result.push([0, hostLenght]);
             }
-            else if (isCursorPosition && position <= hostLenght + pathLength) {
+            else if (isCursorPositionAvailable && position <= hostLenght + pathLength) {
                 // cursor somewhere in the path
                 result.push([hostLenght, hostLenght + pathLength]);
             }
-            else if (!isCursorPosition || position <= hostLenght + pathLength + queryLength) {
-                var paramIndex = 0;
+            else if (!isCursorPositionAvailable || position <= hostLenght + pathLength + queryLength) {
+                var currentIndex = 0;
                 // cursor somewhere in query area
                 fullUrl.replace(paramPattern, (match: string, paramName: string, paramValue: string, offset: number) => {
                     // check if we should higlight this param
-                    if ((!isCursorPosition && paramIndex == position) ||
+                    if ((!isCursorPositionAvailable && currentIndex == paramIndex) ||
                         (position >= offset && position <= offset + paramName.length + paramValue.length + 1)) {
                         result.push([offset, offset + paramName.length]);
                         result.push([offset + paramName.length + 1, offset + paramName.length + 1 + paramValue.length]);
                     }
 
-                    paramIndex++;
+                    currentIndex++;
 
                     return match;
                 });
+            }
+            
+            if (result.length == 0) {
+                let hash = this.hash();
+                if (hash && position > fullUrl.length - hash.length) {
+                    result.push([fullUrl.length - hash.length, fullUrl.length]);
+                }
             }
 
             return result;

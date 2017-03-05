@@ -20,6 +20,8 @@ interface IParsedUrl {
 interface IParamContainerElement extends HTMLDivElement {
     nameElement?: HTMLInputElement;
     valueElement?: HTMLInputElement;
-    encodeElement?: HTMLInputElement;
     isParamContainer?: boolean;
+    urlEncoded?: boolean;
+    base64Encoded?: boolean;
+    isFlippable?: boolean;
 }

@@ -1,4 +1,9 @@
 ﻿/// <reference path="shared_interfaces.d.ts" />
+/// <reference path="helpers.ts" />
+/// <reference path="param_options.ts" />
+/// <reference path="settings.ts" />
+/// <reference path="tracking.ts" />
+
 module UrlEditor {
 
     var paramEncodedPattern = /%[a-fA-F0-9]{2}/;
@@ -28,8 +33,6 @@ module UrlEditor {
 
         private measureElem: HTMLSpanElement;
 
-        private formTextElements = ["INPUT", "TEXTAREA"];
-
         constructor(private url: Uri, private doc: HTMLDocument, settings: Settings, private submit: (uri: Uri, openIn: OpenIn) => void) {
 
 
@@ -58,17 +61,38 @@ module UrlEditor {
             }
 
             this.updateFields(false/*setUriFromFields*/);
+
+            // initialize param options
+            ParamOptions.init(document);
+            ParamOptions.registerOption({
+                text: "Url encoding",
+                action: container => this.encodeDecodeParamValue(container, false),
+                isActive: container => container.urlEncoded,
+                order: 1
+            });
+            ParamOptions.registerOption({
+                text: "Base64 encoding",
+                action: container => this.encodeDecodeParamValue(container, true),
+                isActive: container => !!container.base64Encoded,
+                order: 1
+            });
+            ParamOptions.registerOption({
+                text: "Delete",
+                action: container => this.deleteParam(container),
+                isActive: container => undefined,
+                order: 1
+            });
         }
 
         private clickEventDispatcher(evt: MouseEvent) {
-            var elem = <HTMLElement>evt.target;
+            let elem = <HTMLElement>evt.target;
+
+            // make sure ParamOptions menu is closed
+            ParamOptions.hide();
+
             if (elem.tagName == "INPUT") {
                 var inputElem = <HTMLInputElement>elem;
                 switch (inputElem.type) {
-                    case "checkbox":
-                        Tracking.trackEvent(Tracking.Category.Encoding, "click", inputElem.checked.toString());
-                        this.checkboxClickHandler(inputElem);
-                        break;
                     case "button":
                         this.buttonClickHandler(inputElem, evt);
                         break;
@@ -76,28 +100,45 @@ module UrlEditor {
             }
         }
 
-        private checkboxClickHandler(elem: HTMLInputElement) {
-            var valElem = <HTMLInputElement>elem.previousElementSibling;
+        private encodeDecodeParamValue(paramContainer: IParamContainerElement, base64: boolean) {
+            let value = paramContainer.valueElement.value;
+            if (base64) {
+                // TODO this check is not perfect as string may just look like encoded
+                let isEncoded = Helpers.isBase64Encoded(value);
 
-            // we have only one checkbox for encoding/decoding value
-            if (elem.checked) {
-                valElem.value = decodeURIComponent(valElem.value);
+                if (isEncoded) {
+                    paramContainer.valueElement.value = Helpers.b64DecodeUnicode(paramContainer.valueElement.value);
+                }
+
+                paramContainer.base64Encoded = !paramContainer.base64Encoded;
+
+                // we always need to urlencode base64 values (because of the '=' chars)
+                if (paramContainer.base64Encoded) {
+                    paramContainer.urlEncoded = true;
+                }
             }
             else {
-                valElem.value = this.encodeURIComponent(valElem.value);
+                // we always need to urlencode base64 values (because of the '=' chars)
+                paramContainer.urlEncoded = paramContainer.base64Encoded || !paramContainer.urlEncoded;
             }
+
+            // delay execution
+            setTimeout(() => {
+                paramContainer.valueElement.focus();
+                this.updateFields(true/*setUriFromFields*/);
+            }, 0);
         }
 
-        private buttonClickHandler(elem: HTMLInputElement, evt: MouseEvent) {
+        private buttonClickHandler(pressedButton: HTMLInputElement, evt: MouseEvent) {
             // this handler is triggered for any button click on page
 
-            var paramContainer = <IParamContainerElement>elem.parentElement;
+            var paramContainer = <IParamContainerElement>pressedButton.parentElement;
             if (paramContainer.isParamContainer) {
-                // this seems to be a delete param button so we're removing param
-                this.deleteParam(paramContainer);
+
+                ParamOptions.show(paramContainer, pressedButton, /*openingByKeyboard*/evt.clientX == 0 && evt.clientY == 0);
             }
             else {
-                switch (elem.id) {
+                switch (pressedButton.id) {
                     case "add_param":
                         Tracking.trackEvent(Tracking.Category.AddParam, "click");
                         this.addNewParamFields();
@@ -131,7 +172,7 @@ module UrlEditor {
             var activeElem = <HTMLElement>this.doc.activeElement;
             var isTextFieldActive = Helpers.isTextFieldActive();
 
-            if (activeElem.id == "full_url" || !isTextFieldActive) {
+            if (activeElem.id == "full_url" || (!(<IParamContainerElement>activeElem.parentElement).isParamContainer && !isTextFieldActive)) {
                 this.populateInputFields(!isTextFieldActive);
             }
 
@@ -188,22 +229,17 @@ module UrlEditor {
 
                 urlParams[name].forEach((value, valueIndex) => {
                     name = decodeURIComponent(name);
-                    param = this.createNewParamContainer(name);
-                    // check if param value is encoded
-                    var isEncoded = paramEncodedPattern.test(value);
+                    param = this.createNewParamContainer(name); 
 
                     // parameter name field
                     param.nameElement.value = name;
 
-                    // parameter value field
-                    param.valueElement.value = isEncoded ? decodeURIComponent(value) : value;
-                    param.valueElement["param-value-position"] = valueIndex;
+                    // always encode/decode params by default
+                    param.urlEncoded = true;
 
-                    // parameter encoded checkbox
-                    if (isEncoded) {
-                        var paramEncoded = <HTMLInputElement>param.valueElement.nextElementSibling;
-                        paramEncoded.checked = true;
-                    }
+                    // parameter value field
+                    param.valueElement.value = param.urlEncoded ? decodeURIComponent(value) : value;
+                    param.valueElement["param-value-position"] = valueIndex;
 
                     // measuring
                     var nameWidth = this.getTextWidth(name);
@@ -241,14 +277,12 @@ module UrlEditor {
         private createNewParamContainer(name?: string): IParamContainerElement {
             var param = <IParamContainerElement>document.createElement("div");
             param.className = "param";
-            param.innerHTML = '<input type="text" name="name" class="name" autocomplete="off" /> <input type="text" name="value" class="value" autocomplete="off" /> <input type="checkbox" title="Encode / decode" /> <input type="button" value="x" />';
+            param.innerHTML = '<input type="text" name="name" class="name" autocomplete="off" spellcheck="false" /> <input type="text" name="value" class="value" autocomplete="off" spellcheck="false" /> <input type="button" value="&#x270E;" />';
 
             // parameter name field
             param.nameElement = <HTMLInputElement>param.firstElementChild;
             // parameter value field
             param.valueElement = <HTMLInputElement>param.nameElement.nextElementSibling;
-            // encode element
-            param.encodeElement = <HTMLInputElement>param.valueElement.nextElementSibling;
 
             param.isParamContainer = true;
 
@@ -257,9 +291,10 @@ module UrlEditor {
 
         private deleteParam(elem: IParamContainerElement) {
 
-            // set focus on previous param
-            if (elem.previousElementSibling) {
-                (<IParamContainerElement>elem.previousElementSibling).nameElement.focus();
+            // try to get next or previous param container
+            var paramToFocus = <IParamContainerElement>elem.nextElementSibling || <IParamContainerElement>elem.previousElementSibling;
+            if (paramToFocus) {
+                paramToFocus.nameElement.focus();
             }
             
             elem.parentElement.removeChild(elem);
@@ -367,7 +402,20 @@ module UrlEditor {
                         if (elem.parentElement.parentElement.id == "params" && !nextContainer) {
                             nextContainer = elem.parentElement.parentElement.previousElementSibling;
                         }
+
                         nextElem = this.getElementInTheSameColumn<HTMLInputElement>(elem, <HTMLElement>nextContainer);
+
+                        // if on full url field loop to the last available field on the bottom
+                        if (!nextElem) {
+                            let lastParamContainer = <IParamContainerElement>Helpers.ge("params").lastElementChild;
+                            if (lastParamContainer) {
+                                nextElem = lastParamContainer.nameElement;
+                            }
+                            else {
+                                nextElem = Helpers.ge<HTMLInputElement>("hostname");
+                            }
+                        }
+
                         break;
                     case 40: // down
                         var nextContainer = elem.parentElement.nextElementSibling;
@@ -376,6 +424,13 @@ module UrlEditor {
                             nextContainer = nextContainer.firstElementChild;
                         }
                         nextElem = this.getElementInTheSameColumn<HTMLInputElement>(elem, <HTMLElement>nextContainer);
+
+                        // if on last param then loop to host or full url field
+                        if (!nextElem) {
+                            // take full url field if the current one is hostname
+                            nextElem = Helpers.ge<HTMLInputElement>(elem.id == "hostname" ? "full_url" : "hostname");
+                        }
+
                         break;
                     case 37: // left
                         nextElem = <HTMLInputElement>elem.previousElementSibling;
@@ -387,7 +442,7 @@ module UrlEditor {
                 
                 evt.preventDefault();
 
-                if (nextElem && Helpers.isTextField(nextElem)) {
+                if (nextElem) {
                     nextElem.focus();
                 }
                 
@@ -399,13 +454,17 @@ module UrlEditor {
 
         private getElementInTheSameColumn<T>(currentElem: HTMLElement, container: HTMLElement): T {
             if (currentElem && container) {
-                var index = Helpers.getIndexOfSiblingGivenType(currentElem, this.formTextElements);
-                return <any>Helpers.findNthElementOfType(container, this.formTextElements, index);
+                let textFieldElements = ["INPUT", "DIV"];
+                let index = Helpers.getIndexOfSiblingGivenType(currentElem, textFieldElements);
+                return <any>Helpers.findNthElementOfType(container, textFieldElements, index);
             }
         }
 
         private addNewParamFields() {
-            var container = this.createNewParamContainer()
+            var container = this.createNewParamContainer();
+            // by default all new params are encoded
+            container.urlEncoded = true;
+
             Helpers.ge("params").appendChild(container);
 
             (<HTMLInputElement>container.firstElementChild).focus();
@@ -423,26 +482,52 @@ module UrlEditor {
         }
 
         private setUriFromFields() {
-            var currentInput = <HTMLElement>this.doc.activeElement;
+            let currentInput = <HTMLElement>this.doc.activeElement;
 
             if (currentInput) {
-                var func = this.mapIdToFunction[currentInput.id];
+                let func = this.mapIdToFunction[currentInput.id];
                 if (func) {
                     this.url[func](currentInput.tagName == "INPUT" ? (<HTMLInputElement>currentInput).value : currentInput.textContent);
                 }
                 else {
-                    var params: IMap<string[]> = {};
+                    let params: IMap<string[]> = {};
 
-                    var container = Helpers.ge("params");
+                    let paramsWrapper = Helpers.ge("params");
 
-                    [].forEach.call(container.childNodes, (child: IParamContainerElement) => {
-                        if (child.nameElement && child.nameElement.value != "") {
-                            var paramName = this.encodeURIComponent(child.nameElement.value);
+                    [].forEach.call(paramsWrapper.childNodes, (container: IParamContainerElement) => {
+                        if (container.nameElement && container.nameElement.value != "") {
+                            let paramName = this.encodeURIComponent(container.nameElement.value);
                             // make sure it exists
                             params[paramName] = params[paramName] || [];
+                            
+                            let value = container.valueElement.value;
 
-                            // add value to collection
-                            var value = child.encodeElement.checked ? this.encodeURIComponent(child.valueElement.value) : child.valueElement.value;
+                            // force url-encoding if value contins ampersand
+                            if (value.indexOf("&") != -1 && !container.base64Encoded) {
+                                container.urlEncoded = true;
+                            }
+
+                            // check if we should encode it
+                            if (container.base64Encoded) {
+                                if (Helpers.isBase64Encoded(value)) {
+                                    // sometimes string can only look like a base64 encoded and in such cases exception can be thrown
+                                    try {
+                                        container.valueElement.value = Helpers.b64DecodeUnicode(value);
+                                    }
+                                    catch (e) {
+                                        value = Helpers.b64EncodeUnicode(value);
+                                    }
+                                }
+                                else {
+                                    value = Helpers.b64EncodeUnicode(value);
+                                }
+                            }
+
+                            // we always need to urlencode base64 values (because of the '=' chars)
+                            if (container.urlEncoded || container.base64Encoded) {
+                                value = this.encodeURIComponent(value);
+                            }
+
                             params[paramName].push(value);
                         }
                     });

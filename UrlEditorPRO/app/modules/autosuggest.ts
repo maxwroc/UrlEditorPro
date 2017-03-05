@@ -1,4 +1,7 @@
-﻿module UrlEditor {
+﻿/// <reference path="settings.ts" />
+/// <reference path="shared_interfaces.d.ts" />
+
+module UrlEditor {
 
     export interface IAutoSuggestData {
         [pageHostName: string]: IAutoSuggestPageData;
@@ -263,6 +266,9 @@
                 this.handler = (evt: KeyboardEvent) => this.keyboardNavigation(evt);
 
                 this.inputElem.addEventListener("keydown", this.handler, true);
+
+                 // increase by 2px due to border size
+                Helpers.ensureIsVisible(this.container, this.doc.body, window.innerHeight + 2);
             }
         }
 
@@ -363,7 +369,8 @@
             if (suggestionToSelect) {
                 Tracking.trackEvent(Tracking.Category.AutoSuggest, "selected");
                 suggestionToSelect.classList.add("hv");
-                this.ensureIsVisible(suggestionToSelect);
+                 // increase by 2px due to border size
+                Helpers.ensureIsVisible(suggestionToSelect, this.container, this.container.offsetHeight + 2);
             }
             else {
                 this.container.scrollTop = 0;
@@ -388,18 +395,6 @@
             }
         }
 
-        private ensureIsVisible(suggestionElem: HTMLElement) {
-            var containerScrollTop = this.container.scrollTop;
-            var suggestionElemOffsetTop = suggestionElem.offsetTop;
-            var offsetBottom = suggestionElemOffsetTop + suggestionElem.offsetHeight;
-            if (offsetBottom > containerScrollTop + this.container.offsetHeight) {
-                this.container.scrollTop = offsetBottom - this.container.offsetHeight + 2; // increase due to border size
-            }
-            else if (suggestionElemOffsetTop < containerScrollTop) {
-                this.container.scrollTop = suggestionElemOffsetTop;
-            }
-        }
-
         private deleteSuggestion(suggestion: ISuggestion) {
             var paramElem = <IParamContainerElement>this.inputElem.parentElement;
 
@@ -413,7 +408,11 @@
             }
             
             // remove suggestion from DOM
-            suggestion.parentElement.removeChild(suggestion);
+            this.container.removeChild(suggestion);
+
+            if (this.container.childElementCount == 0) {
+                this.hide();
+            }
         }
     }
 }
