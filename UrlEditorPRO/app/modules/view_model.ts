@@ -76,6 +76,12 @@ module UrlEditor {
                 isActive: container => !!container.base64Encoded,
                 order: 1
             });
+            ParamOptions.registerOption({
+                text: "Delete",
+                action: container => this.deleteParam(container),
+                isActive: container => undefined,
+                order: 1
+            });
         }
 
         private clickEventDispatcher(evt: MouseEvent) {

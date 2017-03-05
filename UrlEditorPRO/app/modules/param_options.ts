@@ -21,7 +21,7 @@ module UrlEditor.ParamOptions {
     }
 
     export function show(container: IParamContainerElement, pressedButton: HTMLElement, openingByKeyboard = false) {
-
+        
         if (menuElem) {
             // update isActive states
             for (let i = 0; i < menuElem.children.length; i++) {
@@ -34,6 +34,7 @@ module UrlEditor.ParamOptions {
             initializeOptions(container);
         }
 
+        menuElem.currentContainer = container;
         menuElem.style.display = "block";
 
         // move menu to proper position
@@ -93,19 +94,20 @@ module UrlEditor.ParamOptions {
 
                 // prepare handler for updating the field state
                 li[setActiveState] = (c: IParamContainerElement) => checkbox.checked = option.isActive(c);
-                li[clickAction] = () => {
-                    option.action(container);
-                    hide();
-                }
             }
             else {
                 li.appendChild(span);
             }
 
+            li[clickAction] = () => {
+                option.action(menuElem.currentContainer);
+                hide();
+            }
+
             // using mouseup event as "click" one is triggered as well whenever input checkbox state changes (do avoid double action execution)
             li.addEventListener("mouseup", evt => {
                 evt.stopPropagation();
-                option.action(container);
+                option.action(menuElem.currentContainer);
                 hide();
             }, true);
             
@@ -181,8 +183,7 @@ module UrlEditor.ParamOptions {
     }
 
     interface IParamOptionsContainer extends HTMLUListElement {
-        urlEncodeElem?: HTMLInputElement;
-        base64EncodeElem?: HTMLInputElement;
+        currentContainer?: IParamContainerElement;
     }
 
     export interface IParamOption {
