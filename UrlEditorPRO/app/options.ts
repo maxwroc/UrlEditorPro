@@ -160,11 +160,15 @@ module UrlEditor.Options {
             }
         }
 
+        let commandToElemIDMap: IStringMap = {
+            "_execute_browser_action": "action-shortcut",
+            "goToHomepage": "goToHome-shortcut"
+        };
 
-        chrome.commands.getAll((commands: any[]) => {
+        chrome.commands.getAll(commands => {
             commands.forEach(command => {
-                if (command.name == "_execute_browser_action") {
-                    document.getElementById("action-shortcut").innerText = command.shortcut;
+                if (commandToElemIDMap[command.name]) {
+                    document.getElementById(commandToElemIDMap[command.name]).innerText = command.shortcut;
                 }
             });
         });

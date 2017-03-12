@@ -35,7 +35,7 @@
         "default": "Ctrl+Shift+H",
         "mac": "Command+Shift+H"
       },
-      "description": "Go to homepage"
+      "description": "Go to homepage (root path)"
     }
   },
   "content_security_policy": "script-src 'self' https://www.google-analytics.com; object-src 'self'"
