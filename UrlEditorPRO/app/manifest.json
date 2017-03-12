@@ -3,7 +3,7 @@
 
   "name": "Url Editor PRO",
   "description": "Url parser which makes editing complex URLs as easy as possible. Features: params decoding, auto-suggest, keyboard navigation..",
-  "version": "0.9.0.0",
+  "version": "0.9.1.1",
 
   "permissions": [
     "http://*/*",
@@ -21,11 +21,21 @@
     "default_popup": "popup.html"
   },
   "options_page": "options.html",
+  "background": {
+    "scripts": [ "modules/url_parser.js", "background.js" ]
+  },
   "commands": {
     "_execute_browser_action": {
       "suggested_key": {
         "default": "Ctrl+Shift+U"
       }
+    },
+    "goToHomepage": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+H",
+        "mac": "Command+Shift+H"
+      },
+      "description": "Go to homepage"
     }
   },
   "content_security_policy": "script-src 'self' https://www.google-analytics.com; object-src 'self'"
