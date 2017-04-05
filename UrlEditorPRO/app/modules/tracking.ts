@@ -1,4 +1,5 @@
-﻿declare var _gaq: Array<Array<string | number>>;
+﻿/// <reference path="../../../typings/index.d.ts" />
+/// <reference path="helpers.ts" />
 
 module UrlEditor.Tracking {
 

@@ -7,7 +7,7 @@
             "taskName": "build",
             "command": "tsc",
             "isShellCommand": true,
-            "args": ["-w", "-p", "./UrlEditorPRO/"],
+            "args": ["-w", "-p", "."],
             "showOutput": "silent",
             "isBackground": true,
             "problemMatcher": "$tsc-watch"

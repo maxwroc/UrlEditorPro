@@ -1,6 +1,6 @@
-﻿/// <reference path="../../typings/jasmine/jasmine.d.ts" />
-/// <reference path="../../helpers/helpers.ts" />
-/// <reference path="../../../../urleditorpro/app/modules/url_parser.ts" />
+﻿/// <reference path="../../../typings/index.d.ts" />
+/// <reference path="../helpers/helpers.ts" />
+/// <reference path="../../../UrlEditorPro/app/modules/url_parser.ts" />
 
 module Tests {
     describe("Uri class", () => {

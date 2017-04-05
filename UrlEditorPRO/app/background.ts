@@ -1,5 +1,5 @@
 ﻿/// <reference path="modules/url_parser.ts" />
-/// <reference path="../scripts/typings/chrome/chrome.d.ts" />
+/// <reference path="../../typings/index.d.ts" />
 
 module UrlEditor {
     chrome.commands.onCommand.addListener(command => {

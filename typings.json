@@ -1,5 +1,7 @@
 {
   "globalDevDependencies": {
-    "chrome": "registry:dt/chrome#0.0.0+20170323135751"
+    "chrome": "registry:dt/chrome#0.0.0+20170323135751",
+    "google.analytics": "registry:dt/google.analytics#0.0.0+20170324151803",
+    "jasmine": "registry:dt/jasmine#2.5.2+20170317130948"
   }
 }

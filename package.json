@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/maxwroc/UrlEditorPro#readme",
   "devDependencies": {
+    "jasmine": "^2.5.3",
     "typescript": "^2.2.2",
     "typings": "^2.1.0"
   }
