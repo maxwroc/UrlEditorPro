@@ -1,0 +1,23 @@
+{
+  "name": "urleditorpro",
+  "version": "0.9.1",
+  "description": "Chrome extension helping with editing long and complex urls",
+  "main": "popup.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maxwroc/UrlEditorPro.git"
+  },
+  "author": "Max Chodorowski",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/maxwroc/UrlEditorPro/issues"
+  },
+  "homepage": "https://github.com/maxwroc/UrlEditorPro#readme",
+  "devDependencies": {
+    "typescript": "^2.2.2",
+    "typings": "^2.1.0"
+  }
+}

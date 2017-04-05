@@ -1,4 +1,5 @@
-﻿
+﻿/// <reference path="modules/rich_textbox.ts" />
+/// <reference path="modules/view_model.ts" />
 
 module UrlEditor {
 
