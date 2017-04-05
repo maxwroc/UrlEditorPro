@@ -1,5 +1,6 @@
 ﻿/// <reference path="modules/rich_textbox.ts" />
 /// <reference path="modules/view_model.ts" />
+/// <reference path="../../typings/index.d.ts" />
 
 module UrlEditor {
 
