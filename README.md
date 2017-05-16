@@ -15,3 +15,17 @@ This extension can help you with changing parameters (or parts) of complex and l
 
 ## Options page
 ![Options page screenshot](https://github.com/maxwroc/UrlEditorPro/blob/master/UrlEditorPRO/screenshots/options.png)
+
+
+## Dev
+### How to start?
+* Instal [NPM]( https://www.npmjs.com/)
+* npm install
+* typings install
+
+Recommended IDE: VSCode
+
+### Working with the code
+* Manual build: npm run build
+* Run tests: npm run test
+* Build + watch: npm run watch
