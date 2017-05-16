@@ -4,7 +4,10 @@
   "description": "Chrome extension helping with editing long and complex urls",
   "main": "popup.html",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "pretest": "tsc -p ./UrlEditorPRO.Tests/",
+    "test": "start UrlEditorPRO.Tests/SpecRunner.html",
+    "build": "tsc -p ./UrlEditorPRO/",
+    "work": "tsc -p ./UrlEditorPRO/ -w"
   },
   "repository": {
     "type": "git",

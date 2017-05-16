@@ -1,9 +1,10 @@
 {
   "spec_dir": "spec",
   "spec_files": [
-    "**/*[sS]pec.js"
+    "**/*.tests.js"
   ],
   "helpers": [
+    "../../UrlEditorPro/app/modules/*.js",
     "helpers/**/*.js"
   ],
   "stopSpecOnExpectationFailure": false,
