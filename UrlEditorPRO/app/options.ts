@@ -1,4 +1,7 @@
-﻿
+﻿/// <reference path="modules/settings.ts" />
+/// <reference path="modules/autosuggest.ts" />
+/// <reference path="modules/tracking.ts" />
+
 module UrlEditor.Options {
 
     var settings = new Settings(localStorage);

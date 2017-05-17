@@ -1,0 +1,9 @@
+{
+  "globalDevDependencies": {
+    "chrome": "registry:dt/chrome#0.0.0+20170323135751",
+    "filesystem": "registry:dt/filesystem#0.0.0+20160510010627",
+    "filewriter": "registry:dt/filewriter#0.0.0+20160714054521",
+    "google.analytics": "registry:dt/google.analytics#0.0.0+20170324151803",
+    "jasmine": "registry:dt/jasmine#2.5.2+20170317130948"
+  }
+}
