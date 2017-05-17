@@ -1,6 +1,6 @@
 {
   "name": "urleditorpro",
-  "version": "0.9.1.2",
+  "version": "0.9.1",
   "description": "Chrome extension helping with editing long and complex urls",
   "main": "popup.html",
   "scripts": {
