@@ -2,7 +2,13 @@
 /// <reference path="shared_interfaces.d.ts" />
 
 module UrlEditor {
-    
+
+    const modifierKeys = [
+        16, // Shift
+        17, // Ctrl
+        18, // Alt
+    ];
+
     export class RichTextboxViewModel {
 
         private richText: RichTextBox;
@@ -14,9 +20,15 @@ module UrlEditor {
 
             doc.body.addEventListener("input", evt => this.onDomEvent(<HTMLElement>evt.target, evt.type));
             doc.body.addEventListener("DOMFocusIn", evt => this.onDomEvent(<HTMLElement>evt.target, evt.type));
-            
-            // handle clicks and cursor position hanges in full url field
-            fullUrl.addEventListener("selectstart", (evt) => this.onDomEvent(<HTMLElement>evt.currentTarget, evt.type));
+
+            // handle clicks and cursor position changes in full url field
+            fullUrl.addEventListener("mouseup", (evt) => this.onDomEvent(<HTMLElement>evt.currentTarget, evt.type));
+            fullUrl.addEventListener("keyup", (evt) => {
+                // Skip handling for modifier keys
+                if (modifierKeys.indexOf(evt.keyCode) == -1) {
+                    this.onDomEvent(<HTMLElement>evt.currentTarget, evt.type);
+                }
+            });
         }
 
         private onDomEvent(elem: HTMLElement, evtType: string) {
@@ -26,23 +38,17 @@ module UrlEditor {
 
                 switch (elem.id) {
                     case "full_url":
-                        if (evtType == "DOMFocusIn") {
+                        if (evtType == "DOMFocusIn" || evtType == "input") {
                             // we dont need to handle it
                             return;
                         }
-
-                        let isEventTriggeredByClick = evtType == "selectstart";
+                        
                         action = () => {
-                            let cursorPos = this.richText.getCursorPos();
-                            this.highlight(cursorPos, undefined);
-
-                            if (isEventTriggeredByClick) {
-                                // bring back original cursor pos
-                                this.richText.setCursorPos(cursorPos);
-                            }
+                            let selection = this.richText.getSelectionIndexes();
+                            this.highlight(selection.start, undefined);
+                            // bring back original cursor pos
+                            this.richText.select(selection.start, selection.end);
                         }
-                        // when the click event is rised the element doesn't have focus yet so we need to delay reading cursor position
-                        delay = isEventTriggeredByClick;
                         break;
                     case "hostname":
                     case "path":
@@ -51,7 +57,7 @@ module UrlEditor {
                         delay = evtType == "input";
                         break;
                     default:
-                        let paramContainer = <IParamContainerElement>this.doc.activeElement.parentElement;
+                        let paramContainer = <IParamContainerElement>elem.parentElement;
                         if (paramContainer.isParamContainer) {
                             action = () => this.highlightParams(elem);
                             // delay handling - we need to wait when all fields will be updated (by ViewModel)
@@ -72,19 +78,19 @@ module UrlEditor {
 
         private highlightHostOrPath(elem: HTMLElement) {
             let cursorPos = 0;
-            
+
             let uri = new Uri(this.richText.getText());
             cursorPos += uri.protocol().length + uri.host().length + 2; // 2 - for double slash after protocol
 
             if (elem.id == "path") {
                 cursorPos += uri.pathname().length;
             }
-            
+
             this.highlight(cursorPos, undefined);
         }
 
         private highlightParams(elem: HTMLElement) {
-            let paramContainer = <IParamContainerElement>this.doc.activeElement.parentElement;
+            let paramContainer = <IParamContainerElement>elem.parentElement;
             if (paramContainer.isParamContainer) {
                 let paramIndex = 0;
                 // set param position/number
@@ -121,14 +127,14 @@ module UrlEditor {
             else {
                 this.elem = <HTMLElement>elem;
             }
-            
+
             this.doc = this.elem.ownerDocument;
             this.window = this.doc.defaultView;
         }
 
         highlight(markupPos: number[][]) {
-            var originalText = this.elem.textContent;
-            var result = "";
+            let originalText = this.elem.textContent;
+            let result = "";
             let lastPos = 0;
             markupPos.forEach((elemPos) => {
                 result += originalText.substr(lastPos, elemPos[0] - lastPos).htmlEncode() + "<b>" + originalText.substr(elemPos[0], elemPos[1] - elemPos[0]).htmlEncode() + "</b>";
@@ -143,24 +149,28 @@ module UrlEditor {
             }
         }
 
-        getCursorPos(selectionEnd = false): number {
-            var pos = 0;
-            var sel = this.window.getSelection();
+        getSelectionIndexes(): { start: number, end: number } {
+            let posStart = 0;
+            let posEnd = 0;
+            let sel = this.window.getSelection();
 
             if (sel.rangeCount > 0) {
-                var range = sel.getRangeAt(0);
-                var preCaretRange = range.cloneRange();
+                let range = sel.getRangeAt(0);
+                let preCaretRange = range.cloneRange();
                 preCaretRange.selectNodeContents(this.elem);
                 preCaretRange.setEnd(range.startContainer, range.startOffset);
-                pos = preCaretRange.toString().length;
+                posStart = preCaretRange.toString().length;
 
-                if (selectionEnd) {
-                    preCaretRange.setEnd(range.endContainer, range.endOffset);
-                    pos = preCaretRange.toString().length;
-                }
+                preCaretRange.setEnd(range.endContainer, range.endOffset);
+                posEnd = preCaretRange.toString().length;
             }
 
-            return pos;
+            return { start: posStart, end: posEnd };
+        }
+
+        getCursorPos(returnSelectionEnd = false): number {
+            let selection = this.getSelectionIndexes();
+            return returnSelectionEnd ? selection.end : selection.start;
         }
 
         setCursorPos(pos: number) {
@@ -172,9 +182,9 @@ module UrlEditor {
                 // gacefully fail
                 return;
             }
-            
-            var range = this.doc.createRange();
-            var startNode: Node, endNode: Node;
+
+            let range = this.doc.createRange();
+            let startNode: Node, endNode: Node;
 
             // iterate over all nodes: text, element, etc
             for (let i = 0; i < this.elem.childNodes.length; i++) {
@@ -205,7 +215,7 @@ module UrlEditor {
             }
 
             if (startNode && endNode) {
-                var sel = this.window.getSelection();
+                let sel = this.window.getSelection();
 
                 // set same pos for start and end
                 range.setStart(startNode, start);

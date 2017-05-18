@@ -1,6 +1,6 @@
-﻿/// <reference path="../../typings/jasmine/jasmine.d.ts" />
-/// <reference path="../../helpers/helpers.ts" />
-/// <reference path="../../../../urleditorpro/app/modules/url_parser.ts" />
+﻿/// <reference path="../../../typings/index.d.ts" />
+/// <reference path="../helpers/helpers.ts" />
+/// <reference path="../../../UrlEditorPro/app/modules/url_parser.ts" />
 
 module Tests {
     describe("Uri class", () => {
@@ -80,9 +80,10 @@ module Tests {
                 ["http://something/dddd?param1=1&param2=val2&param3=t", 0, [[22, 28], [29, 30]]],
                 ["http://something/dddd?param1=1&param2=val2&param3=t", 1, [[31, 37], [38, 42]]],
                 ["http://something/dddd?param1=1&param2=val2&param3=t", 2, [[43, 49], [50, 51]]],
+                ["https://www.amazon.co.uk/VicTsing-Resolution/dp/B00W3GXVY6/ref=pd_vtph_23_bs_tr_t_1?_encoding=UTF8&psc=1&refRID=W3RY2WFS2MHH9NT1MTBS", 0, [[84, 93], [94, 98]]],
             ],
             (url: string, pos: number, expected: number[][]) => {
-                var uri = new UrlEditor.Uri(url.replace("|", ""));
+                var uri = new UrlEditor.Uri(url);
 
                 var result = uri.getHighlightMarkupPos(undefined, pos);
                 expect(result).toEqual(expected);
