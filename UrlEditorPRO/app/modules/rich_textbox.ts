@@ -51,7 +51,7 @@ module UrlEditor {
                         delay = evtType == "input";
                         break;
                     default:
-                        let paramContainer = <IParamContainerElement>this.doc.activeElement.parentElement;
+                        let paramContainer = <IParamContainerElement>elem.parentElement;
                         if (paramContainer.isParamContainer) {
                             action = () => this.highlightParams(elem);
                             // delay handling - we need to wait when all fields will be updated (by ViewModel)
@@ -84,7 +84,7 @@ module UrlEditor {
         }
 
         private highlightParams(elem: HTMLElement) {
-            let paramContainer = <IParamContainerElement>this.doc.activeElement.parentElement;
+            let paramContainer = <IParamContainerElement>elem.parentElement;
             if (paramContainer.isParamContainer) {
                 let paramIndex = 0;
                 // set param position/number
@@ -127,8 +127,8 @@ module UrlEditor {
         }
 
         highlight(markupPos: number[][]) {
-            var originalText = this.elem.textContent;
-            var result = "";
+            let originalText = this.elem.textContent;
+            let result = "";
             let lastPos = 0;
             markupPos.forEach((elemPos) => {
                 result += originalText.substr(lastPos, elemPos[0] - lastPos).htmlEncode() + "<b>" + originalText.substr(elemPos[0], elemPos[1] - elemPos[0]).htmlEncode() + "</b>";
@@ -144,12 +144,12 @@ module UrlEditor {
         }
 
         getCursorPos(selectionEnd = false): number {
-            var pos = 0;
-            var sel = this.window.getSelection();
+            let pos = 0;
+            let sel = this.window.getSelection();
 
             if (sel.rangeCount > 0) {
-                var range = sel.getRangeAt(0);
-                var preCaretRange = range.cloneRange();
+                let range = sel.getRangeAt(0);
+                let preCaretRange = range.cloneRange();
                 preCaretRange.selectNodeContents(this.elem);
                 preCaretRange.setEnd(range.startContainer, range.startOffset);
                 pos = preCaretRange.toString().length;
@@ -173,8 +173,8 @@ module UrlEditor {
                 return;
             }
             
-            var range = this.doc.createRange();
-            var startNode: Node, endNode: Node;
+            let range = this.doc.createRange();
+            let startNode: Node, endNode: Node;
 
             // iterate over all nodes: text, element, etc
             for (let i = 0; i < this.elem.childNodes.length; i++) {
@@ -205,7 +205,7 @@ module UrlEditor {
             }
 
             if (startNode && endNode) {
-                var sel = this.window.getSelection();
+                let sel = this.window.getSelection();
 
                 // set same pos for start and end
                 range.setStart(startNode, start);

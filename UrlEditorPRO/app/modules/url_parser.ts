@@ -2,8 +2,8 @@
 
 module UrlEditor {
 
-    var paramPattern = /([^\?=&#]+)=([^\?&#]*)/g; // consider to change it to /(?:\?|&(?:amp;)?)([^=&#]+)(?:=?([^&#]*))/g
-    var prefixPattern = /^([a-zA-Z0-9-]+:)http/;
+    let paramPattern = /(?:\?|&(?:amp;)?)([^=&#]+)(?:=?([^&#]*))/g;
+    let prefixPattern = /^([a-zA-Z0-9-]+:)http/;
 
     export class Uri {
         private anchor: HTMLAnchorElement;
@@ -32,7 +32,7 @@ module UrlEditor {
         }
 
         port(value?: number): number {
-            var result = this.getSet(value, "port");
+            let result = this.getSet(value, "port");
             return result ? parseInt(result) : undefined;
         }
         
@@ -49,7 +49,7 @@ module UrlEditor {
         }
 
         host(value?: string): string {
-            var current = this.getSet(undefined, "host");;
+            let current = this.getSet(undefined, "host");;
             if (value == undefined) {
                 return current
             }
@@ -65,8 +65,8 @@ module UrlEditor {
             // check whether we should set or return value
             if (value == undefined) {
 
-                var params: IMap<string[]> = {}
-                var match: string[];
+                let params: IMap<string[]> = {}
+                let match: string[];
 
                 while (match = paramPattern.exec(this.anchor.search)) {
                     // initialize with empty array if doesn't exist already
@@ -78,8 +78,8 @@ module UrlEditor {
                 return params;
             }
             else {
-                var search = "";
-                for (var name in value) {
+                let search = "";
+                for (let name in value) {
                     if (value[name].length == 0) {
                         // add empty string as a value otherwise param won't be added
                         value[name].push("");
@@ -105,7 +105,7 @@ module UrlEditor {
                 return this.urlPrefix + this.anchor.href;
             }
             
-            var matches = url.match(prefixPattern);
+            let matches = url.match(prefixPattern);
             if (matches && matches.length > 1) {
                 this.urlPrefix = matches[1];
                 // remove prefix from the url before passing it to anchor elem
@@ -121,12 +121,12 @@ module UrlEditor {
         getHighlightMarkupPos(position: number, paramIndex: number = undefined): number[][] {
             let isCursorPositionAvailable = position != undefined;
 
-            var fullUrl = this.url();
+            let fullUrl = this.url();
             let result: number[][] = [];
 
-            var queryLength = this.anchor.search.length;
-            var pathLength = this.anchor.pathname.length;
-            var hostLenght = this.anchor.href.length - queryLength - pathLength - this.anchor.hash.length;
+            let queryLength = this.anchor.search.length;
+            let pathLength = this.anchor.pathname.length;
+            let hostLenght = this.anchor.href.length - queryLength - pathLength - this.anchor.hash.length;
 
             if (isCursorPositionAvailable && position <= hostLenght) {
                 // cursor somewhere in the beginning of the url / host part
@@ -137,9 +137,11 @@ module UrlEditor {
                 result.push([hostLenght, hostLenght + pathLength]);
             }
             else if (!isCursorPositionAvailable || position <= hostLenght + pathLength + queryLength) {
-                var currentIndex = 0;
+                let currentIndex = 0;
                 // cursor somewhere in query area
                 fullUrl.replace(paramPattern, (match: string, paramName: string, paramValue: string, offset: number) => {
+                    // Increment offset as the pattern conatin joiner char (? or &)
+                    offset++;
                     // check if we should higlight this param
                     if ((!isCursorPositionAvailable && currentIndex == paramIndex) ||
                         (position >= offset && position <= offset + paramName.length + paramValue.length + 1)) {
