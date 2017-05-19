@@ -10,7 +10,7 @@ module UrlEditor {
     var port80Pattern = /:80$/;
     var maxClientWidth = 780;
     var paramsMarginSum = 86; //5 * 4 + 2 * 3 + 2 * 22 + 2 * 8;
-    
+
     /**
      * Returns following results for given params
      * 0 (CurrentTab) <- false, false
@@ -33,7 +33,7 @@ module UrlEditor {
 
         private measureElem: HTMLSpanElement;
 
-        constructor(private url: Uri, private doc: HTMLDocument, settings: Settings, private submit: (uri: Uri, openIn: OpenIn) => void) {
+        constructor(private url: Uri, private doc: HTMLDocument, private settings: Settings, private submit: (uri: Uri, openIn: OpenIn) => void) {
 
 
             this.measureElem = Helpers.ge<HTMLSpanElement>("measure");
@@ -42,8 +42,9 @@ module UrlEditor {
             doc.body.addEventListener("click", evt => this.clickEventDispatcher(evt));
             doc.body.addEventListener("input", evt => this.keyboardEventDispatcher(evt));
             doc.body.addEventListener("updated", evt => this.keyboardEventDispatcher(evt));
+            doc.body.addEventListener("DOMFocusIn", evt => this.autoSelectInputValue(evt.target as HTMLInputElement));
             doc.body.addEventListener("keydown", evt => {
-                
+
                 if (this.keyboardNavigation(evt)) {
                     return;
                 }
@@ -159,7 +160,7 @@ module UrlEditor {
             if (Helpers.isTextFieldActive()) {
                 // clear error message
                 this.setErrorMessage("", elem);
-                
+
                 this.updateFields();
             }
         }
@@ -229,7 +230,7 @@ module UrlEditor {
 
                 urlParams[name].forEach((value, valueIndex) => {
                     name = decodeURIComponent(name);
-                    param = this.createNewParamContainer(name); 
+                    param = this.createNewParamContainer(name);
 
                     // parameter name field
                     param.nameElement.value = name;
@@ -296,7 +297,7 @@ module UrlEditor {
             if (paramToFocus) {
                 paramToFocus.nameElement.focus();
             }
-            
+
             elem.parentElement.removeChild(elem);
             this.updateFields();
         }
@@ -373,7 +374,7 @@ module UrlEditor {
 
                             var input = <HTMLInputElement>evt.target;
                             input.value = Helpers.isBase64Encoded(input.value) ? Helpers.b64DecodeUnicode(input.value) : Helpers.b64EncodeUnicode(input.value);
-                            
+
                             this.updateFields();
                             return true;
                         }
@@ -439,13 +440,13 @@ module UrlEditor {
                         nextElem = <HTMLInputElement>elem.nextElementSibling;
                         break;
                 }
-                
+
                 evt.preventDefault();
 
                 if (nextElem) {
                     nextElem.focus();
                 }
-                
+
                 return true;
             }
 
@@ -481,6 +482,13 @@ module UrlEditor {
             this.url.params(sortedParams);
         }
 
+        private autoSelectInputValue(input: HTMLInputElement) {
+            if (this.settings.autoSelectValue && Helpers.isTextFieldActive() && input.id != "full_url") {
+                input.selectionStart = 0;
+                input.selectionEnd = input.value.length;
+            }
+        }
+
         private setUriFromFields() {
             let currentInput = <HTMLElement>this.doc.activeElement;
 
@@ -499,7 +507,7 @@ module UrlEditor {
                             let paramName = this.encodeURIComponent(container.nameElement.value);
                             // make sure it exists
                             params[paramName] = params[paramName] || [];
-                            
+
                             let value = container.valueElement.value;
 
                             // force url-encoding if value contins ampersand
@@ -535,7 +543,7 @@ module UrlEditor {
                     this.url.params(params);
                 }
             } // if
-            
+
         } // function
 
         /**

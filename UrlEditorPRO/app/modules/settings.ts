@@ -20,6 +20,11 @@
         public autoSortParams = false;
 
         /**
+         * Whether to select value on focus change
+         */
+        public autoSelectValue = true;
+
+        /**
         * Whether to show parameter suggestions
         */
         public autoSuggest = true;
