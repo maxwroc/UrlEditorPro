@@ -21,7 +21,6 @@ This extension can help you with changing parameters (or parts) of complex and l
 ### How to start?
 * Instal [NPM]( https://www.npmjs.com/)
 * `npm install`
-* `typings install`
 
 Recommended IDE: VSCode
 
