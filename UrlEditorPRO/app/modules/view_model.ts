@@ -335,11 +335,26 @@ module UrlEditor {
                 case 9: // tab
                     return true;
                 case 187: // = (+)
-                    // add new param
-                    if (evt.ctrlKey) {
+                    if (evt.ctrlKey) { // add new param
                         Tracking.trackEvent(Tracking.Category.AddParam, "keyboard");
                         this.addNewParamFields();
                         return true;
+                    }
+                    else {
+                        // jump to param value elem
+                        let paramContainer = (<HTMLElement>evt.target).parentElement as IParamContainerElement;
+                        if (this.settings.autoJumpToValueOnEqual && 
+                            paramContainer && 
+                            paramContainer.isParamContainer && 
+                            paramContainer.nameElement === evt.target) {
+                                
+                            if (!paramContainer.hasJumpedToValueOnce) {
+                                paramContainer.hasJumpedToValueOnce = true;
+                                paramContainer.valueElement.focus();
+                                // prevent from putting the char in the target field
+                                evt.preventDefault();
+                            }
+                        }
                     }
                     break;
                 case 189: // -
