@@ -4,6 +4,8 @@
 
 module UrlEditor.Options {
 
+    const HOST_ALIAS_KEY = "[suggestionAlias]";
+
     var settings = new Settings(localStorage);
     var autoSuggestData: IAutoSuggestData;
 
@@ -85,8 +87,28 @@ module UrlEditor.Options {
         else if (elem.tagName == "SELECT") {
             switch (elem.name) {
                 case "page":
-                    var pageData = autoSuggestData[elem.value] || {};
+                    let alias = autoSuggestData[elem.value] && 
+                                autoSuggestData[elem.value][HOST_ALIAS_KEY] && 
+                                autoSuggestData[elem.value][HOST_ALIAS_KEY][0];
+                    
+                    let pageData = alias ? autoSuggestData[alias] : autoSuggestData[elem.value]
                     populateComboBox("autoSuggestParams", Object.keys(pageData), "-- select param --", elem.value);
+
+                    let selectedIndex = 0;
+                    let defaultText = "-- select website to bind --"
+                    let filtered = Object.keys(autoSuggestData).filter((x, index) => {
+                        let areEqual = x == elem.value;
+
+                        if (x == alias) {
+                            // adding one as we add one element on the beginning of the list
+                            selectedIndex = index + 1;
+                            defaultText = "-- unbind " + alias + " --";
+                        }
+
+                        // accept if different
+                        return !areEqual;
+                    });
+                    populateComboBox("autoSuggestPagesToBind", filtered, defaultText, elem.value, selectedIndex);
                     break;
                 case "param":
                     var paramData = autoSuggestData[elem["source"]][elem.value] || [];
@@ -121,63 +143,7 @@ module UrlEditor.Options {
     function onClickHandler(evt: MouseEvent): void {
         var elem = <HTMLInputElement>evt.target;
         if (elem.tagName == "INPUT" && elem.name == "delete" && autoSuggestData) {
-            var pageElem = <HTMLInputElement>document.getElementById("autoSuggestPages");
-            var paramElem = <HTMLInputElement>document.getElementById("autoSuggestParams");
-            var paramValues = <HTMLDivElement>document.getElementById("autoSuggestParamValues");
-
-            var saveData = false;
-
-            var subjectElem = <HTMLInputElement>elem.previousElementSibling;
-
-            // check if deleting page
-            if (subjectElem == pageElem && autoSuggestData[subjectElem.value]) {
-                if (confirm("Do you want to dletete all (" + Object.keys(autoSuggestData[subjectElem.value]).length + ") parameters for page: " + subjectElem.value)) {
-                    Tracking.trackEvent(Tracking.Category.AutoSuggest, "delete page data");
-                    delete autoSuggestData[subjectElem.value];
-
-                    // remove element from the list
-                    var select = <HTMLSelectElement><any>subjectElem;
-                    select.remove(select.selectedIndex);
-                    // remove all param values
-                    var paramsSelect = <HTMLSelectElement><any>paramElem;
-                    paramElem.innerHTML = "";
-                    paramElem.value = "";
-                    // remove all visible values
-                    paramValues.innerHTML = "";
-
-                    saveData = true;
-                }
-            }
-            // check if deleting param
-            else if (subjectElem == paramElem && autoSuggestData[pageElem.value][subjectElem.value]) {
-                if (confirm("Do you want to dletete all (" + Object.keys(autoSuggestData[pageElem.value][subjectElem.value]).length + ") values for parameter: " + subjectElem.value)) {
-                    Tracking.trackEvent(Tracking.Category.AutoSuggest, "delete param data");
-                    delete autoSuggestData[pageElem.value][subjectElem.value];
-
-                    // remove element from the list
-                    var select = <HTMLSelectElement><any>subjectElem;
-                    select.remove(select.selectedIndex);
-                    // remove all visible values
-                    paramValues.innerHTML = "";
-
-                    saveData = true;
-                }
-            }
-            // check if deleting value
-            else if (autoSuggestData[pageElem.value] &&
-                autoSuggestData[pageElem.value][paramElem.value] &&
-                autoSuggestData[pageElem.value][paramElem.value].indexOf(subjectElem.value) != -1) {
-                if (confirm("Do you want to delete '" + subjectElem.value + "' value from param '" + paramElem.value + "'")) {
-                    Tracking.trackEvent(Tracking.Category.AutoSuggest, "delete param value");
-                    autoSuggestData[pageElem.value][paramElem.value] = autoSuggestData[pageElem.value][paramElem.value].filter(val => val != subjectElem.value);
-                    subjectElem.parentElement.parentElement.removeChild(subjectElem.parentElement);
-                    saveData = true;
-                }
-            }
-
-            if (saveData) {
-                settings.setValue("autoSuggestData", JSON.stringify(autoSuggestData));
-            }
+            this.handleSuggestionDelete(elem);
         }
 
         // general click tracking
@@ -186,6 +152,66 @@ module UrlEditor.Options {
             if (trackId) {
                 Tracking.trackEvent(Tracking.Category.Settings, trackId);
             }
+        }
+    }
+
+    function handleSuggestionDelete(elem: HTMLInputElement) {
+        var pageElem = <HTMLInputElement>document.getElementById("autoSuggestPages");
+        var paramElem = <HTMLInputElement>document.getElementById("autoSuggestParams");
+        var paramValues = <HTMLDivElement>document.getElementById("autoSuggestParamValues");
+
+        var saveData = false;
+
+        var subjectElem = <HTMLInputElement>elem.previousElementSibling;
+
+        // check if deleting page
+        if (subjectElem == pageElem && autoSuggestData[subjectElem.value]) {
+            if (confirm("Do you want to dletete all (" + Object.keys(autoSuggestData[subjectElem.value]).length + ") parameters for page: " + subjectElem.value)) {
+                Tracking.trackEvent(Tracking.Category.AutoSuggest, "delete page data");
+                delete autoSuggestData[subjectElem.value];
+
+                // remove element from the list
+                var select = <HTMLSelectElement><any>subjectElem;
+                select.remove(select.selectedIndex);
+                // remove all param values
+                var paramsSelect = <HTMLSelectElement><any>paramElem;
+                paramElem.innerHTML = "";
+                paramElem.value = "";
+                // remove all visible values
+                paramValues.innerHTML = "";
+
+                saveData = true;
+            }
+        }
+        // check if deleting param
+        else if (subjectElem == paramElem && autoSuggestData[pageElem.value][subjectElem.value]) {
+            if (confirm("Do you want to dletete all (" + Object.keys(autoSuggestData[pageElem.value][subjectElem.value]).length + ") values for parameter: " + subjectElem.value)) {
+                Tracking.trackEvent(Tracking.Category.AutoSuggest, "delete param data");
+                delete autoSuggestData[pageElem.value][subjectElem.value];
+
+                // remove element from the list
+                var select = <HTMLSelectElement><any>subjectElem;
+                select.remove(select.selectedIndex);
+                // remove all visible values
+                paramValues.innerHTML = "";
+
+                saveData = true;
+            }
+        }
+        // check if deleting value
+        else if (autoSuggestData[pageElem.value] &&
+            autoSuggestData[pageElem.value][paramElem.value] &&
+            autoSuggestData[pageElem.value][paramElem.value].indexOf(subjectElem.value) != -1) {
+            if (confirm("Do you want to delete '" + subjectElem.value + "' value from param '" + paramElem.value + "'")) {
+                Tracking.trackEvent(Tracking.Category.AutoSuggest, "delete param value");
+                autoSuggestData[pageElem.value][paramElem.value] = autoSuggestData[pageElem.value][paramElem.value].filter(val => val != subjectElem.value);
+                subjectElem.parentElement.parentElement.removeChild(subjectElem.parentElement);
+                saveData = true;
+            }
+        }
+
+        if (saveData) {
+            settings.setValue("autoSuggestData", JSON.stringify(autoSuggestData));
         }
     }
 
@@ -205,7 +231,7 @@ module UrlEditor.Options {
         }
     }
 
-    function populateComboBox(elemId: string, data: string[], defaultValue: string = "--", comboSource: string = "") {
+    function populateComboBox(elemId: string, data: string[], defaultValue: string = "--", comboSource: string = "", selectedIndex: number = undefined) {
         var combo = <HTMLSelectElement>document.getElementById(elemId);
         combo.innerHTML = "";
         combo["source"] = comboSource;
@@ -220,6 +246,10 @@ module UrlEditor.Options {
             option.value = option.textContent = optionValue;
             combo.appendChild(option);
         });
+
+        if (selectedIndex != undefined) {
+            combo.selectedIndex = selectedIndex;
+        }
     }
 
     document.addEventListener('DOMContentLoaded', () => initialize());
