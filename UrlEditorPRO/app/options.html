@@ -128,6 +128,7 @@
     <script src="modules/settings.js"></script>
     <script src="modules/helpers.js"></script>
     <script src="options.js"></script>
+    <script src="options/suggestions.js"></script>
 </head>
 <body>
     <div class="wrapper">
@@ -172,7 +173,7 @@
                     </div>
                 </div>
             </div>
-            <div class="setting">
+            <div class="setting" id="recentlyUsedParamsModule">
                 <h3>Recently used params</h3>
                 <div class="setting-value">
                     <div class="grid highlihgt-first-column">
@@ -208,10 +209,10 @@
                         <div class="section grid grid-space grid-last-small">
                             <div>Bind with other host</div>
                             <div>
-                                <select name="bind" id="autoSuggestPagesToBind">
+                                <select name="bindToHost" id="autoSuggestPageToBind">
                                     <option value="--">-- select website first --</option>
                                 </select>
-                                <input name="save" type="button" value="Save" />
+                                <input name="saveBinding" type="button" value="Save" />
                             </div>
                             <div>You can bind websites share params between them.</div>
                             <div>Params from both will be merged - conflicting ones will be overwritten by values from the website selected in the first field.</div>
