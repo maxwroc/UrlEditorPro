@@ -9,7 +9,7 @@ module UrlEditor.Options.Suggestions {
     let pageElem: HTMLSelectElement;
     let paramElem: HTMLSelectElement;
     let bindToElem: HTMLSelectElement;
-    let paramValues: HTMLDivElement;
+    let paramValuesContainer: HTMLDivElement;
 
     bindOnInitializedHandler((setts: Settings) => {
         settings = setts;
@@ -21,7 +21,7 @@ module UrlEditor.Options.Suggestions {
         pageElem = Helpers.ge<HTMLSelectElement>("autoSuggestPages");
         paramElem = Helpers.ge<HTMLSelectElement>("autoSuggestParams");
         bindToElem = Helpers.ge<HTMLSelectElement>("autoSuggestPageToBind");
-        paramValues = Helpers.ge<HTMLDivElement>("autoSuggestParamValues");
+        paramValuesContainer = Helpers.ge<HTMLDivElement>("autoSuggestParamValues");
 
         if (settings.autoSuggestData) {
             autoSuggestData = <IAutoSuggestData>JSON.parse(settings.autoSuggestData);
@@ -129,7 +129,7 @@ module UrlEditor.Options.Suggestions {
                 paramElem.innerHTML = "";
                 paramElem.value = "";
                 // remove all visible values
-                paramValues.innerHTML = "";
+                paramValuesContainer.innerHTML = "";
 
                 saveData = true;
             }
@@ -144,7 +144,7 @@ module UrlEditor.Options.Suggestions {
                 let select = <HTMLSelectElement><any>subjectElem;
                 select.remove(select.selectedIndex);
                 // remove all visible values
-                paramValues.innerHTML = "";
+                paramValuesContainer.innerHTML = "";
 
                 saveData = true;
             }
