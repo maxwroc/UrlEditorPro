@@ -1,4 +1,5 @@
 ﻿/// <reference path="settings.ts" />
+/// <reference path="tracking.ts" />
 /// <reference path="shared_interfaces.d.ts" />
 
 module UrlEditor {
@@ -16,6 +17,8 @@ module UrlEditor {
     }
 
     export class AutoSuggest {
+        
+        public static HOST_ALIAS_KEY = "[suggestionAlias]";
 
         private settings: Settings;
 

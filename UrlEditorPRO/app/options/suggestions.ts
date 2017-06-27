@@ -1,7 +1,6 @@
+///<reference path="../modules/autosuggest.ts" />
 
 module UrlEditor.Options.Suggestions {
-
-    const HOST_ALIAS_KEY = "[suggestionAlias]";
 
     let autoSuggestData: IAutoSuggestData;
     let settings: Settings;
@@ -11,7 +10,10 @@ module UrlEditor.Options.Suggestions {
     let bindToElem: HTMLSelectElement;
     let paramValuesContainer: HTMLDivElement;
 
-    bindOnInitializedHandler((setts: Settings) => {
+    // init will be automatically called once the main code is initialized and ready
+    bindOnInitializedHandler(settings => init(settings));
+
+    export function init(setts: Settings) {
         settings = setts;
 
         let recentlyUsedParamsModule = Helpers.ge("recentlyUsedParamsModule");
@@ -27,7 +29,7 @@ module UrlEditor.Options.Suggestions {
             autoSuggestData = <IAutoSuggestData>JSON.parse(settings.autoSuggestData);
             populateComboBox(pageElem, Object.keys(autoSuggestData), "-- select page --");
         }
-    })
+    }
 
     function handleClick(evt: Event) {
         let elem = <HTMLInputElement>evt.target;
@@ -53,8 +55,8 @@ module UrlEditor.Options.Suggestions {
             switch (elem.name) {
                 case "page":
                     let alias = autoSuggestData[elem.value] &&
-                        autoSuggestData[elem.value][HOST_ALIAS_KEY] &&
-                        autoSuggestData[elem.value][HOST_ALIAS_KEY][0];
+                        autoSuggestData[elem.value][AutoSuggest.HOST_ALIAS_KEY] &&
+                        autoSuggestData[elem.value][AutoSuggest.HOST_ALIAS_KEY][0];
 
                     let pageData = alias ? autoSuggestData[alias] : autoSuggestData[elem.value]
                     if (pageData) {
@@ -81,10 +83,9 @@ module UrlEditor.Options.Suggestions {
                     break;
                 case "param":
                     let paramData = autoSuggestData[elem["source"]][elem.value] || [];
-                    let paramValuesElem = document.getElementById("autoSuggestParamValues");
 
                     // clear param list
-                    paramValuesElem.innerHTML = "";
+                    paramValuesContainer.innerHTML = "";
 
                     paramData.forEach(value => {
                         let paramVal = document.createElement("div");
@@ -102,7 +103,7 @@ module UrlEditor.Options.Suggestions {
                         deleteBtn.name = "delete";
                         paramVal.appendChild(deleteBtn);
 
-                        paramValuesElem.appendChild(paramVal);
+                        paramValuesContainer.appendChild(paramVal);
                     });
                     break;
             }
@@ -203,9 +204,14 @@ module UrlEditor.Options.Suggestions {
                     ));
                 
                 if ((autoSuggestData[bindSubject][paramName] || []).length != autoSuggestData[bindTo][paramName].length) {
-                    console.log(paramName, result);
+                    autoSuggestData[bindSubject][paramName] = result;
                 }
             });
+
+            autoSuggestData[bindTo] = {};
+            autoSuggestData[bindTo][HOST_ALIAS_KEY] = [ bindSubject ];
+
+            settings.setValue("autoSuggestData", JSON.stringify(autoSuggestData));
         }
     }
 
