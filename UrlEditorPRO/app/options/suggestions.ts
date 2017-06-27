@@ -209,7 +209,7 @@ module UrlEditor.Options.Suggestions {
             });
 
             autoSuggestData[bindTo] = {};
-            autoSuggestData[bindTo][HOST_ALIAS_KEY] = [ bindSubject ];
+            autoSuggestData[bindTo][AutoSuggest.HOST_ALIAS_KEY] = [ bindSubject ];
 
             settings.setValue("autoSuggestData", JSON.stringify(autoSuggestData));
         }

@@ -108,22 +108,33 @@ module UrlEditor {
         }
         
         deleteSuggestion(paramName: string, paramValue?: string) {
-            var pageName = this.baseUrl.hostname();
+            let pageData = this.getCurrentPageData();
 
-            if (this.parsedData && this.parsedData[pageName]) {
+            if (pageData) {
 
                 if (paramValue != undefined) { // removing value suggestion
-                    if (this.parsedData[pageName][paramName]) {
+                    if (pageData[paramName]) {
                         // remove suggestion from settings
-                        this.parsedData[pageName][paramName] = this.parsedData[pageName][paramName].filter(val => val != paramValue);
+                        pageData[paramName] = pageData[paramName].filter(val => val != paramValue);
                     }
                 }
                 else { // removing param suggestion
-                    delete this.parsedData[pageName][paramName];
+                    delete pageData[paramName];
                 }
-                
+
                 this.settings.setValue("autoSuggestData", JSON.stringify(this.parsedData));
             }
+        }
+
+        private getCurrentPageData() {
+            var pageData = this.parsedData[this.baseUrl.hostname()];
+            // check if it's not an alias
+            if (pageData && pageData[AutoSuggest.HOST_ALIAS_KEY]) {
+                let aliasPageName = pageData[AutoSuggest.HOST_ALIAS_KEY][0];
+                pageData = this.parsedData[aliasPageName];
+            }
+
+            return pageData;
         }
 
         private onDomEvent(elem: HTMLInputElement) {
@@ -159,7 +170,7 @@ module UrlEditor {
                 this.parsedData = JSON.parse(this.settings.autoSuggestData);
             }
 
-            var pageData = this.parsedData[this.baseUrl.hostname()]
+            var pageData = this.getCurrentPageData();
             if (pageData) {
                 var suggestions: string[] = [];
 
