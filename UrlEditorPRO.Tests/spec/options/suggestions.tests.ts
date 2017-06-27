@@ -192,6 +192,11 @@ module Tests {
             // check if in binding field the default option is to unbind
             let autoSuggestPageToBind = UrlEditor.Helpers.ge<HTMLSelectElement>("autoSuggestPageToBind");
             expect(autoSuggestPageToBind.length).toEqual(1);
+            
+            
+            // TODO check if text is correct and fix logic
+
+
             raiseEvent(autoSuggestPageToBind, "change");
         });
 
