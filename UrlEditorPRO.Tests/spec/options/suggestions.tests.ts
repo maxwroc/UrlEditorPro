@@ -156,7 +156,9 @@ module Tests {
                 }
             }
             
-            detailedObjectComparison(expected, JSON.parse(setValueSettingsSpy.calls.argsFor(0)[1]), "autoSuggestData")
+            let actualAutoSuggestData = setValueSettingsSpy.calls.argsFor(0)[1];
+            expect(actualAutoSuggestData).not.toBeUndefined();
+            detailedObjectComparison(expected, JSON.parse(actualAutoSuggestData), "autoSuggestData")
         });
 
         it("params are listed correctly for bind page", () => {
@@ -189,15 +191,61 @@ module Tests {
                 expect(param).toEqual(autoSuggestParams.children[index]["value"]);
             });
 
-            // check if in binding field the default option is to unbind
             let autoSuggestPageToBind = UrlEditor.Helpers.ge<HTMLSelectElement>("autoSuggestPageToBind");
-            expect(autoSuggestPageToBind.length).toEqual(1);
-            
-            
-            // TODO check if text is correct and fix logic
+            expect(autoSuggestPageToBind.length).toEqual(2);
 
+            ["-- select website to (un)bind --", "[Unbind] www.google.com"].forEach((val, index) => {
+                expect("OPTION").toEqual(autoSuggestPageToBind.children[index].tagName);
+                expect(val).toEqual(autoSuggestPageToBind.children[index]["value"]);
+            });
+        });
 
-            raiseEvent(autoSuggestPageToBind, "change");
+        it("params are unbind correctly", () => {
+            autoSuggestData = {
+                "www.google.com": {
+                    "param1": ["a1", "a2", "a3", "a10"],
+                    "param2": ["b1", "b2", "b3"],
+                    "param3": ["c1"]
+                },
+                "www.web.com": {
+                    "[suggestionAlias]": [ "www.google.com" ]
+                }
+            };
+
+            initialize();
+
+            let setValueSettingsSpy = spyOn(settings, "setValue");
+
+            let autoSuggestPages = UrlEditor.Helpers.ge<HTMLSelectElement>("autoSuggestPages");
+            autoSuggestPages.selectedIndex = 2; // www.web.com
+            expect(autoSuggestPages.value).toEqual("www.web.com");
+            raiseEvent(autoSuggestPages, "change"); 
+            
+            let params = Object.keys(autoSuggestData["www.google.com"]);
+            let autoSuggestParams = UrlEditor.Helpers.ge<HTMLSelectElement>("autoSuggestParams");
+
+            let autoSuggestPageToBind = UrlEditor.Helpers.ge<HTMLSelectElement>("autoSuggestPageToBind");
+            autoSuggestPageToBind.selectedIndex = 2; // [Unbind] www.google.com
+
+            let saveBinding = UrlEditor.Helpers.ge<HTMLSelectElement>("saveBinding");
+            raiseEvent(saveBinding, "click");
+            
+            let expected = {
+                "www.google.com": {
+                    "param1": ["a1", "a2", "a3", "a10"],
+                    "param2": ["b1", "b2", "b3"],
+                    "param3": ["c1"]
+                },
+                "www.web.com": {
+                    "param1": ["a1", "a2", "a3", "a10"],
+                    "param2": ["b1", "b2", "b3"],
+                    "param3": ["c1"]
+                }
+            }
+            
+            let actualAutoSuggestData = setValueSettingsSpy.calls.argsFor(0)[1];
+            expect(actualAutoSuggestData).not.toBeUndefined();
+            detailedObjectComparison(expected, JSON.parse(actualAutoSuggestData), "autoSuggestData")
         });
 
         function raiseEvent(elem: HTMLElement, eventName: string) {

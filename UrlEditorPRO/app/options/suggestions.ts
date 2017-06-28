@@ -64,20 +64,11 @@ module UrlEditor.Options.Suggestions {
                     }
 
                     let selectedIndex = 0;
-                    let defaultText = "-- select website to bind --";
+                    let defaultText = "-- select website to (un)bind --";
 
-                    let filteredWebsites = Object.keys(autoSuggestData).filter((x, index) => {
-                        let areEqual = x == elem.value;
-
-                        if (x == alias) {
-                            // adding one as we add one element on the beginning of the list
-                            selectedIndex = index + 1;
-                            defaultText = "-- unbind " + alias + " --";
-                        }
-
-                        // accept if different
-                        return !areEqual;
-                    });
+                    let filteredWebsites = Object.keys(autoSuggestData)
+                        .filter(x => x != elem.value) // remove subject page
+                        .map(x => x == alias ? "[Unbind] " + alias : x); // add "unbind" if bind already
 
                     populateComboBox(bindToElem, filteredWebsites, defaultText, elem.value, selectedIndex);
                     break;
