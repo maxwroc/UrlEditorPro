@@ -74,9 +74,9 @@ module UrlEditor.Options.Suggestions {
                         // add "unbind" if bind already
                         .map(x => {
                             if (x == alias ||
-                            autoSuggestData[x] &&
-                            autoSuggestData[x][AutoSuggest.HOST_ALIAS_KEY] && 
-                            autoSuggestData[x][AutoSuggest.HOST_ALIAS_KEY][0] == elem.value) {
+                                autoSuggestData[x] &&
+                                autoSuggestData[x][AutoSuggest.HOST_ALIAS_KEY] &&
+                                autoSuggestData[x][AutoSuggest.HOST_ALIAS_KEY][0] == elem.value) {
                                 x = "[Unbind] " + x;
                             }
                             return x;
@@ -207,7 +207,13 @@ module UrlEditor.Options.Suggestions {
         if (targetPage && autoSuggestData[targetPage]) {
 
             if (unbinding) {
-                autoSuggestData[targetPage] = autoSuggestData[subjectPage]
+                // double check which one is the alias
+                if (autoSuggestData[subjectPage][AutoSuggest.HOST_ALIAS_KEY]) {
+                    autoSuggestData[subjectPage] = autoSuggestData[targetPage];
+                }
+                else {
+                    autoSuggestData[targetPage] = autoSuggestData[subjectPage];
+                }
             }
             else {
                 Object.keys(autoSuggestData[targetPage]).forEach(paramName => {

@@ -13,8 +13,10 @@
         className && elem.setAttribute("class", className);
         return <T>elem;
     }
-    
+
     export function detailedObjectComparison(expected: Object, actual: Object, path: string): void {
+        let validationFailed = false;
+
         if (!expected) {
             switch (typeof expected) {
                 case "undefined":
@@ -42,6 +44,7 @@
             if (expected.hasOwnProperty(i)) {
                 if (!actual.hasOwnProperty(i)) {
                     expect(path + "/ (key is missing)").toEqual(path + "/" + i);
+                    validationFailed = true;
                     continue;
                 }
                 if (expected[i] !== null && typeof (expected[i]) == "object") {
@@ -53,6 +56,10 @@
                     expect(pathCmp + expected[i]).toEqual(pathCmp + actual[i]);
                 }
             }
+        }
+
+        if (validationFailed) {
+            console.log("Failed - objects not the same", expected, actual);
         }
     }
 }

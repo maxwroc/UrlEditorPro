@@ -3,6 +3,7 @@
 /// <reference path="../../../UrlEditorPro/app/options/suggestions.ts" />
 
 module Tests {
+
     describe("[Options] Suggestions - testing if ", () => {
 
         let autoSuggestData: UrlEditor.IAutoSuggestData;
@@ -230,12 +231,41 @@ module Tests {
                             "param3": ["c1"]
                         }
                     }
+                ],
+                [
+                    // inputData
+                    {
+                        "www.google.com": {
+                            "param1": ["a1", "a2", "a3", "a10"],
+                            "param2": ["b1", "b2", "b3"],
+                            "param3": ["c1"]
+                        },
+                        "www.web.com": {
+                            "[suggestionAlias]": [ "www.google.com" ]
+                        }
+                    },
+                    // subjectPageIndex
+                    1,
+                    // targetPageIndex
+                    0,
+                    {
+                        "www.google.com": {
+                            "param1": ["a1", "a2", "a3", "a10"],
+                            "param2": ["b1", "b2", "b3"],
+                            "param3": ["c1"]
+                        },
+                        "www.web.com": {
+                            "param1": ["a1", "a2", "a3", "a10"],
+                            "param2": ["b1", "b2", "b3"],
+                            "param3": ["c1"]
+                        }
+                    }
                 ]
             ], 
             (inputData, subjectPageIndex: number, targetPageIndex: number, expected) => {
             
             autoSuggestData = inputData;
-            
+
             initialize();
 
             let setValueSettingsSpy = spyOn(settings, "setValue");
