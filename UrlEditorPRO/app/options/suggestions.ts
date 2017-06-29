@@ -2,6 +2,8 @@
 
 module UrlEditor.Options.Suggestions {
 
+    const UNBIND = "[Unbind] ";
+
     let autoSuggestData: IAutoSuggestData;
     let settings: Settings;
 
@@ -67,8 +69,18 @@ module UrlEditor.Options.Suggestions {
                     let defaultText = "-- select website to (un)bind --";
 
                     let filteredWebsites = Object.keys(autoSuggestData)
-                        .filter(x => x != elem.value) // remove subject page
-                        .map(x => x == alias ? "[Unbind] " + alias : x); // add "unbind" if bind already
+                        // remove subject page
+                        .filter(x => x != elem.value)
+                        // add "unbind" if bind already
+                        .map(x => {
+                            if (x == alias ||
+                            autoSuggestData[x] &&
+                            autoSuggestData[x][AutoSuggest.HOST_ALIAS_KEY] && 
+                            autoSuggestData[x][AutoSuggest.HOST_ALIAS_KEY][0] == elem.value) {
+                                x = "[Unbind] " + x;
+                            }
+                            return x;
+                        });
 
                     populateComboBox(bindToElem, filteredWebsites, defaultText, elem.value, selectedIndex);
                     break;
@@ -179,28 +191,40 @@ module UrlEditor.Options.Suggestions {
     }
 
     function saveBinding(autoSuggestData: IAutoSuggestData) {
-        let bindSubject = pageElem.value
-        let bindTo = bindToElem.value;
+        let subjectPage = pageElem.value
+        let targetPage = bindToElem.value;
+        let unbinding = false;
 
-        if (bindSubject.startsWith("-- ") || bindTo.startsWith("-- ")) {
+        if (subjectPage.startsWith("-- ") || targetPage.startsWith("-- ")) {
             throw new Error("Bind subject must be a valid, existing page")
         }
 
-        if (bindTo && autoSuggestData[bindTo]) {
-            Object.keys(autoSuggestData[bindTo]).forEach(paramName => {
-                // merging arrays making sure that we won't have any dupes
-                let result = Array.from(
-                    new Set(
-                        (autoSuggestData[bindSubject][paramName] || []).concat(autoSuggestData[bindTo][paramName])
-                    ));
-                
-                if ((autoSuggestData[bindSubject][paramName] || []).length != autoSuggestData[bindTo][paramName].length) {
-                    autoSuggestData[bindSubject][paramName] = result;
-                }
-            });
+        if (targetPage.startsWith(UNBIND)) {
+            targetPage = targetPage.substr(UNBIND.length);
+            unbinding = true;
+        }
 
-            autoSuggestData[bindTo] = {};
-            autoSuggestData[bindTo][AutoSuggest.HOST_ALIAS_KEY] = [ bindSubject ];
+        if (targetPage && autoSuggestData[targetPage]) {
+
+            if (unbinding) {
+                autoSuggestData[targetPage] = autoSuggestData[subjectPage]
+            }
+            else {
+                Object.keys(autoSuggestData[targetPage]).forEach(paramName => {
+                    // merging arrays making sure that we won't have any dupes
+                    let result = Array.from(
+                        new Set(
+                            (autoSuggestData[subjectPage][paramName] || []).concat(autoSuggestData[targetPage][paramName])
+                        ));
+
+                    if ((autoSuggestData[subjectPage][paramName] || []).length != autoSuggestData[targetPage][paramName].length) {
+                        autoSuggestData[subjectPage][paramName] = result;
+                    }
+                });
+
+                autoSuggestData[targetPage] = {};
+                autoSuggestData[targetPage][AutoSuggest.HOST_ALIAS_KEY] = [subjectPage];
+            }
 
             settings.setValue("autoSuggestData", JSON.stringify(autoSuggestData));
         }

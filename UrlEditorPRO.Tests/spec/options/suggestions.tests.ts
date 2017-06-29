@@ -200,48 +200,57 @@ module Tests {
             });
         });
 
-        it("params are unbind correctly", () => {
-            autoSuggestData = {
-                "www.google.com": {
-                    "param1": ["a1", "a2", "a3", "a10"],
-                    "param2": ["b1", "b2", "b3"],
-                    "param3": ["c1"]
-                },
-                "www.web.com": {
-                    "[suggestionAlias]": [ "www.google.com" ]
-                }
-            };
-
+        all("params are unbind correctly",
+            [
+                [
+                    // inputData
+                    {
+                        "www.google.com": {
+                            "param1": ["a1", "a2", "a3", "a10"],
+                            "param2": ["b1", "b2", "b3"],
+                            "param3": ["c1"]
+                        },
+                        "www.web.com": {
+                            "[suggestionAlias]": [ "www.google.com" ]
+                        }
+                    },
+                    // subjectPageIndex
+                    0,
+                    // targetPageIndex
+                    0,
+                    {
+                        "www.google.com": {
+                            "param1": ["a1", "a2", "a3", "a10"],
+                            "param2": ["b1", "b2", "b3"],
+                            "param3": ["c1"]
+                        },
+                        "www.web.com": {
+                            "param1": ["a1", "a2", "a3", "a10"],
+                            "param2": ["b1", "b2", "b3"],
+                            "param3": ["c1"]
+                        }
+                    }
+                ]
+            ], 
+            (inputData, subjectPageIndex: number, targetPageIndex: number, expected) => {
+            
+            autoSuggestData = inputData;
+            
             initialize();
 
             let setValueSettingsSpy = spyOn(settings, "setValue");
 
             let autoSuggestPages = UrlEditor.Helpers.ge<HTMLSelectElement>("autoSuggestPages");
-            autoSuggestPages.selectedIndex = 2; // www.web.com
-            expect(autoSuggestPages.value).toEqual("www.web.com");
+            autoSuggestPages.selectedIndex = subjectPageIndex + 1; // skip default one
+            expect(autoSuggestPages.value).toEqual(Object.keys(autoSuggestData)[subjectPageIndex]);
             raiseEvent(autoSuggestPages, "change"); 
             
-            let params = Object.keys(autoSuggestData["www.google.com"]);
             let autoSuggestParams = UrlEditor.Helpers.ge<HTMLSelectElement>("autoSuggestParams");
-
             let autoSuggestPageToBind = UrlEditor.Helpers.ge<HTMLSelectElement>("autoSuggestPageToBind");
-            autoSuggestPageToBind.selectedIndex = 2; // [Unbind] www.google.com
+            autoSuggestPageToBind.selectedIndex = targetPageIndex + 1; // skip default one
 
             let saveBinding = UrlEditor.Helpers.ge<HTMLSelectElement>("saveBinding");
             raiseEvent(saveBinding, "click");
-            
-            let expected = {
-                "www.google.com": {
-                    "param1": ["a1", "a2", "a3", "a10"],
-                    "param2": ["b1", "b2", "b3"],
-                    "param3": ["c1"]
-                },
-                "www.web.com": {
-                    "param1": ["a1", "a2", "a3", "a10"],
-                    "param2": ["b1", "b2", "b3"],
-                    "param3": ["c1"]
-                }
-            }
             
             let actualAutoSuggestData = setValueSettingsSpy.calls.argsFor(0)[1];
             expect(actualAutoSuggestData).not.toBeUndefined();
