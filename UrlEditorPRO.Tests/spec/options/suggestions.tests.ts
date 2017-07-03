@@ -195,68 +195,36 @@ module Tests {
 
         all("params are unbind correctly",
             [
-                [
-                    // inputData
-                    {
-                        "www.google.com": {
-                            "param1": ["a1", "a2", "a3", "a10"],
-                            "param2": ["b1", "b2", "b3"],
-                            "param3": ["c1"]
-                        },
-                        "www.web.com": {
-                            "[suggestionAlias]": ["www.google.com"]
-                        }
-                    },
-                    // subjectPageIndex
-                    0,
-                    // targetPageIndex
-                    0,
-                    {
-                        "www.google.com": {
-                            "param1": ["a1", "a2", "a3", "a10"],
-                            "param2": ["b1", "b2", "b3"],
-                            "param3": ["c1"]
-                        },
-                        "www.web.com": {
-                            "param1": ["a1", "a2", "a3", "a10"],
-                            "param2": ["b1", "b2", "b3"],
-                            "param3": ["c1"]
-                        }
-                    }
-                ],
-                [
-                    // inputData
-                    {
-                        "www.google.com": {
-                            "param1": ["a1", "a2", "a3", "a10"],
-                            "param2": ["b1", "b2", "b3"],
-                            "param3": ["c1"]
-                        },
-                        "www.web.com": {
-                            "[suggestionAlias]": ["www.google.com"]
-                        }
-                    },
-                    // subjectPageIndex
-                    1,
-                    // targetPageIndex
-                    0,
-                    {
-                        "www.google.com": {
-                            "param1": ["a1", "a2", "a3", "a10"],
-                            "param2": ["b1", "b2", "b3"],
-                            "param3": ["c1"]
-                        },
-                        "www.web.com": {
-                            "param1": ["a1", "a2", "a3", "a10"],
-                            "param2": ["b1", "b2", "b3"],
-                            "param3": ["c1"]
-                        }
-                    }
-                ]
+                [0, 0],
+                [1, 0]
             ],
-            (inputData, subjectPageIndex: number, targetPageIndex: number, expected) => {
+            (subjectPageIndex: number, targetPageIndex: number) => {
 
-                autoSuggestData = inputData;
+                autoSuggestData =
+                    {
+                        "www.google.com": {
+                            "param1": ["a1", "a2", "a3", "a10"],
+                            "param2": ["b1", "b2", "b3"],
+                            "param3": ["c1"]
+                        },
+                        "www.web.com": {
+                            "[suggestionAlias]": ["www.google.com"]
+                        }
+                    };
+
+                let expected =
+                    {
+                        "www.google.com": {
+                            "param1": ["a1", "a2", "a3", "a10"],
+                            "param2": ["b1", "b2", "b3"],
+                            "param3": ["c1"]
+                        },
+                        "www.web.com": {
+                            "param1": ["a1", "a2", "a3", "a10"],
+                            "param2": ["b1", "b2", "b3"],
+                            "param3": ["c1"]
+                        }
+                    };
 
                 initialize();
 
@@ -299,6 +267,9 @@ module Tests {
                     },
                     "www.bing.com": {
                         "b_param1": ["bb1"]
+                    },
+                    "www.bind.to.sth.else.com": {
+                        "[suggestionAlias]": ["www.else.com"]
                     }
                 };
 
