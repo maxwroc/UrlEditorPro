@@ -51,14 +51,18 @@ module UrlEditor.Options.Suggestions {
         }
     }
 
+    function getBasePageName(pageName: string) {
+        return autoSuggestData[pageName] && 
+               autoSuggestData[pageName][AutoSuggest.HOST_ALIAS_KEY] && 
+               autoSuggestData[pageName][AutoSuggest.HOST_ALIAS_KEY][0];
+    }
+
     function handleSelect(evt) {
         let elem = <HTMLSelectElement>evt.target;
         if (elem.tagName == "SELECT") {
             switch (elem.name) {
                 case "page":
-                    let alias = autoSuggestData[elem.value] &&
-                        autoSuggestData[elem.value][AutoSuggest.HOST_ALIAS_KEY] &&
-                        autoSuggestData[elem.value][AutoSuggest.HOST_ALIAS_KEY][0];
+                    let alias = getBasePageName(elem.value);
 
                     let pageData = alias ? autoSuggestData[alias] : autoSuggestData[elem.value]
                     if (pageData) {
@@ -70,13 +74,10 @@ module UrlEditor.Options.Suggestions {
 
                     let filteredWebsites = Object.keys(autoSuggestData)
                         // remove subject page
-                        .filter(x => x != elem.value)
+                        .filter(x => x != elem.value && (!getBasePageName(x) || getBasePageName(x) == elem.value))
                         // add "unbind" if bind already
                         .map(x => {
-                            if (x == alias ||
-                                autoSuggestData[x] &&
-                                autoSuggestData[x][AutoSuggest.HOST_ALIAS_KEY] &&
-                                autoSuggestData[x][AutoSuggest.HOST_ALIAS_KEY][0] == elem.value) {
+                            if (x == alias || getBasePageName(x) == elem.value) {
                                 x = "[Unbind] " + x;
                             }
                             return x;
