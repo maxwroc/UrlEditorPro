@@ -63,9 +63,3 @@
         }
     }
 }
-
-module UrlEditor.Options {
-    export function bindOnInitializedHandler(handler: (s: Settings) => void) {
-
-    }
-}

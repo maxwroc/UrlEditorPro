@@ -36,11 +36,11 @@ module UrlEditor {
             this.suggestions = new Suggestions(doc, this);
 
             // bind event handlers
-            document.body.addEventListener("DOMFocusOut", evt => {
+            doc.body.addEventListener("DOMFocusOut", evt => {
                 this.suggestions.hide();
             });
-            document.body.addEventListener("DOMFocusIn", evt => this.onDomEvent(<HTMLInputElement>evt.target));
-            document.body.addEventListener("input", evt => this.onDomEvent(<HTMLInputElement>evt.target));
+            doc.body.addEventListener("DOMFocusIn", evt => this.onDomEvent(<HTMLInputElement>evt.target));
+            doc.body.addEventListener("input", evt => this.onDomEvent(<HTMLInputElement>evt.target));
         }
 
         onSubmission(submittedUri: Uri) {
@@ -253,7 +253,7 @@ module UrlEditor {
             if (this.container.innerHTML) {
                 var pos = elem.getBoundingClientRect();
                 // pos doesn't contain scroll value so we need to add it
-                var posTop = pos.bottom + document.body.scrollTop - 3;
+                var posTop = pos.bottom + this.doc.body.scrollTop - 3;
                 this.container.style.top = posTop + "px";
                 this.container.style.left = pos.left + "px";
                 this.container.style.display = "block";

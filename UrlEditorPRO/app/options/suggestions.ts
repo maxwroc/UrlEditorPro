@@ -1,4 +1,5 @@
 ///<reference path="../modules/autosuggest.ts" />
+///<reference path="../options.ts" />
 
 module UrlEditor.Options.Suggestions {
 

@@ -102,9 +102,6 @@ module Tests {
                 expect("OPTION").toEqual(autoSuggestParams.children[index].tagName);
                 expect(param).toEqual(autoSuggestParams.children[index]["value"]);
             });
-
-
-            spyOn(UrlEditor.Options, "bindOnInitializedHandler").and.callFake((init: Function) => initialize = init);
         });
 
         it("param values are populated when param is selected", () => {
