@@ -63,5 +63,5 @@ module UrlEditor {
         });
     };
     
-    document.addEventListener('DOMContentLoaded', () => initialize());
+    document.addEventListener(window.top == window.self ? "DOMContentLoaded" : "init", () => initialize());
 }

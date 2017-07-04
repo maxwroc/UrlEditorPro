@@ -1,5 +1,4 @@
 ///<reference path="../modules/autosuggest.ts" />
-///<reference path="../options.ts" />
 
 module UrlEditor.Options.Suggestions {
 
@@ -12,9 +11,6 @@ module UrlEditor.Options.Suggestions {
     let paramElem: HTMLSelectElement;
     let bindToElem: HTMLSelectElement;
     let paramValuesContainer: HTMLDivElement;
-
-    // init will be automatically called once the main code is initialized and ready
-    bindOnInitializedHandler(settings => init(settings));
 
     export function init(setts: Settings) {
         settings = setts;

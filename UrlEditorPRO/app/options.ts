@@ -53,13 +53,7 @@ module UrlEditor.Options {
             });
         });
 
-        if (onInitializedHandlers) {
-            onInitializedHandlers.forEach(handler => handler(settings));
-        }
-    }
-
-    export function bindOnInitializedHandler(handler: IOnInitializedHandler) {
-        onInitializedHandlers.push(handler);
+        Suggestions.init(settings);
     }
 
     function onChangeHandler(evt: Event): void {
