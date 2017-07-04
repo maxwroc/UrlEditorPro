@@ -16,7 +16,13 @@ module Tests.Canvas {
         page = undefined;
     }
 
-    export function loadPage(name: string) {
+    export function loadPage(name: string, initialize?: boolean) {
+        if (initialize) {
+            page.addEventListener("load", () => {
+                raiseEvent(page.contentWindow.document, "init");
+            })
+        }
+
         page.src = `../UrlEditorPro/app/${name}.html`;
     }
 
@@ -34,10 +40,8 @@ module Tests.Canvas {
         return <T>elem;
     }
 
-    export function raiseEvent(elem: HTMLElement, eventName: string) {
+    export function raiseEvent(elem: HTMLElement | Document, eventName: string) {
         // add support for mouse/keyboard events
-        let evt = page.contentWindow.document.createEvent("HTMLEvents");
-        evt.initEvent(eventName, true, true);
-        elem.dispatchEvent(evt);
+        elem.dispatchEvent(new Event(eventName));
     }
 }
