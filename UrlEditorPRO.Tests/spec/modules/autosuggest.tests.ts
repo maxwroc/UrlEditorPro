@@ -3,8 +3,8 @@
 module Tests.Autosuggest {
     describe("test", () => {
         it("test", () => {
-            //Canvas.create();
-            //Canvas.loadPage("popup", true);
+            Canvas.create();
+            Canvas.loadPage("popup", true);
         });
     })
 }

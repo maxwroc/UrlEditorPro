@@ -1,3 +1,5 @@
+declare let TEMPLATES: IMap<string>;
+
 module Tests.Canvas {
 
     let page: HTMLIFrameElement;
@@ -17,13 +19,14 @@ module Tests.Canvas {
     }
 
     export function loadPage(name: string, initialize?: boolean) {
-        if (initialize) {
-            page.addEventListener("load", () => {
-                raiseEvent(page.contentWindow.document, "init");
-            })
-        }
 
-        page.src = `../UrlEditorPro/app/${name}.html`;
+        page.contentWindow.document.write(TEMPLATES[name + ".html"].replace(/ src="/g, ' src="../UrlEditorPro/app/'));
+        if (initialize) {
+            // delay event triggering to wait for the page elements to be rendered
+            setTimeout(function() {
+                raiseEvent(page.contentWindow.document, "init");
+            }, 0);
+        }
     }
 
     export function createElement<T extends HTMLElement>(tagName: string, container?: HTMLElement, attributes?: IMap<string>): T {
@@ -33,7 +36,7 @@ module Tests.Canvas {
             Object.keys(attributes).forEach(name => elem.setAttribute(name, attributes[name]));
         }
 
-        if (!container) {
+        if (container === undefined) {
             page.contentWindow.document.body.appendChild(elem);
         }
 
