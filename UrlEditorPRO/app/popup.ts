@@ -17,9 +17,9 @@ module UrlEditor {
         return false;
     }
 
-    function initialize() {
+    function initialize(storage: Storage) {
         var version = chrome.runtime.getManifest().version;
-        var settings = new Settings(localStorage);
+        var settings = new Settings(storage);
 
         // it is better to set variable before page view event (init)
         Tracking.setCustomDimension(Tracking.Dimension.Version, version);
@@ -63,5 +63,7 @@ module UrlEditor {
         });
     };
     
-    document.addEventListener(window.top == window.self ? "DOMContentLoaded" : "init", () => initialize());
+    document.addEventListener(
+        window.top == window.self ? "DOMContentLoaded" : "init", 
+        (evt: any) => initialize(<Storage>evt.detail || localStorage));
 }

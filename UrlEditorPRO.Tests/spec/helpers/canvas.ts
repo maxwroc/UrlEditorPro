@@ -1,8 +1,12 @@
+/// <reference path="../../../typings/index.d.ts" />
+
 declare let TEMPLATES: IMap<string>;
 
 module Tests.Canvas {
 
     let page: HTMLIFrameElement;
+
+    export var chromeMock;
 
     export function create() {
         // just in case it wasn't dismissed before
@@ -18,13 +22,16 @@ module Tests.Canvas {
         page = undefined;
     }
 
-    export function loadPage(name: string, initialize?: boolean) {
-
+    export function loadPage(name: string, initialize?: boolean, storage: any = {}) {
+        // prepend src attributes by a path to app dir and write template to the page
         page.contentWindow.document.write(TEMPLATES[name + ".html"].replace(/ src="/g, ' src="../UrlEditorPro/app/'));
+        // mock Chrom API
+        chromeMock = createChromeMock(page.contentWindow, "chrome");
+
         if (initialize) {
             // delay event triggering to wait for the page elements to be rendered
             setTimeout(function() {
-                raiseEvent(page.contentWindow.document, "init");
+                raiseEvent(page.contentWindow.document, "init", storage);
             }, 0);
         }
     }
@@ -43,8 +50,12 @@ module Tests.Canvas {
         return <T>elem;
     }
 
-    export function raiseEvent(elem: HTMLElement | Document, eventName: string) {
+    export function raiseEvent(elem: HTMLElement | Document, eventName: string, storage: any) {
         // add support for mouse/keyboard events
-        elem.dispatchEvent(new Event(eventName));
+        elem.dispatchEvent(new CustomEvent(eventName, { detail: storage }));
+    }
+
+    export function getElement(id: string) {
+        return page.contentWindow.document.getElementById(id);
     }
 }
