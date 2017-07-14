@@ -1,20 +1,32 @@
 /// <reference path="../helpers/canvas.ts" />
 
-//declare var waitUntil: (escapeOn: () => boolean) => { then: (executeAfter: Function) => void };
-
 module Tests.Autosuggest {
 
     describe("test", () => {
-        it("test", done => {
-            Canvas.create();
-            Canvas.loadPage("popup");
-            let chromeMock = Canvas.chromeMock;
 
-            waitUntil(() => Canvas.ready)
-                .then(() => {
-                    chromeMock.tabs.getSelected.fireCallbacks(chromeMock.mocks.getTab());
-                    done();
-                });
+        let autoSuggestData: UrlEditor.IAutoSuggestData = {
+            "www.google.com": {
+                "param1": ["param1_val1", "param1_val2"]
+            }
+        }
+
+        let chrome: ChromeMock;
+
+        beforeEach(done => {
+            Canvas.create();
+            Canvas.loadPage("popup", null /* prevent from initialization */);
+            chrome = createChromeMock(Canvas.getWindow(), "chrome");
+
+            // make sure that DOM is ready
+            waitUntil(() => Canvas.ready).then(() => done());
+        })
+
+        it("test", () => {
+
+            Canvas.init({ autoSuggestData: autoSuggestData, trackingEnabled: false });
+            
+            // pass current tab info
+            chrome.tabs.getSelected.fireCallbacks(chrome.mocks.getTab());
         });
     });
 
