@@ -7,7 +7,7 @@ module Tests.Autosuggest {
     describe("test", () => {
         it("test", done => {
             Canvas.create();
-            Canvas.loadPage("popup", true, new UrlEditor.Settings({ trackingEnabled: false }));
+            Canvas.loadPage("popup");
             let chromeMock = Canvas.chromeMock;
 
             waitUntil(() => Canvas.ready)

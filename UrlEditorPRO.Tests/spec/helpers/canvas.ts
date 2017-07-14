@@ -29,17 +29,15 @@ module Tests.Canvas {
         ready = false;
     }
 
-    export function loadPage(name: string, initialize?: boolean, storage: any = {}) {
+    export function loadPage(name: string, storage: IMap<any> = { trackingEnabled: false }) {
         // prepend src attributes by a path to app dir and write template to the page
         page.contentWindow.document.write(TEMPLATES[name + ".html"].replace(/ src="/g, ' src="../UrlEditorPro/app/'));
 
-        if (initialize) {
-            // delay event triggering to wait for the page elements to be rendered
-            setTimeout(function() {
-                raiseEvent(page.contentWindow.document, "init", storage);
-                ready = true;
-            }, 0);
-        }
+        // delay event triggering to wait for the page elements to be rendered
+        setTimeout(function() {
+            raiseEvent(page.contentWindow.document, "init", storage);
+            ready = true;
+        }, 0);
     }
 
     export function createElement<T extends HTMLElement>(tagName: string, container?: HTMLElement, attributes?: IMap<string>): T {
