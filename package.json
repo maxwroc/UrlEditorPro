@@ -26,7 +26,7 @@
     "gulp-html2string": "^0.1.1",
     "gulp-rename": "^1.2.2",
     "gulp-typescript": "^3.1.7",
-    "jasmine": "^2.5.3",
+    "jasmine": "^2.6.0",
     "jasmine-core": "^2.6.2",
     "typescript": "^2.4.0",
     "typings": "^2.1.0"

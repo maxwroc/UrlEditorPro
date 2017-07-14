@@ -7,6 +7,29 @@
         });
     }
 
+    /**
+     * Polls an escape function. Once the escape function returns true, executes a run function.
+     */
+    export function waitUntil(escapeFunction: () => boolean, checkDelay = 1) {
+        var _runFunction;
+
+        var interval = setInterval(function () {
+            if (escapeFunction()) {
+                clearInterval(interval);
+
+                if (_runFunction) {
+                    _runFunction();
+                }
+            }
+        }, checkDelay);
+
+        return {
+            then: function (runFunction) {
+                _runFunction = runFunction;
+            }
+        };
+    };
+
     export function createElement<T extends HTMLElement>(tagName: string, id?: string, className?: string): T {
         let elem = document.createElement(tagName);
         id && elem.setAttribute("id", id);

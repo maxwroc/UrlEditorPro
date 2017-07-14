@@ -1,4 +1,5 @@
 /// <reference path="../../../typings/index.d.ts" />
+/// <reference path="chrome_mock.ts" />
 
 declare let TEMPLATES: IMap<string>;
 
@@ -6,7 +7,9 @@ module Tests.Canvas {
 
     let page: HTMLIFrameElement;
 
-    export var chromeMock;
+    export var chromeMock: ChromeMock;
+
+    export var ready: boolean;
 
     export function create() {
         // just in case it wasn't dismissed before
@@ -15,23 +18,26 @@ module Tests.Canvas {
         page = document.createElement("iframe");
         page.setAttribute("style", "resize: both; overflow: auto; width: 416px; height: 400px");
         document.body.appendChild(page);
+
+        // mock Chrom API
+        chromeMock = createChromeMock(page.contentWindow, "chrome");
     }
 
     export function dismiss() {
         page && document.body.removeChild(page);
         page = undefined;
+        ready = false;
     }
 
     export function loadPage(name: string, initialize?: boolean, storage: any = {}) {
         // prepend src attributes by a path to app dir and write template to the page
         page.contentWindow.document.write(TEMPLATES[name + ".html"].replace(/ src="/g, ' src="../UrlEditorPro/app/'));
-        // mock Chrom API
-        chromeMock = createChromeMock(page.contentWindow, "chrome");
 
         if (initialize) {
             // delay event triggering to wait for the page elements to be rendered
             setTimeout(function() {
                 raiseEvent(page.contentWindow.document, "init", storage);
+                ready = true;
             }, 0);
         }
     }

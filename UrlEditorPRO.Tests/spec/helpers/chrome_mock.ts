@@ -9,7 +9,7 @@ module Tests {
         obj.runtime = <IRuntime>{};
         addExtendedSpy(obj.runtime, "getManifest", -1, { version: "1.0.2" });
         obj.tabs = <ITabs>{};
-        addExtendedSpy(obj.tabs, "getSelected", 0);
+        addExtendedSpy(obj.tabs, "getSelected", 1);
         return obj;
     }
 
@@ -18,11 +18,11 @@ module Tests {
             obj[funcName] = () => returnValue;
         }
 
-        let spy = spyOn(obj, funcName);
-        obj["spy"] = spy;
+        let spy = spyOn(obj, funcName).and.callThrough();
+        obj[funcName]["spy"] = spy;
 
-        obj["fireCallbacks"] = (...args) => {
-            if (spy.calls.allArgs.length == 0) {
+        obj[funcName]["fireCallbacks"] = (...args) => {
+            if (spy.calls.allArgs().length == 0) {
                 throw new Error(`Function ${funcName} was never called.`);
             }
 
@@ -31,15 +31,20 @@ module Tests {
                     throw new Error(`Argument [${callbackIndex}] not found on ${index} call to ${funcName}`);
                 }
 
-                let handler = <Function>argsArray[index][callbackIndex]
+                let handler = <Function>argsArray[callbackIndex]
                 handler.apply(null, args);
             });
         }
     }
 
-    class ChromeMock {
+    export class ChromeMock {
         public runtime: IRuntime;
         public tabs: ITabs;
+        public mocks: IChromeObjectMocks = {
+            getTab: () => {
+                return <chrome.tabs.Tab>{ incognito: false, id: 1, url: "http://google.com/path?q=r&z=x" };
+            }
+        }
     }
 
     interface IRuntime {
@@ -54,5 +59,9 @@ module Tests {
         (): T;
         fireCallbacks: (...args) => void;
         spy: jasmine.Spy;
+    }
+
+    interface IChromeObjectMocks {
+        getTab: () => chrome.tabs.Tab
     }
 }
