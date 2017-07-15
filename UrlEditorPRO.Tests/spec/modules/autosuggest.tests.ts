@@ -23,7 +23,9 @@ module Tests.Autosuggest {
 
         it("test", () => {
 
-            Canvas.init({ autoSuggestData: autoSuggestData, trackingEnabled: false });
+            expect(Canvas.ready).toBeTruthy();
+            
+            Canvas.init({ autoSuggestData: JSON.stringify(autoSuggestData), trackingEnabled: false });
             
             // pass current tab info
             chrome.tabs.getSelected.fireCallbacks(chrome.mocks.getTab());
