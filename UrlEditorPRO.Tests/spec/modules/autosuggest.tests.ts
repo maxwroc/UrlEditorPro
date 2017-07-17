@@ -22,14 +22,22 @@ module Tests.Autosuggest {
         })
 
         it("test", () => {
-
-            expect(Canvas.ready).toBeTruthy();
-            
             Canvas.init({ autoSuggestData: JSON.stringify(autoSuggestData), trackingEnabled: false });
-            
+
             // pass current tab info
             chrome.tabs.getSelected.fireCallbacks(chrome.mocks.getTab());
+
+            expect(getParam(0).getName().value).toEqual("q");
         });
+
+        function getParam(index: number) {
+
+            let container = Canvas.getElement("params");
+            return {
+                getName: () => <HTMLInputElement>container.querySelector(`.param:nth-of-type(${index+1}) input:nth-of-type(1)`),
+                getValue: () => <HTMLInputElement>container.querySelector(`.param:nth-of-type(${index+1}) input:nth-of-type(2)`)
+            }
+        }
     });
 
 
