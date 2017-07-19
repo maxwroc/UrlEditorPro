@@ -39,7 +39,7 @@ module Tests.Canvas {
     }
 
     export function init(storage: IMap<any> = { trackingEnabled: false }) {
-        raiseEvent(page.contentWindow.document, SimulatedEvent.Init, storage);
+        raiseEvent(page.contentWindow.document, SimulatedEvent.Init, { "storage": storage });
     }
 
     export function createElement<T extends HTMLElement>(tagName: string, container?: HTMLElement, attributes?: IMap<string>): T {
@@ -78,11 +78,18 @@ module Tests.Canvas {
             case SimulatedEvent.KeyPress:
             case SimulatedEvent.KeyUp:
                 let evt = <any>new KeyboardEvent(simulatedEventToString(eventType));
+                var e = new KeyboardEvent("keydown", {bubbles : true, cancelable : true, key : (eventData.key ? eventData.key.to : undefined), shiftKey : true});
+
                 if (eventData.keyCode) {
                     evt["which"] = evt["keyCode"] = eventData.keyCode;
                 }
 
                 elem.dispatchEvent(evt);
+
+                let input = <HTMLInputElement>elem;
+                if(eventType == SimulatedEvent.KeyDown && input.tagName == "INPUT" && input.type == "text") {
+                    
+                }
                 break;
         }
     }
@@ -99,7 +106,8 @@ module Tests.Canvas {
         Init,
         KeyDown,
         KeyPress,
-        KeyUp
+        KeyUp,
+        Focus
     }
 
     function simulatedEventToString(eventType: SimulatedEvent) {
@@ -111,7 +119,7 @@ module Tests.Canvas {
             case SimulatedEvent.KeyUp:
                 return "keyup";
         }
-        
+
         throw new Error("Unsupported simulated event type: " + eventType);
     }
 }

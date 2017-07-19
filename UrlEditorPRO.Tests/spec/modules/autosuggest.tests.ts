@@ -27,7 +27,9 @@ module Tests.Autosuggest {
             // pass current tab info
             chrome.tabs.getSelected.fireCallbacks(chrome.mocks.getTab());
 
-            expect(getParam(0).getName().value).toEqual("q");
+            let param = getParam(0);
+            expect(param.getName().value).toEqual("q");
+            Canvas.type(param.getValue(), "param");
         });
 
         function getParam(index: number) {
