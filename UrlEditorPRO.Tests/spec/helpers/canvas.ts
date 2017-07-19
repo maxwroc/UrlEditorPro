@@ -39,7 +39,7 @@ module Tests.Canvas {
     }
 
     export function init(storage: IMap<any> = { trackingEnabled: false }) {
-        raiseEvent(page.contentWindow.document, "init", storage);
+        raiseEvent(page.contentWindow.document, SimulatedEvent.Init, storage);
     }
 
     export function createElement<T extends HTMLElement>(tagName: string, container?: HTMLElement, attributes?: IMap<string>): T {
@@ -56,9 +56,35 @@ module Tests.Canvas {
         return <T>elem;
     }
 
-    export function raiseEvent(elem: HTMLElement | Document, eventName: string, storage: any) {
-        // add support for mouse/keyboard events
-        elem.dispatchEvent(new CustomEvent(eventName, { detail: storage }));
+    export function type(elem: HTMLInputElement, text: string) {
+        Array.from(text).forEach(char => {
+            raiseEvent(elem, SimulatedEvent.KeyDown, { keyCode: char.charCodeAt(0) });
+            raiseEvent(elem, SimulatedEvent.KeyPress, { keyCode: char.charCodeAt(0) });
+            raiseEvent(elem, SimulatedEvent.KeyUp, { keyCode: char.charCodeAt(0) });
+        });
+    }
+
+    export function raiseEvent(elem: HTMLElement | Document, eventType: SimulatedEvent, eventData: IMap<any> = {}) {
+        switch (eventType) {
+            case SimulatedEvent.Init:
+                if (!eventData.storage) {
+                    throw new Error("Missing 'storage' property on the eventData object which is required for Init event");
+                }
+
+                elem.dispatchEvent(new CustomEvent("init", { detail: eventData.storage }));
+                break;
+
+            case SimulatedEvent.KeyDown:
+            case SimulatedEvent.KeyPress:
+            case SimulatedEvent.KeyUp:
+                let evt = <any>new KeyboardEvent(simulatedEventToString(eventType));
+                if (eventData.keyCode) {
+                    evt["which"] = evt["keyCode"] = eventData.keyCode;
+                }
+
+                elem.dispatchEvent(evt);
+                break;
+        }
     }
 
     export function getElement(id: string) {
@@ -67,5 +93,25 @@ module Tests.Canvas {
 
     export function getWindow() {
         return page.contentWindow;
+    }
+
+    export const enum SimulatedEvent {
+        Init,
+        KeyDown,
+        KeyPress,
+        KeyUp
+    }
+
+    function simulatedEventToString(eventType: SimulatedEvent) {
+        switch (eventType) {
+            case SimulatedEvent.KeyDown:
+                return "keydown";
+            case SimulatedEvent.KeyPress:
+                return "keypress";
+            case SimulatedEvent.KeyUp:
+                return "keyup";
+        }
+        
+        throw new Error("Unsupported simulated event type: " + eventType);
     }
 }
