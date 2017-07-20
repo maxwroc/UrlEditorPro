@@ -23,12 +23,12 @@ module Tests {
 
         obj[funcName]["fireCallbacks"] = (...args) => {
             if (spy.calls.allArgs().length == 0) {
-                throw new Error(`Function ${funcName} was never called.`);
+                throw new Error(`Firing callbacks on function argument failed. Function "${funcName}" was never called.`);
             }
 
             spy.calls.allArgs().forEach((argsArray, index) => {
                 if (argsArray[callbackIndex] === undefined) {
-                    throw new Error(`Argument [${callbackIndex}] not found on ${index} call to ${funcName}`);
+                    throw new Error(`Firing callbacks on function argument failed. Argument [${callbackIndex}] not found on ${index} call to ${funcName}`);
                 }
 
                 let handler = <Function>argsArray[callbackIndex]
