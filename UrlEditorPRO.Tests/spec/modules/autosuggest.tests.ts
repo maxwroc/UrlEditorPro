@@ -1,5 +1,7 @@
 /// <reference path="../helpers/canvas.ts" />
 
+declare var $;
+
 module Tests.Autosuggest {
 
     describe("test", () => {
@@ -27,15 +29,16 @@ module Tests.Autosuggest {
             // pass current tab info
             chrome.tabs.getSelected.fireCallbacks(chrome.mocks.getTab());
 
-            expect(getParam(0).getName().value).toEqual("q");
+            $(getParam(0).getName()).simulate("key-sequence", { sequence: "test" });
+            //expect(getParam(0).getName().value).toEqual("q");
         });
 
         function getParam(index: number) {
 
             let container = Canvas.getElement("params");
             return {
-                getName: () => <HTMLInputElement>container.querySelector(`.param:nth-of-type(${index+1}) input:nth-of-type(1)`),
-                getValue: () => <HTMLInputElement>container.querySelector(`.param:nth-of-type(${index+1}) input:nth-of-type(2)`)
+                getName: () => <HTMLInputElement>container.querySelector(`.param:nth-of-type(${index + 1}) input:nth-of-type(1)`),
+                getValue: () => <HTMLInputElement>container.querySelector(`.param:nth-of-type(${index + 1}) input:nth-of-type(2)`)
             }
         }
     });
