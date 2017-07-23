@@ -58,8 +58,12 @@ module Tests.Canvas {
     }
 
     export function type(elem: HTMLInputElement, text: string) {
-        $(elem).simulate("key-sequence", { sequence: "{backspace}pa" });
+        $(elem).simulate("key-sequence", { sequence: text });
         elem.dispatchEvent(new Event("input", { bubbles: true, cancelable: true }));
+    }
+
+    export function click(elem: HTMLElement) { 
+        $(elem).trigger("click");
     }
 
     export function raiseEvent(elem: HTMLElement | Document, eventType: string, eventData: IMap<any> = {}) {
@@ -90,7 +94,21 @@ module Tests.Canvas {
         return page.contentWindow.document.body.querySelectorAll(selector);
     }
 
+    export function getActiveElement() {
+        return page.contentWindow.document.activeElement;
+    }
+
     export function getWindow() {
         return page.contentWindow;
+    }
+
+    export class Elements {
+        static getFullUrl() {
+            return page.contentWindow.document.getElementById("full_url");
+        }
+
+        static getGoButton() {
+            return page.contentWindow.document.getElementById("go");
+        }
     }
 }

@@ -10,10 +10,14 @@ module Tests {
         addExtendedSpy(obj.runtime, "getManifest", -1, { version: "1.0.2" });
         obj.tabs = <ITabs>{};
         addExtendedSpy(obj.tabs, "getSelected", 1);
+        addExtendedSpy(obj.tabs, "update");
+        addExtendedSpy(obj.tabs, "create");
+        obj.windows = <IWindows>{};
+        addExtendedSpy(obj.windows, "create");
         return obj;
     }
 
-    function addExtendedSpy(obj: any, funcName: string, callbackIndex: number, returnValue?: any) {
+    function addExtendedSpy(obj: any, funcName: string, callbackIndex = -1, returnValue?: any) {
         if (obj[funcName] === undefined) {
             obj[funcName] = () => returnValue;
         }
@@ -22,6 +26,10 @@ module Tests {
         obj[funcName]["spy"] = spy;
 
         obj[funcName]["fireCallbacks"] = (...args) => {
+            if (callbackIndex == -1) {
+                throw new Error(`Firing callbacks on function argument failed. No defined callbacks on "${funcName}" function.`);
+            }
+
             if (spy.calls.allArgs().length == 0) {
                 throw new Error(`Firing callbacks on function argument failed. Function "${funcName}" was never called.`);
             }
@@ -40,6 +48,7 @@ module Tests {
     export class ChromeMock {
         public runtime: IRuntime;
         public tabs: ITabs;
+        public windows: IWindows;
         public mocks: IChromeObjectMocks = {
             getTab: () => {
                 return <chrome.tabs.Tab>{ incognito: false, id: 1, url: "http://www.google.com/path?q=r&z=x" };
@@ -53,6 +62,12 @@ module Tests {
 
     interface ITabs {
         getSelected: IFunctionMock<any>;
+        create: ({ url: string }) => void;
+        update: (id: number, { url: string }) => void;
+    }
+
+    interface IWindows {
+        create: ({ url: string }) => void;
     }
 
     interface IFunctionMock<T> {

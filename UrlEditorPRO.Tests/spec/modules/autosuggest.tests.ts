@@ -56,6 +56,32 @@ module Tests.Autosuggest {
             expect(suggestions.isBelow(paramContainer.getValueElem())).toBeTruthy();
             expect(suggestions.getSuggestionTexts()).toEqual(["param1_val1", "param1_val2"]);
         });
+
+        it("new param is added to suggestion data - when user added param and pressed Go button", (done) => {
+            let storage = { autoSuggestData: JSON.stringify(autoSuggestData), trackingEnabled: false };
+            Canvas.init(storage);
+
+            // pass current tab info
+            chrome.tabs.getSelected.fireCallbacks(chrome.mocks.getTab());
+
+            let paramNameElem = new ParamContainer(0).getNameElem();
+            // add new param keyboard combination
+            $(paramNameElem).simulate("key-combo", { combo: "ctrl+=" });
+
+            let lastParamContainer = ParamContainer.getLast();
+            Canvas.type(lastParamContainer.getNameElem(), "new_param");
+            Canvas.type(lastParamContainer.getValueElem(), "new_value");
+
+            waitUntil(() => Canvas.Elements.getFullUrl().textContent.endsWith("new_value"))
+                .then(() => {
+                    Canvas.click(Canvas.Elements.getGoButton());
+
+                    let newAutoSuggestData = JSON.parse(storage.autoSuggestData);
+
+                    expect(newAutoSuggestData["www.google.com"]["new_param"]).toEqual(["new_value"]);
+                    done();
+                });
+        })
     });
 
     class ParamContainer {
@@ -70,6 +96,11 @@ module Tests.Autosuggest {
 
         getValueElem() {
             return <HTMLInputElement>this.container.querySelector(`.param:nth-of-type(${this.index + 1}) input:nth-of-type(2)`);
+        }
+
+        static getLast() {
+            // we could use last-of-type selector but this way we wouldn't be able to reuse constructor
+            return new ParamContainer(Canvas.getElementById("params").children.length - 1);
         }
     }
 

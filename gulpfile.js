@@ -58,3 +58,7 @@ gulp.task('test', ['build-test'], function() {
     return gulp.src('UrlEditorPRO.Tests/SpecRunner.html')
         .pipe(open());
 });
+
+gulp.task('watch-test', function () {
+    gulp.watch('UrlEditorPRO.Tests/spec/**/*.ts', ['build-test-internal']);
+});
