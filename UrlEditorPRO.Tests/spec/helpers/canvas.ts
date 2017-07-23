@@ -2,6 +2,7 @@
 /// <reference path="chrome_mock.ts" />
 
 declare let TEMPLATES: IMap<string>;
+declare let $;
 
 module Tests.Canvas {
 
@@ -39,7 +40,7 @@ module Tests.Canvas {
     }
 
     export function init(storage: IMap<any> = { trackingEnabled: false }) {
-        raiseEvent(page.contentWindow.document, SimulatedEvent.Init, { "storage": storage });
+        raiseEvent(page.contentWindow.document, "init", { "storage": storage });
     }
 
     export function createElement<T extends HTMLElement>(tagName: string, container?: HTMLElement, attributes?: IMap<string>): T {
@@ -57,69 +58,39 @@ module Tests.Canvas {
     }
 
     export function type(elem: HTMLInputElement, text: string) {
-        Array.from(text).forEach(char => {
-            raiseEvent(elem, SimulatedEvent.KeyDown, { keyCode: char.charCodeAt(0) });
-            raiseEvent(elem, SimulatedEvent.KeyPress, { keyCode: char.charCodeAt(0) });
-            raiseEvent(elem, SimulatedEvent.KeyUp, { keyCode: char.charCodeAt(0) });
-        });
+        $(elem).simulate("key-sequence", { sequence: "{backspace}pa" });
+        elem.dispatchEvent(new Event("input", { bubbles: true, cancelable: true }));
     }
 
-    export function raiseEvent(elem: HTMLElement | Document, eventType: SimulatedEvent, eventData: IMap<any> = {}) {
+    export function raiseEvent(elem: HTMLElement | Document, eventType: string, eventData: IMap<any> = {}) {
+        let evt: Event;
         switch (eventType) {
-            case SimulatedEvent.Init:
+            case "init":
                 if (!eventData.storage) {
                     throw new Error("Missing 'storage' property on the eventData object which is required for Init event");
                 }
+                evt = new CustomEvent("init", { detail: eventData.storage });
+                break;;
+        }
 
-                elem.dispatchEvent(new CustomEvent("init", { detail: eventData.storage }));
-                break;
-
-            case SimulatedEvent.KeyDown:
-            case SimulatedEvent.KeyPress:
-            case SimulatedEvent.KeyUp:
-                let evt = <any>new KeyboardEvent(simulatedEventToString(eventType));
-                var e = new KeyboardEvent("keydown", {bubbles : true, cancelable : true, key : (eventData.key ? eventData.key.to : undefined), shiftKey : true});
-
-                if (eventData.keyCode) {
-                    evt["which"] = evt["keyCode"] = eventData.keyCode;
-                }
-
-                elem.dispatchEvent(evt);
-
-                let input = <HTMLInputElement>elem;
-                if(eventType == SimulatedEvent.KeyDown && input.tagName == "INPUT" && input.type == "text") {
-                    
-                }
-                break;
+        if (evt) {
+            elem.dispatchEvent(evt);
         }
     }
 
-    export function getElement(id: string) {
+    export function getElementById(id: string) {
         return page.contentWindow.document.getElementById(id);
+    }
+
+    export function getElementBySelector(selector: string) {
+        return page.contentWindow.document.body.querySelector(selector);
+    }
+
+    export function getElementsBySelector(selector: string) {
+        return page.contentWindow.document.body.querySelectorAll(selector);
     }
 
     export function getWindow() {
         return page.contentWindow;
-    }
-
-    export const enum SimulatedEvent {
-        Init,
-        KeyDown,
-        KeyPress,
-        KeyUp,
-        Focus
-    }
-
-    function simulatedEventToString(eventType: SimulatedEvent) {
-        switch (eventType) {
-            case SimulatedEvent.KeyDown:
-                return "keydown";
-            case SimulatedEvent.KeyPress:
-                return "keypress";
-            case SimulatedEvent.KeyUp:
-                return "keyup";
-        }
-
-        throw new Error("Unsupported simulated event type: " + eventType);
     }
 }

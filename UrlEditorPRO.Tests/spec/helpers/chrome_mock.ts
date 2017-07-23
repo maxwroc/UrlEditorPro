@@ -42,7 +42,7 @@ module Tests {
         public tabs: ITabs;
         public mocks: IChromeObjectMocks = {
             getTab: () => {
-                return <chrome.tabs.Tab>{ incognito: false, id: 1, url: "http://google.com/path?q=r&z=x" };
+                return <chrome.tabs.Tab>{ incognito: false, id: 1, url: "http://www.google.com/path?q=r&z=x" };
             }
         }
     }
