@@ -37,7 +37,16 @@
         return <T>elem;
     }
 
-    export function detailedObjectComparison(expected: Object, actual: Object, path: string): void {
+    /**
+     * Compares objects showing more precise failure reason.
+     *
+     * @param expected      Value which is a baseline to check
+     * @param actual        The actual value used to test
+     * @param path          Current path (used to visualize object depth)
+     * @param exactMatch    Whether to check if objects have exactly the same structure. By default it just checks
+     *                      if expected values exist without validating if some others are there as well.
+     */
+    export function detailedObjectComparison(expected: Object, actual: Object, path: string, exactMatch = false): void {
         let validationFailed = false;
 
         if (!expected) {
@@ -63,6 +72,16 @@
             return;
         }
 
+        if (exactMatch && typeof expected == "object") {
+            let actualVal = "/" + JSON.stringify(Object.keys(actual));
+            let expectedVal = "/" + JSON.stringify(Object.keys(expected));
+            expect(path + actualVal).toEqual(path + expectedVal);
+            if (expectedVal != actualVal) {
+                // it doesn't make sense to check further
+                return;
+            }
+        }
+
         for (let i in expected) {
             if (expected.hasOwnProperty(i)) {
                 if (!actual.hasOwnProperty(i)) {
@@ -72,7 +91,7 @@
                 }
                 if (expected[i] !== null && typeof (expected[i]) == "object") {
                     //going on step down in the object tree!!
-                    detailedObjectComparison(expected[i], actual[i], path + "/" + i);
+                    detailedObjectComparison(expected[i], actual[i], path + "/" + i, exactMatch);
                 }
                 else {
                     let pathCmp = path + "/" + i + ":";

@@ -76,9 +76,10 @@ module Tests.Autosuggest {
                 .then(() => {
                     Canvas.click(Canvas.Elements.getGoButton());
 
-                    let newAutoSuggestData = JSON.parse(storage.autoSuggestData);
+                    // create expected data object
+                    autoSuggestData["www.google.com"]["new_param"] = ["new_value"];
 
-                    expect(newAutoSuggestData["www.google.com"]["new_param"]).toEqual(["new_value"]);
+                    detailedObjectComparison(autoSuggestData, JSON.parse(storage.autoSuggestData), "autoSuggestData", true/*exactMatch*/);
                     done();
                 });
         })

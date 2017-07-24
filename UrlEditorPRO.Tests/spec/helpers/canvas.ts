@@ -30,13 +30,14 @@ module Tests.Canvas {
         page.contentWindow.document.write(TEMPLATES[name + ".html"].replace(/ src="/g, ' src="../UrlEditorPro/app/'));
 
         // delay event triggering to wait for the page elements to be rendered
-        setTimeout(function () {
-            if (storage) {
-                init(storage);
-            }
+        waitUntil(() => !!Elements.getVersion(false/*throwWhenMissing*/))
+            .then(() => {
+                if (storage) {
+                    init(storage);
+                }
 
-            ready = true;
-        }, 0);
+                ready = true;
+            });
     }
 
     export function init(storage: IMap<any> = { trackingEnabled: false }) {
@@ -62,7 +63,7 @@ module Tests.Canvas {
         elem.dispatchEvent(new Event("input", { bubbles: true, cancelable: true }));
     }
 
-    export function click(elem: HTMLElement) { 
+    export function click(elem: HTMLElement) {
         $(elem).trigger("click");
     }
 
@@ -103,12 +104,24 @@ module Tests.Canvas {
     }
 
     export class Elements {
-        static getFullUrl() {
-            return page.contentWindow.document.getElementById("full_url");
+        static getFullUrl(thowWhenMissing = true) {
+            return Elements.getElem("full_url", thowWhenMissing);
         }
 
-        static getGoButton() {
-            return page.contentWindow.document.getElementById("go");
+        static getGoButton(thowWhenMissing = true) {
+            return Elements.getElem("go", thowWhenMissing);
+        }
+        static getVersion(thowWhenMissing = true) {
+            return Elements.getElem("version", thowWhenMissing);
+        }
+
+        private static getElem(id: string, thowWhenMissing: boolean) {
+            let elem = page.contentWindow.document.getElementById(id);
+            if (thowWhenMissing && !elem) {
+                throw new Error(`Element with id "${id}" not found. Please make sure the pane is loaded already.`);
+            }
+
+            return elem;
         }
     }
 }

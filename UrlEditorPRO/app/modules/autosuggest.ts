@@ -65,12 +65,18 @@ module UrlEditor {
             Object.keys(submittedParams).forEach(name => {
                 // add params to save list when they were just added
                 if (baseParams[name] == undefined ||
-                    // or their value is different than before
-                    baseParams[name] != submittedParams[name]) {
+                    // or their values are different than before (this is not the most efficient way to compare arrays but it's simple and works)
+                    baseParams[name].join(",") != submittedParams[name].join(",")) {
+                    
                     // initilize collection whenever it is needed
                     paramsToSave = paramsToSave || {};
                     // take only values which were not saved previously
-                    paramsToSave[name] = submittedParams[name].filter(val => !baseParams[name] || baseParams[name].indexOf(val) == -1);
+                    let newValues = submittedParams[name].filter(val => !baseParams[name] || baseParams[name].indexOf(val) == -1);
+
+                    // skip empty ones
+                    if (newValues.length) {
+                        paramsToSave[name] = newValues;
+                    }
                 }
             });
 
