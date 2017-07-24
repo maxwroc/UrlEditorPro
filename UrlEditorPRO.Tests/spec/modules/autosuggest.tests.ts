@@ -167,6 +167,58 @@ module Tests.Autosuggest {
                     done();
                 });
         });
+
+        it("new param value is added to suggestion data when param data exists already", () => {
+            let storage = { autoSuggestData: JSON.stringify(autoSuggestData), trackingEnabled: false };
+            Canvas.init(storage);
+
+            // pass current tab info
+            chrome.tabs.getSelected.fireCallbacks(chrome.mocks.getTab());
+
+            let paramContainer = new ParamContainer(0);
+            paramContainer.getNameElem().value = "param1";
+            let valueElem = paramContainer.getValueElem();
+            valueElem.value = "";
+            Canvas.type(valueElem, "new_value")
+
+            Canvas.click(Canvas.Elements.getGoButton());
+
+            // create expected data object
+            autoSuggestData["www.google.com"]["param1"].unshift("new_value");
+
+            detailedObjectComparison(autoSuggestData, JSON.parse(storage.autoSuggestData), "autoSuggestData", true/*exactMatch*/);
+        });
+
+        it("new param is added to suggestion data when domain data didin't exist before", (done) => {
+            let storage = { autoSuggestData: JSON.stringify(autoSuggestData), trackingEnabled: false };
+            Canvas.init(storage);
+
+            // pass current tab info
+            let tab = chrome.mocks.getTab();
+            tab.url = "http://www.something-new.com/path?q=r&z=x"
+            chrome.tabs.getSelected.fireCallbacks(tab);
+
+            let paramNameElem = new ParamContainer(0).getNameElem();
+            // add new param keyboard combination (ctrl+"+")
+            $(paramNameElem).simulate("key-combo", { combo: "ctrl+=" });
+
+            let lastParamContainer = ParamContainer.getLast();
+            Canvas.type(lastParamContainer.getNameElem(), "new_param");
+            Canvas.type(lastParamContainer.getValueElem(), "new_value");
+
+            waitUntil(() => Canvas.Elements.getFullUrl().textContent.endsWith("new_value"))
+                .then(() => {
+                    Canvas.click(Canvas.Elements.getGoButton());
+
+                    // create expected data object
+                    autoSuggestData["www.something-new.com"] = {
+                        "new_param": ["new_value"]
+                    };
+
+                    detailedObjectComparison(autoSuggestData, JSON.parse(storage.autoSuggestData), "autoSuggestData", true/*exactMatch*/);
+                    done();
+                });
+        });
     });
 
     class ParamContainer {
