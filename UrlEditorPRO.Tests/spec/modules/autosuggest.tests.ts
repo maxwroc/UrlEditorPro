@@ -38,6 +38,30 @@ module Tests.Autosuggest {
             expect(suggestions.getSuggestionTexts()).toEqual(["param1"]);
         });
 
+        it("suggestions list appears on param name element - domain alias", () => {
+            // add alias domain
+            autoSuggestData["www.google-test.com"] = {
+                "[suggestionAlias]": ["www.google.com"]
+            };
+
+            Canvas.init({ autoSuggestData: JSON.stringify(autoSuggestData), trackingEnabled: false });
+
+            // pass current tab info
+            let tab = chrome.mocks.getTab();
+            tab.url = "http://www.google-test.com/path?q=r&z=x"
+            chrome.tabs.getSelected.fireCallbacks(tab);
+
+            let paramContainer = new ParamContainer(0);
+            let nameInput = paramContainer.getNameElem();
+            Canvas.type(nameInput, "{backspace}pa");
+
+            let suggestions = new SuggestionContainer();
+
+            expect(suggestions.isVisible()).toBeTruthy();
+            expect(suggestions.isBelow(paramContainer.getNameElem())).toBeTruthy();
+            expect(suggestions.getSuggestionTexts()).toEqual(["param1"]);
+        });
+
         it("suggestions list appears on param value element", () => {
             Canvas.init({ autoSuggestData: JSON.stringify(autoSuggestData), trackingEnabled: false });
 
@@ -57,7 +81,33 @@ module Tests.Autosuggest {
             expect(suggestions.getSuggestionTexts()).toEqual(["param1_val1", "param1_val2"]);
         });
 
-        it("new param is added to suggestion data - when user added param and pressed Go button", (done) => {
+        it("suggestions list appears on param value element - domain alias", () => {
+            // add alias domain
+            autoSuggestData["www.google-test.com"] = {
+                "[suggestionAlias]": ["www.google.com"]
+            };
+
+            Canvas.init({ autoSuggestData: JSON.stringify(autoSuggestData), trackingEnabled: false });
+
+            // pass current tab info
+            let tab = chrome.mocks.getTab();
+            tab.url = "http://www.google-test.com/path?q=r&z=x"
+            chrome.tabs.getSelected.fireCallbacks(tab);
+
+            let paramContainer = new ParamContainer(0);
+            // it has to match param name
+            paramContainer.getNameElem().value = "param1";
+
+            let valueInput = paramContainer.getValueElem();
+            Canvas.type(valueInput, "{backspace}pa");
+
+            let suggestions = new SuggestionContainer();
+            expect(suggestions.isVisible()).toBeTruthy();
+            expect(suggestions.isBelow(paramContainer.getValueElem())).toBeTruthy();
+            expect(suggestions.getSuggestionTexts()).toEqual(["param1_val1", "param1_val2"]);
+        });
+
+        it("new param is added to suggestion data", (done) => {
             let storage = { autoSuggestData: JSON.stringify(autoSuggestData), trackingEnabled: false };
             Canvas.init(storage);
 
@@ -65,7 +115,7 @@ module Tests.Autosuggest {
             chrome.tabs.getSelected.fireCallbacks(chrome.mocks.getTab());
 
             let paramNameElem = new ParamContainer(0).getNameElem();
-            // add new param keyboard combination
+            // add new param keyboard combination (ctrl+"+")
             $(paramNameElem).simulate("key-combo", { combo: "ctrl+=" });
 
             let lastParamContainer = ParamContainer.getLast();
@@ -82,7 +132,41 @@ module Tests.Autosuggest {
                     detailedObjectComparison(autoSuggestData, JSON.parse(storage.autoSuggestData), "autoSuggestData", true/*exactMatch*/);
                     done();
                 });
-        })
+        });
+
+        it("new param is added to suggestion data - domain alias", (done) => {
+            // add alias domain
+            autoSuggestData["www.google-test.com"] = {
+                "[suggestionAlias]": ["www.google.com"]
+            };
+
+            let storage = { autoSuggestData: JSON.stringify(autoSuggestData), trackingEnabled: false };
+            Canvas.init(storage);
+
+            // pass current tab info
+            let tab = chrome.mocks.getTab();
+            tab.url = "http://www.google-test.com/path?q=r&z=x"
+            chrome.tabs.getSelected.fireCallbacks(tab);
+
+            let paramNameElem = new ParamContainer(0).getNameElem();
+            // add new param keyboard combination (ctrl+"+")
+            $(paramNameElem).simulate("key-combo", { combo: "ctrl+=" });
+
+            let lastParamContainer = ParamContainer.getLast();
+            Canvas.type(lastParamContainer.getNameElem(), "new_param");
+            Canvas.type(lastParamContainer.getValueElem(), "new_value");
+
+            waitUntil(() => Canvas.Elements.getFullUrl().textContent.endsWith("new_value"))
+                .then(() => {
+                    Canvas.click(Canvas.Elements.getGoButton());
+
+                    // create expected data object
+                    autoSuggestData["www.google.com"]["new_param"] = ["new_value"];
+
+                    detailedObjectComparison(autoSuggestData, JSON.parse(storage.autoSuggestData), "autoSuggestData", true/*exactMatch*/);
+                    done();
+                });
+        });
     });
 
     class ParamContainer {

@@ -81,9 +81,12 @@ module UrlEditor {
             });
 
             if (paramsToSave) {
-                var pageName = submittedUri.hostname();
+                let pageData = this.getCurrentPageData();
+                
                 // make sure that the entry exists
-                var pageData = this.parsedData[pageName] = this.parsedData[pageName] || {};
+                if (!pageData) {
+                    pageData = this.parsedData[submittedUri.hostname()] = {};
+                }
 
                 Object.keys(paramsToSave).forEach(name => {
                     // make sure collection of values for parameter name exists
