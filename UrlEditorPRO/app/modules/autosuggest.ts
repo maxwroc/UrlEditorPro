@@ -57,11 +57,11 @@ module UrlEditor {
                 return;
             }
             
-            var baseParams = this.baseUrl.params();
-            var submittedParams = submittedUri.params();
+            let baseParams = this.baseUrl.params();
+            let submittedParams = submittedUri.params();
             
             // create a list of params to save
-            var paramsToSave: IMap<string[]>;
+            let paramsToSave: IMap<string[]>;
             Object.keys(submittedParams).forEach(name => {
                 // add params to save list when they were just added
                 if (baseParams[name] == undefined ||
@@ -95,7 +95,7 @@ module UrlEditor {
                     // iterate over newly added param values
                     paramsToSave[name].forEach(val => {
                         // check if value already exists
-                        var foundOnPosition = pageData[name].indexOf(val);
+                        let foundOnPosition = pageData[name].indexOf(val);
                         if (foundOnPosition != -1) {
                             // remove it as we want to add it on the beginning of the collection later
                             pageData[name].splice(foundOnPosition, 1);
@@ -136,7 +136,7 @@ module UrlEditor {
         }
 
         private getCurrentPageData() {
-            var pageData = this.parsedData[this.baseUrl.hostname()];
+            let pageData = this.parsedData[this.baseUrl.hostname()];
             // check if it's not an alias
             if (pageData && pageData[AutoSuggest.HOST_ALIAS_KEY]) {
                 let aliasPageName = pageData[AutoSuggest.HOST_ALIAS_KEY][0];
@@ -148,7 +148,7 @@ module UrlEditor {
 
         private onDomEvent(elem: HTMLInputElement) {
             if (elem.tagName == "INPUT" && elem.type == "text" && (<IParamContainerElement>elem.parentElement).isParamContainer) {
-                var name, value;
+                let name, value;
                 switch (elem.name) {
                     case "name":
                         name = elem.value;
@@ -179,11 +179,11 @@ module UrlEditor {
                 this.parsedData = JSON.parse(this.settings.autoSuggestData);
             }
 
-            var pageData = this.getCurrentPageData();
+            let pageData = this.getCurrentPageData();
             if (pageData) {
-                var suggestions: string[] = [];
+                let suggestions: string[] = [];
 
-                var prefix: string;
+                let prefix: string;
 
                 // check if name is being edited
                 if (value == undefined) {
@@ -232,13 +232,13 @@ module UrlEditor {
         }
 
         add(text: string) {
-            var li = this.doc.createElement("li");
+            let li = this.doc.createElement("li");
             li.textContent = text;
             li.className = "suggestion";
             li["suggestionText"] = text;
 
             // delete button
-            var del = this.doc.createElement("span");
+            let del = this.doc.createElement("span");
             del.textContent = "x";
             del.className = "delete";
             del.title = "Press Ctrl+D to remove";
@@ -260,9 +260,9 @@ module UrlEditor {
         show(elem: HTMLInputElement) {
             // show only if there is anything to show
             if (this.container.innerHTML) {
-                var pos = elem.getBoundingClientRect();
+                let pos = elem.getBoundingClientRect();
                 // pos doesn't contain scroll value so we need to add it
-                var posTop = pos.bottom + this.doc.body.scrollTop - 3;
+                let posTop = pos.bottom + this.doc.body.scrollTop - 3;
                 this.container.style.top = posTop + "px";
                 this.container.style.left = pos.left + "px";
                 this.container.style.display = "block";
@@ -271,13 +271,13 @@ module UrlEditor {
                 this.container.style.width = "auto";
 
                 // reduce the height if it is reached page end
-                var tooBig = posTop + this.container.offsetHeight - (this.doc.body.offsetHeight + 8); // increase by 8 due to margin
+                let tooBig = posTop + this.container.offsetHeight - (this.doc.body.offsetHeight + 8); // increase by 8 due to margin
                 if (tooBig > 0) {
                     this.container.style.height = (this.container.offsetHeight - tooBig) + "px"; 
                 }
 
                 // reduce width if it is too wide
-                var tooWide = pos.left + this.container.offsetWidth - (this.doc.body.offsetWidth + 8);
+                let tooWide = pos.left + this.container.offsetWidth - (this.doc.body.offsetWidth + 8);
                 if (tooWide > 0) {
                     this.container.style.width = (this.container.offsetWidth - tooWide) + "px";
                 }
@@ -305,7 +305,7 @@ module UrlEditor {
         }
 
         private mouseEventHandler(evt: MouseEvent) {
-            var elem = <HTMLElement>evt.target;
+            let elem = <HTMLElement>evt.target;
 
             switch (elem.className) {
                 case "suggestion":
@@ -314,7 +314,7 @@ module UrlEditor {
                     Tracking.trackEvent(Tracking.Category.AutoSuggest, "used");
 
                     // trigger event which will update param in the url (via view model)
-                    var e = new Event("updated");
+                    let e = new Event("updated");
                     e.initEvent("updated", true, true);
                     this.inputElem.dispatchEvent(e)
                     break;
@@ -332,15 +332,15 @@ module UrlEditor {
         }
 
         private keyboardNavigation(evt: KeyboardEvent) {
-            var handled: boolean;
-            var elementToFocus: HTMLInputElement;
+            let handled: boolean;
+            let elementToFocus: HTMLInputElement;
 
             // allow user to navigate to other input elem
             if (evt.ctrlKey && evt.keyCode != 68) {
                 return;
             }
 
-            var suggestionToSelect: ISuggestion;
+            let suggestionToSelect: ISuggestion;
 
             switch (evt.keyCode) {
                 case 38: // up
@@ -357,7 +357,7 @@ module UrlEditor {
                         handled = true;
                         this.originalText = this.active.suggestionText;
 
-                        var nextInput = <HTMLInputElement>this.inputElem.nextElementSibling;
+                        let nextInput = <HTMLInputElement>this.inputElem.nextElementSibling;
                         if (nextInput.tagName == "INPUT" && nextInput.type == "text") {
                             elementToFocus = nextInput;
                         }
@@ -369,7 +369,7 @@ module UrlEditor {
                         Tracking.trackEvent(Tracking.Category.AutoSuggest, "used");
 
                     // trigger event which will update param in the url (via view model)
-                        var e = new Event("updated");
+                        let e = new Event("updated");
                         e.initEvent("updated", true, true);
                         this.inputElem.dispatchEvent(e)
                     }
@@ -419,7 +419,7 @@ module UrlEditor {
         }
 
         private deleteSuggestion(suggestion: ISuggestion) {
-            var paramElem = <IParamContainerElement>this.inputElem.parentElement;
+            let paramElem = <IParamContainerElement>this.inputElem.parentElement;
 
             // check if user wants to remove value suggestion
             if (this.inputElem == paramElem.valueElement) {
