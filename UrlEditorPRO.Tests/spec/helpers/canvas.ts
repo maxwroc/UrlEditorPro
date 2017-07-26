@@ -64,7 +64,9 @@ module Tests.Canvas {
     }
 
     export function click(elem: HTMLElement) {
-        $(elem).trigger("click");
+        $(elem).simulate("mousedown");
+        $(elem).simulate("click");
+        $(elem).simulate("mouseup");
     }
 
     export function raiseEvent(elem: HTMLElement | Document, eventType: string, eventData: IMap<any> = {}) {

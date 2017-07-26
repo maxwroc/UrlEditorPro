@@ -4,15 +4,17 @@ module Tests.Autosuggest {
 
     describe("Autosuggest test validating if", () => {
 
-        let autoSuggestData: UrlEditor.IAutoSuggestData = {
-            "www.google.com": {
-                "param1": ["param1_val1", "param1_val2"]
-            }
-        }
+        let autoSuggestData: UrlEditor.IAutoSuggestData;
 
         let chrome: ChromeMock;
 
         beforeEach(done => {
+            autoSuggestData = {
+                "www.google.com": {
+                    "param1": ["param1_val1", "param1_val2"]
+                }
+            }
+
             Canvas.create();
             Canvas.loadPage("popup", null /* prevent from initialization */);
             chrome = createChromeMock(Canvas.getWindow(), "chrome");
@@ -219,6 +221,49 @@ module Tests.Autosuggest {
                     done();
                 });
         });
+
+        it("clicking on delete button removes param", () => {
+            let storage = { autoSuggestData: JSON.stringify(autoSuggestData), trackingEnabled: false };
+            Canvas.init(storage);
+
+            // pass current tab info
+            chrome.tabs.getSelected.fireCallbacks(chrome.mocks.getTab());
+
+            let paramContainer = new ParamContainer(0);
+            let nameInput = paramContainer.getNameElem();
+            Canvas.type(nameInput, "{backspace}pa");
+
+            let suggestions = new SuggestionContainer();
+
+            suggestions.delete("param1");
+
+            // update expected data object
+            delete autoSuggestData["www.google.com"]["param1"];
+
+            detailedObjectComparison(autoSuggestData, JSON.parse(storage.autoSuggestData), "autoSuggestData", true/*exactMatch*/);
+        });
+
+        it("clicking on delete button removes param value", () => {
+            let storage = { autoSuggestData: JSON.stringify(autoSuggestData), trackingEnabled: false };
+            Canvas.init(storage);
+
+            // pass current tab info
+            chrome.tabs.getSelected.fireCallbacks(chrome.mocks.getTab());
+
+            let paramContainer = new ParamContainer(0);
+            paramContainer.getNameElem().value = "param1";
+            let valueInput = paramContainer.getValueElem();
+            Canvas.type(valueInput, "{backspace}pa");
+
+            let suggestions = new SuggestionContainer();
+
+            suggestions.delete("param1_val1");
+
+            // update expected data object (remove first param value)
+            autoSuggestData["www.google.com"]["param1"].shift();
+
+            detailedObjectComparison(autoSuggestData, JSON.parse(storage.autoSuggestData), "autoSuggestData", true/*exactMatch*/);
+        });
     });
 
     class ParamContainer {
@@ -276,14 +321,27 @@ module Tests.Autosuggest {
         }
 
         getSuggestionTexts() {
+            return this.getSuggestionsElems().map(li => {
+                return li.childNodes[0].textContent;
+            })
+        }
+
+        delete(suggestion: string) {
+            let deleteButton: HTMLElement;
+            this.getSuggestionsElems().forEach(elem => {
+                if (elem.childNodes[0].textContent == suggestion) {
+                    Canvas.click(<HTMLElement>elem.childNodes[1]);
+                }
+            });
+        }
+
+        private getSuggestionsElems() {
             let suggestions = this.container.querySelectorAll(".suggestion");
             if (suggestions.length == 0) {
                 throw new Error("Suggestions not found");
             }
 
-            return Array.from(suggestions).map(li => {
-                return li.childNodes[0].textContent;
-            })
+            return Array.from(suggestions);
         }
     }
 
