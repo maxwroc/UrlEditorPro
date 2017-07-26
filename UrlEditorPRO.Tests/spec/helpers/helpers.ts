@@ -101,7 +101,7 @@
         }
 
         if (validationFailed) {
-            console.log("Failed - objects not the same", expected, actual);
+            console.log("Failed - objects not the same expected/actual [" + path + "]", expected, actual);
         }
     }
 }

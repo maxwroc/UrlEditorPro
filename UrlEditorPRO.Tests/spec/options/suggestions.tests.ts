@@ -156,7 +156,7 @@ module Tests {
 
             let actualAutoSuggestData = setValueSettingsSpy.calls.argsFor(0)[1];
             expect(actualAutoSuggestData).not.toBeUndefined();
-            detailedObjectComparison(expected, JSON.parse(actualAutoSuggestData), "autoSuggestData")
+            detailedObjectComparison(expected, JSON.parse(actualAutoSuggestData), "autoSuggestData");
         });
 
         it("params are listed correctly for bind page", () => {
@@ -241,7 +241,7 @@ module Tests {
 
                 let actualAutoSuggestData = setValueSettingsSpy.calls.argsFor(0)[1];
                 expect(actualAutoSuggestData).not.toBeUndefined();
-                detailedObjectComparison(expected, JSON.parse(actualAutoSuggestData), "autoSuggestData")
+                detailedObjectComparison(expected, JSON.parse(actualAutoSuggestData), "autoSuggestData");
             });
 
         all("pages to bind are populated correctly",
@@ -282,6 +282,61 @@ module Tests {
                     expect(val).toEqual(autoSuggestPageToBind.children[index]["value"]);
                 });
             });
+        
+        it("when binding check if other pages have current page as alias", () => {
+            autoSuggestData = {
+                "www.google.com": {
+                    "param1": ["a1", "a2", "a3", "a10"],
+                    "param2": ["b1", "b2", "b3"],
+                    "param3": ["c1"]
+                },
+                "www.something.com": {
+                    "[suggestionAlias]": ["www.google.com"]
+                },
+                "www.web.com": {
+                    "[suggestionAlias]": ["www.google.com"]
+                },
+                "www.new-mother-page.com": {
+                    "b_param1": ["bb1"]
+                }
+            };
+
+            initialize();
+
+            let setValueSettingsSpy = spyOn(settings, "setValue");
+            
+            let autoSuggestPages = UrlEditor.Helpers.ge<HTMLSelectElement>("autoSuggestPages");
+            autoSuggestPages.selectedIndex = 3 + 1; // skipping default one (www.new-mother-page.com)
+            raiseEvent(autoSuggestPages, "change");
+
+            let autoSuggestParams = UrlEditor.Helpers.ge<HTMLSelectElement>("autoSuggestParams");
+            let autoSuggestPageToBind = UrlEditor.Helpers.ge<HTMLSelectElement>("autoSuggestPageToBind");
+            autoSuggestPageToBind.selectedIndex = 0 + 1; // skip default one (www.google.com)
+
+            let saveBinding = UrlEditor.Helpers.ge<HTMLSelectElement>("saveBinding");
+            raiseEvent(saveBinding, "click");
+
+            let expected = {
+                "www.google.com": {
+                    "[suggestionAlias]": ["www.new-mother-page.com"]
+                },
+                "www.something.com": {
+                    "[suggestionAlias]": ["www.new-mother-page.com"]
+                },
+                "www.web.com": {
+                    "[suggestionAlias]": ["www.new-mother-page.com"]
+                },
+                "www.new-mother-page.com": {
+                    "param1": ["a1", "a2", "a3", "a10"],
+                    "param2": ["b1", "b2", "b3"],
+                    "param3": ["c1"],
+                    "b_param1": ["bb1"]
+                }
+            };
+
+            let actualAutoSuggestData = setValueSettingsSpy.calls.argsFor(0)[1];
+            detailedObjectComparison(expected, JSON.parse(actualAutoSuggestData), "autoSuggestData")
+        });
 
         function raiseEvent(elem: HTMLElement, eventName: string) {
             let evt = testPageContainer.contentWindow.document.createEvent("HTMLEvents");

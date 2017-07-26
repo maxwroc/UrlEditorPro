@@ -60,5 +60,6 @@ gulp.task('test', ['build-test'], function() {
 });
 
 gulp.task('watch-test', function () {
+    gulp.watch('UrlEditorPRO/app/**/*.ts', ['build']);
     gulp.watch('UrlEditorPRO.Tests/spec/**/*.ts', ['build-test-internal']);
 });

@@ -3,6 +3,7 @@
 module UrlEditor.Options.Suggestions {
 
     const UNBIND = "[Unbind] ";
+    const HOST_ALIAS_KEY = "[suggestionAlias]";
 
     let autoSuggestData: IAutoSuggestData;
     let settings: Settings;
@@ -49,9 +50,9 @@ module UrlEditor.Options.Suggestions {
     }
 
     function getBasePageName(pageName: string) {
-        return autoSuggestData[pageName] && 
-               autoSuggestData[pageName][AutoSuggest.HOST_ALIAS_KEY] && 
-               autoSuggestData[pageName][AutoSuggest.HOST_ALIAS_KEY][0];
+        return autoSuggestData[pageName] &&
+            autoSuggestData[pageName][HOST_ALIAS_KEY] &&
+            autoSuggestData[pageName][HOST_ALIAS_KEY][0];
     }
 
     function handleSelect(evt) {
@@ -205,36 +206,99 @@ module UrlEditor.Options.Suggestions {
         if (targetPage && autoSuggestData[targetPage]) {
 
             if (unbinding) {
-                // double check which one is the alias
-                if (autoSuggestData[subjectPage][AutoSuggest.HOST_ALIAS_KEY]) {
-                    autoSuggestData[subjectPage] = autoSuggestData[targetPage];
-                }
-                else {
-                    autoSuggestData[targetPage] = autoSuggestData[subjectPage];
-                }
+                new Page(subjectPage).unbind(new Page(targetPage));
             }
             else {
-                Object.keys(autoSuggestData[targetPage]).forEach(paramName => {
-                    // merging arrays making sure that we won't have any dupes
-                    let result = Array.from(
-                        new Set(
-                            (autoSuggestData[subjectPage][paramName] || []).concat(autoSuggestData[targetPage][paramName])
-                        ));
-
-                    if ((autoSuggestData[subjectPage][paramName] || []).length != autoSuggestData[targetPage][paramName].length) {
-                        autoSuggestData[subjectPage][paramName] = result;
-                    }
-                });
-
-                autoSuggestData[targetPage] = {};
-                autoSuggestData[targetPage][AutoSuggest.HOST_ALIAS_KEY] = [subjectPage];
+                new Page(subjectPage).bindWith(new Page(targetPage));
             }
 
-            settings.setValue("autoSuggestData", JSON.stringify(autoSuggestData));
+            saveAutoSuggestData();
         }
     }
 
     function saveAutoSuggestData() {
         settings.setValue("autoSuggestData", JSON.stringify(autoSuggestData));
+    }
+
+    class Page {
+        constructor(public domain: string) {
+        }
+
+        bindWith(page: Page) {
+            let localTopDomain = this.getTopDomain(this);
+            let bindDomain = this.getTopDomain(page);
+
+            if (localTopDomain == bindDomain) {
+                return;
+            }
+
+            this.mergeParams(localTopDomain, bindDomain);
+
+            // update other domains if they were bind to the bindDomain
+            Object.keys(autoSuggestData).forEach(domain => {
+                if (autoSuggestData[domain][HOST_ALIAS_KEY] && autoSuggestData[domain][HOST_ALIAS_KEY][0] == bindDomain) {
+                    autoSuggestData[domain][HOST_ALIAS_KEY][0] = localTopDomain;
+                }
+            });
+            
+            autoSuggestData[bindDomain] = {};
+            autoSuggestData[bindDomain][HOST_ALIAS_KEY] = [localTopDomain];
+        }
+
+        unbind(page: Page) {
+            let rel = this.resolveRelationship(page);
+            autoSuggestData[rel.child] = autoSuggestData[rel.parent]
+        }
+
+        private getTopDomain(page: Page) {
+            let topDomain = page.domain;
+            while (autoSuggestData[topDomain][HOST_ALIAS_KEY]) {
+                topDomain = autoSuggestData[topDomain][HOST_ALIAS_KEY][0];
+            }
+
+            return topDomain;
+        }
+
+        private resolveRelationship(targetPage: Page, parentLookupEnabled = false) {
+            let result = {
+                parent: this.domain,
+                child: targetPage.domain
+            };
+
+            if (autoSuggestData[this.domain][HOST_ALIAS_KEY]) {
+                let parentDomain = targetPage.domain;
+                if (autoSuggestData[parentDomain][HOST_ALIAS_KEY]) {
+
+                    if (parentLookupEnabled) {
+                        // trying to find root
+                        parentDomain = this.getTopDomain(targetPage);
+                    } else {
+                        throw new Error("Binding failed. Both pages are aliases.");
+                    }    
+                }
+
+                // swap
+                result.parent = parentDomain;
+                result.child = this.domain;
+            }
+
+            return result;
+        }
+
+        private mergeParams(parentDomain, domainToBind) {
+            Object.keys(autoSuggestData[domainToBind]).forEach(paramName => {
+                let result = Array.from(
+                    // Set by default removes all dupes
+                    new Set(
+                        // merging arrays
+                        (autoSuggestData[parentDomain][paramName] || []).concat(autoSuggestData[domainToBind][paramName])
+                    ));
+                
+                // only update if it's different
+                if ((autoSuggestData[parentDomain][paramName] || []).length != autoSuggestData[domainToBind][paramName].length) {
+                    autoSuggestData[parentDomain][paramName] = result;
+                }
+            });
+        }
     }
 }
