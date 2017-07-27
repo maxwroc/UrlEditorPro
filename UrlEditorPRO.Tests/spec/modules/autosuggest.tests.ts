@@ -110,6 +110,35 @@ module Tests.Autosuggest {
             expect(suggestions.getSuggestionTexts()).toEqual(["param1_val1", "param1_val2"]);
         });
 
+        it("submitting param name suggescion causes jump to value field and new suggestions are shown", (done) => {
+            Canvas.init({ autoSuggestData: JSON.stringify(autoSuggestData), trackingEnabled: false });
+
+            // pass current tab info
+            chrome.tabs.getSelected.fireCallbacks(chrome.mocks.getTab());
+
+            let paramContainer = new ParamContainer(0);
+            // it has to match param name
+            let nameInput = paramContainer.getNameElem();
+            Canvas.type(nameInput, "{backspace}pa");
+
+            let valueInput = paramContainer.getValueElem();
+            valueInput.value = "p"; // set it to be a prefix for existing value suggestions
+
+            let suggestions = new SuggestionContainer();
+            expect(suggestions.isVisible()).toBeTruthy();
+
+            // select first suggestion
+            Canvas.keyboardCombination(nameInput, "down-arrow");
+
+            waitUntil(() => nameInput.value == "param1").then(() => {
+                Canvas.keyboardCombination(nameInput, "enter");
+
+                expect(suggestions.isVisible()).toBeTruthy();
+                expect(suggestions.getSuggestionTexts()).toEqual(["param1_val1", "param1_val2"]);
+                done();
+            });
+        });
+
         it("new param is added to suggestion data", (done) => {
             let storage = { autoSuggestData: JSON.stringify(autoSuggestData), trackingEnabled: false };
             Canvas.init(storage);
