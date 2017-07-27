@@ -17,7 +17,7 @@ module UrlEditor {
     }
 
     export class AutoSuggest {
-        
+
         public static HOST_ALIAS_KEY = "[suggestionAlias]";
 
         private settings: Settings;
@@ -44,7 +44,7 @@ module UrlEditor {
         }
 
         onSubmission(submittedUri: Uri) {
-        
+
             // check if we shouldn't save param data
             if (!this.settings.autoSuggestSaveNew ||
                 // check if auto-suggest was not triggered at least once
@@ -56,10 +56,10 @@ module UrlEditor {
                 // not saving data
                 return;
             }
-            
+
             let baseParams = this.baseUrl.params();
             let submittedParams = submittedUri.params();
-            
+
             // create a list of params to save
             let paramsToSave: IMap<string[]>;
             Object.keys(submittedParams).forEach(name => {
@@ -67,7 +67,7 @@ module UrlEditor {
                 if (baseParams[name] == undefined ||
                     // or their values are different than before (this is not the most efficient way to compare arrays but it's simple and works)
                     baseParams[name].join(",") != submittedParams[name].join(",")) {
-                    
+
                     // initilize collection whenever it is needed
                     paramsToSave = paramsToSave || {};
                     // take only values which were not saved previously
@@ -82,7 +82,7 @@ module UrlEditor {
 
             if (paramsToSave) {
                 let pageData = this.getCurrentPageData();
-                
+
                 // make sure that the entry exists
                 if (!pageData) {
                     pageData = this.parsedData[submittedUri.hostname()] = {};
@@ -115,7 +115,7 @@ module UrlEditor {
             // create new Uri object to avoid keeping same reference
             this.baseUrl = new Uri(submittedUri.url());
         }
-        
+
         deleteSuggestion(paramName: string, paramValue?: string) {
             let pageData = this.getCurrentPageData();
 
@@ -207,7 +207,7 @@ module UrlEditor {
                     this.suggestions.show(elem);
                 }
             }
-        } 
+        }
     }
 
     class Suggestions {
@@ -273,7 +273,7 @@ module UrlEditor {
                 // reduce the height if it is reached page end
                 let tooBig = posTop + this.container.offsetHeight - (this.doc.body.offsetHeight + 8); // increase by 8 due to margin
                 if (tooBig > 0) {
-                    this.container.style.height = (this.container.offsetHeight - tooBig) + "px"; 
+                    this.container.style.height = (this.container.offsetHeight - tooBig) + "px";
                 }
 
                 // reduce width if it is too wide
@@ -299,7 +299,6 @@ module UrlEditor {
             this.container.style.display = "none";
             if (this.inputElem) {
                 this.inputElem.removeEventListener("keydown", this.handler, true);
-                this.inputElem = undefined;
             }
             this.active = undefined;
         }
@@ -400,7 +399,7 @@ module UrlEditor {
             }
 
             this.active = suggestionToSelect;
-            
+
 
             if (handled) {
                 // just in case any of handled key combinations would have some default action
@@ -429,7 +428,7 @@ module UrlEditor {
                 // removing param-name suggestion
                 this.autoSuggest.deleteSuggestion(suggestion.suggestionText);
             }
-            
+
             // remove suggestion from DOM
             this.container.removeChild(suggestion);
 

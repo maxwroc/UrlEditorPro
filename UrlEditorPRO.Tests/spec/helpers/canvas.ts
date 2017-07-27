@@ -63,6 +63,10 @@ module Tests.Canvas {
         elem.dispatchEvent(new Event("input", { bubbles: true, cancelable: true }));
     }
 
+    export function keyboardCombination(elem: HTMLElement, combination: string) {
+        $(elem).simulate("key-combo", { combo: combination });
+    }
+
     export function click(elem: HTMLElement) {
         $(elem).simulate("mousedown");
         $(elem).simulate("click");
