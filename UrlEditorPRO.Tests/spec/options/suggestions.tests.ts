@@ -192,10 +192,10 @@ module Tests {
 
         all("params are unbind correctly",
             [
-                [0, 0],
-                [1, 0]
+                ["www.google.com", "[Unbind] www.web.com"],
+                ["www.web.com", "[Unbind] www.google.com"]
             ],
-            (subjectPageIndex: number, targetPageIndex: number) => {
+            (subjectPage: string, targetPage: string) => {
 
                 autoSuggestData =
                     {
@@ -228,13 +228,12 @@ module Tests {
                 let setValueSettingsSpy = spyOn(settings, "setValue");
 
                 let autoSuggestPages = UrlEditor.Helpers.ge<HTMLSelectElement>("autoSuggestPages");
-                autoSuggestPages.selectedIndex = subjectPageIndex + 1; // skip default one
-                expect(autoSuggestPages.value).toEqual(Object.keys(autoSuggestData)[subjectPageIndex]);
+                autoSuggestPages.selectedIndex = nameToIndex(autoSuggestPages, subjectPage);
                 raiseEvent(autoSuggestPages, "change");
 
                 let autoSuggestParams = UrlEditor.Helpers.ge<HTMLSelectElement>("autoSuggestParams");
                 let autoSuggestPageToBind = UrlEditor.Helpers.ge<HTMLSelectElement>("autoSuggestPageToBind");
-                autoSuggestPageToBind.selectedIndex = targetPageIndex + 1; // skip default one
+                autoSuggestPageToBind.selectedIndex = nameToIndex(autoSuggestPageToBind, targetPage);
 
                 let saveBinding = UrlEditor.Helpers.ge<HTMLSelectElement>("saveBinding");
                 raiseEvent(saveBinding, "click");
@@ -246,10 +245,10 @@ module Tests {
 
         all("pages to bind are populated correctly",
             [
-                [0 /* www.google.com */, ["-- select website to (un)bind --", "[Unbind] www.something.com", "[Unbind] www.web.com", "www.bing.com"]],
-                [1 /* www.something.com */, ["-- select website to (un)bind --", "[Unbind] www.google.com"]]
+                ["www.google.com", ["-- select website to (un)bind --", "[Unbind] www.something.com", "[Unbind] www.web.com", "www.bing.com"]],
+                ["www.something.com", ["-- select website to (un)bind --", "[Unbind] www.google.com"]]
             ],
-            (subjectPageIndex: number, expectedPagesToBind: string[]) => {
+            (subjectPage: string, expectedPagesToBind: string[]) => {
                 autoSuggestData = {
                     "www.google.com": {
                         "param1": ["a1", "a2", "a3", "a10"],
@@ -273,7 +272,7 @@ module Tests {
                 initialize();
 
                 let autoSuggestPages = UrlEditor.Helpers.ge<HTMLSelectElement>("autoSuggestPages");
-                autoSuggestPages.selectedIndex = subjectPageIndex + 1; // skipping default one
+                autoSuggestPages.selectedIndex = nameToIndex(autoSuggestPages, subjectPage); // skipping default one
                 raiseEvent(autoSuggestPages, "change");
 
                 let autoSuggestPageToBind = UrlEditor.Helpers.ge<HTMLSelectElement>("autoSuggestPageToBind");
@@ -282,7 +281,7 @@ module Tests {
                     expect(val).toEqual(autoSuggestPageToBind.children[index]["value"]);
                 });
             });
-        
+
         it("when binding check if other pages have current page as alias", () => {
             autoSuggestData = {
                 "www.google.com": {
@@ -304,14 +303,14 @@ module Tests {
             initialize();
 
             let setValueSettingsSpy = spyOn(settings, "setValue");
-            
+
             let autoSuggestPages = UrlEditor.Helpers.ge<HTMLSelectElement>("autoSuggestPages");
-            autoSuggestPages.selectedIndex = 3 + 1; // skipping default one (www.new-mother-page.com)
+            autoSuggestPages.selectedIndex = nameToIndex(autoSuggestPages, "www.new-mother-page.com");
             raiseEvent(autoSuggestPages, "change");
 
             let autoSuggestParams = UrlEditor.Helpers.ge<HTMLSelectElement>("autoSuggestParams");
             let autoSuggestPageToBind = UrlEditor.Helpers.ge<HTMLSelectElement>("autoSuggestPageToBind");
-            autoSuggestPageToBind.selectedIndex = 0 + 1; // skip default one (www.google.com)
+            autoSuggestPageToBind.selectedIndex = nameToIndex(autoSuggestPageToBind, "www.google.com");
 
             let saveBinding = UrlEditor.Helpers.ge<HTMLSelectElement>("saveBinding");
             raiseEvent(saveBinding, "click");
@@ -337,6 +336,17 @@ module Tests {
             let actualAutoSuggestData = setValueSettingsSpy.calls.argsFor(0)[1];
             detailedObjectComparison(expected, JSON.parse(actualAutoSuggestData), "autoSuggestData")
         });
+
+        function nameToIndex(selectElem: HTMLSelectElement, name: string): number {
+            for (var index = 0; index < selectElem.options.length; index++) {
+                if (selectElem.options[index].text == name) {
+                    return index;
+                }
+            }
+
+            console.log("Select element without searched option", selectElem);
+            throw new Error("Option with given name not found:" + name);
+        }
 
         function raiseEvent(elem: HTMLElement, eventName: string) {
             let evt = testPageContainer.contentWindow.document.createEvent("HTMLEvents");

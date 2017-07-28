@@ -131,19 +131,63 @@ module UrlEditor {
                     delete pageData[paramName];
                 }
 
+                this.cleanDataFromEmptyValues();
+
                 this.settings.setValue("autoSuggestData", JSON.stringify(this.parsedData));
             }
         }
 
+        private cleanDataFromEmptyValues() {
+            for (let domain in this.parsedData) {
+
+                let baseDomain = this.parsedData[domain][AutoSuggest.HOST_ALIAS_KEY] &&
+                    this.parsedData[domain][AutoSuggest.HOST_ALIAS_KEY][0];
+                if (baseDomain) {
+                    // if base domain is missing it means that it was removed in previous step
+                    if (!this.parsedData[baseDomain]) {
+                        delete this.parsedData[domain];
+                        // restart clean up
+                        this.cleanDataFromEmptyValues();
+                        return;
+                    }
+
+                    // no need to check rest of the conditions
+                    continue;
+                }
+
+                let paramNames = Object.keys(this.parsedData[domain]);
+                if (paramNames.length == 0) {
+                    delete this.parsedData[domain];
+                    // we need to start from the beginning
+                    this.cleanDataFromEmptyValues();
+                    return;
+                }
+                else {
+                    for (let paramName of paramNames) {
+                        let paramValues = Object.keys(this.parsedData[domain][paramName]);
+                        if (paramValues.length == 0) {
+                            delete this.parsedData[domain][paramName];
+                            // we need to restart cleaning
+                            this.cleanDataFromEmptyValues();
+                            return;
+                        }
+                    }
+                }
+            };
+        }
+
         private getCurrentPageData() {
-            let pageData = this.parsedData[this.baseUrl.hostname()];
-            // check if it's not an alias
-            if (pageData && pageData[AutoSuggest.HOST_ALIAS_KEY]) {
-                let aliasPageName = pageData[AutoSuggest.HOST_ALIAS_KEY][0];
-                pageData = this.parsedData[aliasPageName];
+            let pageData = this.parsedData[this.getResolvedDomain()];
+            return pageData;
+        }
+
+        private getResolvedDomain() {
+            let domain = this.baseUrl.hostname();
+            if (this.parsedData[domain] && this.parsedData[domain][AutoSuggest.HOST_ALIAS_KEY]) {
+                domain = this.parsedData[domain][AutoSuggest.HOST_ALIAS_KEY][0];
             }
 
-            return pageData;
+            return domain;
         }
 
         private onDomEvent(elem: HTMLInputElement) {
@@ -290,7 +334,7 @@ module UrlEditor {
 
                 this.inputElem.addEventListener("keydown", this.handler, true);
 
-                 // increase by 2px due to border size
+                // increase by 2px due to border size
                 Helpers.ensureIsVisible(this.container, this.doc.body, window.innerHeight + 2);
             }
         }
@@ -367,7 +411,7 @@ module UrlEditor {
 
                         Tracking.trackEvent(Tracking.Category.AutoSuggest, "used");
 
-                    // trigger event which will update param in the url (via view model)
+                        // trigger event which will update param in the url (via view model)
                         let e = new Event("updated");
                         e.initEvent("updated", true, true);
                         this.inputElem.dispatchEvent(e)
@@ -391,7 +435,7 @@ module UrlEditor {
             if (suggestionToSelect) {
                 Tracking.trackEvent(Tracking.Category.AutoSuggest, "selected");
                 suggestionToSelect.classList.add("hv");
-                 // increase by 2px due to border size
+                // increase by 2px due to border size
                 Helpers.ensureIsVisible(suggestionToSelect, this.container, this.container.offsetHeight + 2);
             }
             else {

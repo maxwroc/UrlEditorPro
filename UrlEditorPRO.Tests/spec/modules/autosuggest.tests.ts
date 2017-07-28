@@ -12,7 +12,8 @@ module Tests.Autosuggest {
         beforeEach(done => {
             autoSuggestData = {
                 "www.google.com": {
-                    "param1": ["param1_val1", "param1_val2"]
+                    "param1": ["param1_val1", "param1_val2"],
+                    "param2": ["param2_val1", "param2_val2"]
                 }
             }
 
@@ -38,7 +39,7 @@ module Tests.Autosuggest {
 
             expect(suggestions.isVisible()).toBeTruthy();
             expect(suggestions.isBelow(paramContainer.getNameElem())).toBeTruthy();
-            expect(suggestions.getSuggestionTexts()).toEqual(["param1"]);
+            expect(suggestions.getSuggestionTexts()).toEqual(["param1", "param2"]);
         });
 
         it("suggestions list appears on param name element - domain alias", () => {
@@ -62,7 +63,7 @@ module Tests.Autosuggest {
 
             expect(suggestions.isVisible()).toBeTruthy();
             expect(suggestions.isBelow(paramContainer.getNameElem())).toBeTruthy();
-            expect(suggestions.getSuggestionTexts()).toEqual(["param1"]);
+            expect(suggestions.getSuggestionTexts()).toEqual(["param1", "param2"]);
         });
 
         it("suggestions list appears on param value element", () => {
@@ -348,6 +349,75 @@ module Tests.Autosuggest {
                 detailedObjectComparison(autoSuggestData, JSON.parse(storage.autoSuggestData), "autoSuggestData", true/*exactMatch*/);
                 done();
             });
+        });
+
+        it("deleteting all param value suggestions removes param name suggestion, domain (when it's empty) and all bind domains", () => {
+            // leave only one param
+            delete autoSuggestData["www.google.com"]["param2"];
+            autoSuggestData["www.binddomain.com"] = {
+                "[suggestionAlias]": ["www.google.com"]
+            };
+            autoSuggestData["www.regular-domain.com"] = {
+                "param_reg1": ["reg1", "reg2"]
+            }
+            autoSuggestData["www.binddomain2.com"] = {
+                "[suggestionAlias]": ["www.google.com"]
+            };
+            let storage = { autoSuggestData: JSON.stringify(autoSuggestData), trackingEnabled: false };
+            Canvas.init(storage);
+
+            // pass current tab info
+            chrome.tabs.getSelected.fireCallbacks(chrome.mocks.getTab());
+
+            let paramContainer = new ParamContainer(0);
+            paramContainer.getNameElem().value = "param1";
+            let valueInput = paramContainer.getValueElem();
+            Canvas.type(valueInput, "{backspace}pa");
+
+            let suggestions = new SuggestionContainer();
+
+            suggestions.clickDeleteButton("param1_val1");
+            suggestions.clickDeleteButton("param1_val2");
+
+            // update expected data object (remove first param value)
+            delete autoSuggestData["www.google.com"];
+            delete autoSuggestData["www.binddomain.com"];
+            delete autoSuggestData["www.binddomain2.com"];
+
+            detailedObjectComparison(autoSuggestData, JSON.parse(storage.autoSuggestData), "autoSuggestData", true/*exactMatch*/);
+        });
+
+        it("deleteting last param name suggestion from one domain removes domain and all bind domains", () => {
+            // leave only one param
+            delete autoSuggestData["www.google.com"]["param2"];
+            autoSuggestData["www.binddomain.com"] = {
+                "[suggestionAlias]": ["www.google.com"]
+            };
+            autoSuggestData["www.regular-domain.com"] = {
+                "param_reg1": ["reg1", "reg2"]
+            }
+            autoSuggestData["www.binddomain2.com"] = {
+                "[suggestionAlias]": ["www.google.com"]
+            };
+            let storage = { autoSuggestData: JSON.stringify(autoSuggestData), trackingEnabled: false };
+            Canvas.init(storage);
+
+            // pass current tab info
+            chrome.tabs.getSelected.fireCallbacks(chrome.mocks.getTab());
+
+            let paramContainer = new ParamContainer(0);
+            Canvas.type(paramContainer.getNameElem(), "{backspace}pa");
+
+            let suggestions = new SuggestionContainer();
+
+            suggestions.clickDeleteButton("param1");
+
+            // update expected data object (remove first param value)
+            delete autoSuggestData["www.google.com"];
+            delete autoSuggestData["www.binddomain.com"];
+            delete autoSuggestData["www.binddomain2.com"];
+
+            detailedObjectComparison(autoSuggestData, JSON.parse(storage.autoSuggestData), "autoSuggestData", true/*exactMatch*/);
         });
     });
 
