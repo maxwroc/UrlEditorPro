@@ -32,11 +32,11 @@ module UrlEditor {
         !settings.trackingEnabled && (versionElem.style.color = "red");
 
         chrome.tabs.getSelected(null, function (tab) {
-            
+
             var uri = new UrlEditor.Uri(tab.url);
 
             var autosuggest = new AutoSuggest(settings, document, uri, tab.incognito);
-        
+
             new UrlEditor.ViewModel(uri, document, settings, (uri, openIn) => {
 
                 switch (openIn) {
@@ -62,8 +62,8 @@ module UrlEditor {
 
         });
     };
-    
+
     document.addEventListener(
-        window.top == window.self ? "DOMContentLoaded" : "init", 
+        window.top == window.self ? "DOMContentLoaded" : "init",
         (evt: any) => initialize(<Storage>evt.detail || localStorage));
 }

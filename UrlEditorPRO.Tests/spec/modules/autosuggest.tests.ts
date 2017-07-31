@@ -23,7 +23,7 @@ module Tests.Autosuggest {
 
             // make sure that DOM is ready
             waitUntil(() => Canvas.ready).then(() => done());
-        })
+        });
 
         it("suggestions list appears on param name element", () => {
             Canvas.init({ autoSuggestData: JSON.stringify(autoSuggestData), trackingEnabled: false });
@@ -155,9 +155,9 @@ module Tests.Autosuggest {
             Canvas.type(lastParamContainer.getNameElem(), "new_param");
             Canvas.type(lastParamContainer.getValueElem(), "new_value");
 
-            waitUntil(() => Canvas.Elements.getFullUrl().textContent.endsWith("new_value"))
+            waitUntil(() => Canvas.PopupElements.getFullUrl().textContent.endsWith("new_value"))
                 .then(() => {
-                    Canvas.click(Canvas.Elements.getGoButton());
+                    Canvas.click(Canvas.PopupElements.getGoButton());
 
                     // create expected data object
                     autoSuggestData["www.google.com"]["new_param"] = ["new_value"];
@@ -189,9 +189,9 @@ module Tests.Autosuggest {
             Canvas.type(lastParamContainer.getNameElem(), "new_param");
             Canvas.type(lastParamContainer.getValueElem(), "new_value");
 
-            waitUntil(() => Canvas.Elements.getFullUrl().textContent.endsWith("new_value"))
+            waitUntil(() => Canvas.PopupElements.getFullUrl().textContent.endsWith("new_value"))
                 .then(() => {
-                    Canvas.click(Canvas.Elements.getGoButton());
+                    Canvas.click(Canvas.PopupElements.getGoButton());
 
                     // create expected data object
                     autoSuggestData["www.google.com"]["new_param"] = ["new_value"];
@@ -214,7 +214,7 @@ module Tests.Autosuggest {
             valueElem.value = "";
             Canvas.type(valueElem, "new_value")
 
-            Canvas.click(Canvas.Elements.getGoButton());
+            Canvas.click(Canvas.PopupElements.getGoButton());
 
             // create expected data object
             autoSuggestData["www.google.com"]["param1"].unshift("new_value");
@@ -239,9 +239,9 @@ module Tests.Autosuggest {
             Canvas.type(lastParamContainer.getNameElem(), "new_param");
             Canvas.type(lastParamContainer.getValueElem(), "new_value");
 
-            waitUntil(() => Canvas.Elements.getFullUrl().textContent.endsWith("new_value"))
+            waitUntil(() => Canvas.PopupElements.getFullUrl().textContent.endsWith("new_value"))
                 .then(() => {
-                    Canvas.click(Canvas.Elements.getGoButton());
+                    Canvas.click(Canvas.PopupElements.getGoButton());
 
                     // create expected data object
                     autoSuggestData["www.something-new.com"] = {

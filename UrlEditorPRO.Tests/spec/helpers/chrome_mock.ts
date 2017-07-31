@@ -6,6 +6,10 @@ module Tests {
 
     function createBase() {
         let obj = new ChromeMock();
+        obj.browserAction = <IBrowserAction>{};
+        addExtendedSpy(obj.browserAction, "setIcon", -1);
+        obj.commands = <ICommands>{};
+        addExtendedSpy(obj.commands, "getAll", 0);
         obj.runtime = <IRuntime>{};
         addExtendedSpy(obj.runtime, "getManifest", -1, { version: "1.0.2" });
         obj.tabs = <ITabs>{};
@@ -46,6 +50,8 @@ module Tests {
     }
 
     export class ChromeMock {
+        public browserAction: IBrowserAction;
+        public commands: ICommands;
         public runtime: IRuntime;
         public tabs: ITabs;
         public windows: IWindows;
@@ -54,6 +60,14 @@ module Tests {
                 return <chrome.tabs.Tab>{ incognito: false, id: 1, url: "http://www.google.com/path?q=r&z=x" };
             }
         }
+    }
+
+    interface IBrowserAction {
+        setIcon: IFunctionMock<void>;
+    }
+
+    interface ICommands {
+        getAll: IFunctionMock<void>;
     }
 
     interface IRuntime {

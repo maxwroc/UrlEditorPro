@@ -1,50 +1,18 @@
-/// <reference path="../../../UrlEditorPro/app/modules/shared_interfaces.d.ts" />
+
+/// <reference path="../helpers/helpers.ts" />
+/// <reference path="../helpers/canvas.ts" />
 /// <reference path="../../../UrlEditorPro/app/modules/autosuggest.ts" />
-/// <reference path="../../../UrlEditorPro/app/options/suggestions.ts" />
 
 module Tests {
 
-    describe("[Options] Suggestions - testing if ", () => {
+    describe("[Options] Suggestions (integration) - testing if ", () => {
+        const Elements = Canvas.OptionsElements.Suggestions;
 
         let autoSuggestData: UrlEditor.IAutoSuggestData;
-        let initialize: Function;
-        let testPageContainer: HTMLIFrameElement;
-        let pageElements: IMap<HTMLElement> = {};
-        let settings: UrlEditor.Settings;
+        let chrome: ChromeMock;
 
-        beforeEach(() => {
+        beforeEach(done => {
 
-            testPageContainer = createElement<HTMLIFrameElement>("iframe");
-            document.body.appendChild(testPageContainer);
-
-            let pageElementsData = {
-                "autoSuggestPages": { tagName: "select", name: "page" },
-                "autoSuggestParams": { tagName: "select", name: "param" },
-                "autoSuggestPageToBind": { tagName: "select" },
-                "autoSuggestParamValues": { tagName: "div" },
-                "saveBinding": { tagName: "input", type: "button", name: "saveBinding" }
-            }
-
-            let moduleContainer = createElement("div", "recentlyUsedParamsModule");
-            pageElements["recentlyUsedParamsModule"] = moduleContainer;
-
-            Object.keys(pageElementsData).forEach(id => {
-                // overwrite tag name with actual element
-                pageElements[id] = createElement(pageElementsData[id]["tagName"], id);
-                Object.keys(pageElementsData[id]).forEach(prop => {
-                    if (prop != "tagName") {
-                        pageElements[id].setAttribute(prop, pageElementsData[id][prop])
-                    }
-                })
-                moduleContainer.appendChild(pageElements[id]);
-            });
-
-            testPageContainer.contentWindow.document.body.appendChild(moduleContainer);
-
-            // handle get element by id calls
-            spyOn(UrlEditor.Helpers, "ge").and.callFake((id: string) => pageElements[id]);
-
-            // default autosuggest data object
             autoSuggestData = {
                 "www.google.com": {
                     "param1": ["a1", "a2"],
@@ -56,42 +24,39 @@ module Tests {
                 }
             }
 
-            initialize = () => {
-                settings = new UrlEditor.Settings({
-                    autoSuggestData: JSON.stringify(autoSuggestData)
-                })
-                UrlEditor.Options.Suggestions.init(settings);
-            }
-        });
+            Canvas.create();
+            Canvas.loadPage("options", null /* prevent from initialization */);
+            chrome = createChromeMock(Canvas.getWindow(), "chrome");
 
-        afterEach(() => {
-            document.body.removeChild(testPageContainer);
+            // make sure that DOM is ready
+            waitUntil(() => Canvas.ready).then(() => done());
         })
 
         it("pages combo box is populated", () => {
-            initialize();
 
-            let autoSuggestPages = UrlEditor.Helpers.ge<HTMLSelectElement>("autoSuggestPages");
-            let pages = Object.keys(autoSuggestData);
-            expect(autoSuggestPages.children.length).toEqual(pages.length + 1); // one additional for placeholder "-- select ... --"
+            Canvas.init({ autoSuggestData: JSON.stringify(autoSuggestData), trackingEnabled: false });
 
-            pages.forEach((page, index) => {
+            let domainListSelect = Elements.getDomainList();
+            let domains = Object.keys(autoSuggestData);
+            expect(domainListSelect.children.length).toEqual(domains.length + 1); // one additional for placeholder "-- select ... --"
+
+            domains.forEach((domain, index) => {
                 // skip the first one (placeholder)
                 index++;
-                expect("OPTION").toEqual(autoSuggestPages.children[index].tagName);
-                expect(page).toEqual(autoSuggestPages.children[index]["value"]);
+                expect("OPTION").toEqual(domainListSelect.children[index].tagName);
+                expect(domain).toEqual(domainListSelect.children[index]["value"]);
             });
         });
 
         it("params combo box is populated when page is selected", () => {
-            initialize();
+            Canvas.init({ autoSuggestData: JSON.stringify(autoSuggestData), trackingEnabled: false });
 
-            let autoSuggestPages = UrlEditor.Helpers.ge<HTMLSelectElement>("autoSuggestPages");
-            let autoSuggestParams = UrlEditor.Helpers.ge<HTMLSelectElement>("autoSuggestParams");
+            let autoSuggestPages = Elements.getDomainList();
+            let autoSuggestParams = Elements.getParamList();
             autoSuggestPages.selectedIndex = 1;
 
-            autoSuggestPages.selectedIndex = 1;
-            raiseEvent(autoSuggestPages, "change");
+            // select item and trigger change event
+            autoSuggestPages.selectItem("www.google.com");
 
             let params = Object.keys(autoSuggestData[autoSuggestPages.value]);
             expect(autoSuggestParams.children.length).toEqual(params.length + 1); // one additional for placeholder "-- select ... --"
@@ -105,17 +70,15 @@ module Tests {
         });
 
         it("param values are populated when param is selected", () => {
-            initialize();
+            Canvas.init({ autoSuggestData: JSON.stringify(autoSuggestData), trackingEnabled: false });
 
-            let autoSuggestPages = UrlEditor.Helpers.ge<HTMLSelectElement>("autoSuggestPages");
-            let autoSuggestParams = UrlEditor.Helpers.ge<HTMLSelectElement>("autoSuggestParams");
-            let autoSuggestParamValues = UrlEditor.Helpers.ge<HTMLSelectElement>("autoSuggestParamValues");
+            let autoSuggestPages = Elements.getDomainList();
+            let autoSuggestParams = Elements.getParamList();
+            let autoSuggestParamValues = Elements.getValueList();
 
-            autoSuggestPages.selectedIndex = 1;
-            raiseEvent(autoSuggestPages, "change");
+            autoSuggestPages.selectItem("www.google.com");
 
-            autoSuggestParams.selectedIndex = 1;
-            raiseEvent(autoSuggestParams, "change");
+            autoSuggestParams.selectItem("param1");
 
             let paramValues = autoSuggestData[autoSuggestPages.value][autoSuggestParams.value];
             expect(autoSuggestParamValues.children.length).toEqual(paramValues.length);
@@ -127,21 +90,13 @@ module Tests {
         });
 
         it("binding merges params and updates the data correctly", () => {
+            let settings = { autoSuggestData: JSON.stringify(autoSuggestData), trackingEnabled: false };
+            Canvas.init(settings);
 
-            initialize();
+            Elements.getDomainList().selectItem("www.google.com");
+            Elements.getBindDomainList().selectItem("www.web.com");
 
-            let setValueSettingsSpy = spyOn(settings, "setValue");
-
-            let autoSuggestPages = UrlEditor.Helpers.ge<HTMLSelectElement>("autoSuggestPages");
-            autoSuggestPages.selectedIndex = 1; // www.google.com
-            raiseEvent(autoSuggestPages, "change");
-
-            let autoSuggestPageToBind = UrlEditor.Helpers.ge<HTMLSelectElement>("autoSuggestPageToBind");
-            autoSuggestPageToBind.selectedIndex = 1; // www.web.com
-            raiseEvent(autoSuggestPageToBind, "change");
-
-            let saveBinding = UrlEditor.Helpers.ge<HTMLSelectElement>("saveBinding");
-            raiseEvent(saveBinding, "click");
+            Canvas.click(Elements.getSaveButton());
 
             let expected = {
                 "www.google.com": {
@@ -154,9 +109,7 @@ module Tests {
                 }
             }
 
-            let actualAutoSuggestData = setValueSettingsSpy.calls.argsFor(0)[1];
-            expect(actualAutoSuggestData).not.toBeUndefined();
-            detailedObjectComparison(expected, JSON.parse(actualAutoSuggestData), "autoSuggestData");
+            detailedObjectComparison(expected, JSON.parse(settings.autoSuggestData), "autoSuggestData", true/*exactMatch*/);
         });
 
         it("params are listed correctly for bind page", () => {
@@ -171,15 +124,13 @@ module Tests {
                 }
             };
 
-            initialize();
+            let settings = { autoSuggestData: JSON.stringify(autoSuggestData), trackingEnabled: false };
+            Canvas.init(settings);
 
-            let autoSuggestPages = UrlEditor.Helpers.ge<HTMLSelectElement>("autoSuggestPages");
-            autoSuggestPages.selectedIndex = 2; // www.web.com
-            expect(autoSuggestPages.value).toEqual("www.web.com");
-            raiseEvent(autoSuggestPages, "change");
+            Elements.getDomainList().selectItem("www.web.com");
 
             let params = Object.keys(autoSuggestData["www.google.com"]);
-            let autoSuggestParams = UrlEditor.Helpers.ge<HTMLSelectElement>("autoSuggestParams");
+            let autoSuggestParams = Elements.getParamList();
             expect(autoSuggestParams.children.length).toEqual(params.length + 1); // one additional for placeholder "-- select ... --"
 
             params.forEach((param, index) => {
@@ -189,6 +140,7 @@ module Tests {
                 expect(param).toEqual(autoSuggestParams.children[index]["value"]);
             });
         });
+
 
         all("params are unbind correctly",
             [
@@ -223,24 +175,15 @@ module Tests {
                         }
                     };
 
-                initialize();
+                let settings = { autoSuggestData: JSON.stringify(autoSuggestData), trackingEnabled: false };
+                Canvas.init(settings);
 
-                let setValueSettingsSpy = spyOn(settings, "setValue");
+                Elements.getDomainList().selectItem(subjectPage);
+                Elements.getBindDomainList().selectItem(targetPage);
 
-                let autoSuggestPages = UrlEditor.Helpers.ge<HTMLSelectElement>("autoSuggestPages");
-                autoSuggestPages.selectedIndex = nameToIndex(autoSuggestPages, subjectPage);
-                raiseEvent(autoSuggestPages, "change");
+                Canvas.click(Elements.getSaveButton());
 
-                let autoSuggestParams = UrlEditor.Helpers.ge<HTMLSelectElement>("autoSuggestParams");
-                let autoSuggestPageToBind = UrlEditor.Helpers.ge<HTMLSelectElement>("autoSuggestPageToBind");
-                autoSuggestPageToBind.selectedIndex = nameToIndex(autoSuggestPageToBind, targetPage);
-
-                let saveBinding = UrlEditor.Helpers.ge<HTMLSelectElement>("saveBinding");
-                raiseEvent(saveBinding, "click");
-
-                let actualAutoSuggestData = setValueSettingsSpy.calls.argsFor(0)[1];
-                expect(actualAutoSuggestData).not.toBeUndefined();
-                detailedObjectComparison(expected, JSON.parse(actualAutoSuggestData), "autoSuggestData");
+                detailedObjectComparison(expected, JSON.parse(settings.autoSuggestData), "autoSuggestData");
             });
 
         all("pages to bind are populated correctly",
@@ -269,13 +212,12 @@ module Tests {
                     }
                 };
 
-                initialize();
+                let settings = { autoSuggestData: JSON.stringify(autoSuggestData), trackingEnabled: false };
+                Canvas.init(settings);
 
-                let autoSuggestPages = UrlEditor.Helpers.ge<HTMLSelectElement>("autoSuggestPages");
-                autoSuggestPages.selectedIndex = nameToIndex(autoSuggestPages, subjectPage); // skipping default one
-                raiseEvent(autoSuggestPages, "change");
+                Elements.getDomainList().selectItem(subjectPage);
 
-                let autoSuggestPageToBind = UrlEditor.Helpers.ge<HTMLSelectElement>("autoSuggestPageToBind");
+                let autoSuggestPageToBind = Elements.getBindDomainList();
                 expectedPagesToBind.forEach((val, index) => {
                     expect("OPTION").toEqual(autoSuggestPageToBind.children[index].tagName);
                     expect(val).toEqual(autoSuggestPageToBind.children[index]["value"]);
@@ -300,20 +242,13 @@ module Tests {
                 }
             };
 
-            initialize();
+            let settings = { autoSuggestData: JSON.stringify(autoSuggestData), trackingEnabled: false };
+            Canvas.init(settings);
 
-            let setValueSettingsSpy = spyOn(settings, "setValue");
+            Elements.getDomainList().selectItem("www.new-mother-page.com");
+            Elements.getBindDomainList().selectItem("www.google.com");
 
-            let autoSuggestPages = UrlEditor.Helpers.ge<HTMLSelectElement>("autoSuggestPages");
-            autoSuggestPages.selectedIndex = nameToIndex(autoSuggestPages, "www.new-mother-page.com");
-            raiseEvent(autoSuggestPages, "change");
-
-            let autoSuggestParams = UrlEditor.Helpers.ge<HTMLSelectElement>("autoSuggestParams");
-            let autoSuggestPageToBind = UrlEditor.Helpers.ge<HTMLSelectElement>("autoSuggestPageToBind");
-            autoSuggestPageToBind.selectedIndex = nameToIndex(autoSuggestPageToBind, "www.google.com");
-
-            let saveBinding = UrlEditor.Helpers.ge<HTMLSelectElement>("saveBinding");
-            raiseEvent(saveBinding, "click");
+            Canvas.click(Elements.getSaveButton());
 
             let expected = {
                 "www.google.com": {
@@ -333,25 +268,7 @@ module Tests {
                 }
             };
 
-            let actualAutoSuggestData = setValueSettingsSpy.calls.argsFor(0)[1];
-            detailedObjectComparison(expected, JSON.parse(actualAutoSuggestData), "autoSuggestData")
+            detailedObjectComparison(expected, JSON.parse(settings.autoSuggestData), "autoSuggestData")
         });
-
-        function nameToIndex(selectElem: HTMLSelectElement, name: string): number {
-            for (var index = 0; index < selectElem.options.length; index++) {
-                if (selectElem.options[index].text == name) {
-                    return index;
-                }
-            }
-
-            console.log("Select element without searched option", selectElem);
-            throw new Error("Option with given name not found:" + name);
-        }
-
-        function raiseEvent(elem: HTMLElement, eventName: string) {
-            let evt = testPageContainer.contentWindow.document.createEvent("HTMLEvents");
-            evt.initEvent(eventName, true, true);
-            elem.dispatchEvent(evt);
-        }
     });
 }

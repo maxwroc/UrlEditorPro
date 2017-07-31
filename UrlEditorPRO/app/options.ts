@@ -8,14 +8,16 @@ module UrlEditor.Options {
         (settings: Settings): void;
     }
 
-    var settings = new Settings(localStorage);
+    var settings: Settings;
     var autoSuggestData: IAutoSuggestData;
     let onInitializedHandlers: IOnInitializedHandler[] = [];
 
     /**
      * Automatically populates input fields if their name matches setting name.
      */
-    function initialize() {
+    function initialize(storage: Storage) {
+        settings = new Settings(storage);
+
         Tracking.init(settings.trackingEnabled);
 
         document.body.addEventListener("change", evt => onChangeHandler(evt));
@@ -114,5 +116,7 @@ module UrlEditor.Options {
         }
     }
 
-    document.addEventListener('DOMContentLoaded', () => initialize());
+    document.addEventListener(
+        window.top == window.self ? "DOMContentLoaded" : "init",
+        (evt: any) => initialize(<Storage>evt.detail || localStorage));
 }

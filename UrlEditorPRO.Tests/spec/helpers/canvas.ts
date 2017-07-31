@@ -30,7 +30,7 @@ module Tests.Canvas {
         page.contentWindow.document.write(TEMPLATES[name + ".html"].replace(/ src="/g, ' src="../UrlEditorPro/app/'));
 
         // delay event triggering to wait for the page elements to be rendered
-        waitUntil(() => !!Elements.getVersion(false/*throwWhenMissing*/))
+        waitUntil(() => !!getElementBySelector("div"))
             .then(() => {
                 if (storage) {
                     init(storage);
@@ -81,7 +81,11 @@ module Tests.Canvas {
                     throw new Error("Missing 'storage' property on the eventData object which is required for Init event");
                 }
                 evt = new CustomEvent("init", { detail: eventData.storage });
-                break;;
+                break;
+            case "change":
+                evt = page.contentWindow.document.createEvent("HTMLEvents");
+                evt.initEvent(eventType, true, true);
+                break;
         }
 
         if (evt) {
@@ -89,12 +93,22 @@ module Tests.Canvas {
         }
     }
 
-    export function getElementById(id: string) {
-        return page.contentWindow.document.getElementById(id);
+    export function getElementById(id: string, throwIfMissing = false) {
+        let elem = page.contentWindow.document.getElementById(id);
+        if (throwIfMissing && !elem) {
+            throw new Error(`Element with id "${id}" not found. Please make sure the pane is loaded already.`);
+        }
+
+        return elem;
     }
 
-    export function getElementBySelector(selector: string) {
-        return page.contentWindow.document.body.querySelector(selector);
+    export function getElementBySelector(selector: string, throwIfMissing = false) {
+        // add a sfety check as we use this function to probe if pane is loaded
+        let elem = page.contentWindow.document.body && page.contentWindow.document.body.querySelector(selector);
+        if (throwIfMissing && !elem) {
+            throw new Error(`Failed to find element by selector: ${selector}. Please make sure the pane is loaded already.`);
+        }
+        return elem;
     }
 
     export function getElementsBySelector(selector: string) {
@@ -109,25 +123,57 @@ module Tests.Canvas {
         return page.contentWindow;
     }
 
-    export class Elements {
-        static getFullUrl(thowWhenMissing = true) {
-            return Elements.getElem("full_url", thowWhenMissing);
+    export class PopupElements {
+        static getFullUrl() {
+            return <HTMLTextAreaElement>getElementById("full_url", true);
         }
 
-        static getGoButton(thowWhenMissing = true) {
-            return Elements.getElem("go", thowWhenMissing);
+        static getGoButton() {
+            return <HTMLInputElement>getElementById("go", true);
         }
-        static getVersion(thowWhenMissing = true) {
-            return Elements.getElem("version", thowWhenMissing);
+        static getVersion() {
+            return <HTMLSpanElement>getElementById("version", true);
         }
+    }
 
-        private static getElem(id: string, thowWhenMissing: boolean) {
-            let elem = page.contentWindow.document.getElementById(id);
-            if (thowWhenMissing && !elem) {
-                throw new Error(`Element with id "${id}" not found. Please make sure the pane is loaded already.`);
+    export module OptionsElements {
+        export class Suggestions {
+            static getDomainList() {
+                return extendSelectElem(<HTMLSelectElement>getElementById("autoSuggestPages", true));
+            }
+            static getParamList() {
+                return extendSelectElem(<HTMLSelectElement>getElementById("autoSuggestParams", true));
+            }
+            static getValueList() {
+                return <HTMLDivElement>getElementById("autoSuggestParamValues", true);
+            }
+            static getBindDomainList() {
+                return extendSelectElem(<HTMLSelectElement>getElementById("autoSuggestPageToBind", true));
+            }
+            static getSaveButton() {
+                return <HTMLInputElement>getElementBySelector("#autoSuggestPageToBind + input", true);
+            }
+        }
+    }
+
+    export interface HTMLSelectElementExt extends HTMLSelectElement {
+        selectItem(name: string): void;
+    }
+
+    function extendSelectElem(selectElem: HTMLSelectElement) {
+        selectElem["selectItem"] = (name: string) => {
+            for (var index = 0; index < selectElem.options.length; index++) {
+                if (selectElem.options[index].text == name) {
+                    selectElem.selectedIndex = index;
+                    raiseEvent(selectElem, "change");
+                    return;
+                }
             }
 
-            return elem;
+            console.log("Select element without searched option", selectElem);
+            throw new Error("Option with given name not found:" + name);
         }
+
+        return <HTMLSelectElementExt>selectElem;
     }
 }
