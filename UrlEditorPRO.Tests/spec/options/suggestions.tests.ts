@@ -307,6 +307,6 @@ module Tests {
             };
 
             detailedObjectComparison(expected, JSON.parse(settings.autoSuggestData), "autoSuggestData");
-        })
+        });
     });
 }
