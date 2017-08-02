@@ -56,7 +56,7 @@ module Tests {
             autoSuggestPages.selectedIndex = 1;
 
             // select item and trigger change event
-            autoSuggestPages.selectItem("www.google.com");
+            autoSuggestPages.simulateSelectItem("www.google.com");
 
             let params = Object.keys(autoSuggestData[autoSuggestPages.value]);
             expect(autoSuggestParams.children.length).toEqual(params.length + 1); // one additional for placeholder "-- select ... --"
@@ -76,9 +76,9 @@ module Tests {
             let autoSuggestParams = Elements.getParamList();
             let autoSuggestParamValues = Elements.getValueList();
 
-            autoSuggestPages.selectItem("www.google.com");
+            autoSuggestPages.simulateSelectItem("www.google.com");
 
-            autoSuggestParams.selectItem("param1");
+            autoSuggestParams.simulateSelectItem("param1");
 
             let paramValues = autoSuggestData[autoSuggestPages.value][autoSuggestParams.value];
             expect(autoSuggestParamValues.children.length).toEqual(paramValues.length);
@@ -93,10 +93,10 @@ module Tests {
             let settings = { autoSuggestData: JSON.stringify(autoSuggestData), trackingEnabled: false };
             Canvas.init(settings);
 
-            Elements.getDomainList().selectItem("www.google.com");
-            Elements.getBindDomainList().selectItem("www.web.com");
+            Elements.getDomainList().simulateSelectItem("www.google.com");
+            Elements.getBindDomainList().simulateSelectItem("www.web.com");
 
-            Canvas.click(Elements.getSaveButton());
+            Elements.getSaveButton().simulateClick();
 
             let expected = {
                 "www.google.com": {
@@ -127,7 +127,7 @@ module Tests {
             let settings = { autoSuggestData: JSON.stringify(autoSuggestData), trackingEnabled: false };
             Canvas.init(settings);
 
-            Elements.getDomainList().selectItem("www.web.com");
+            Elements.getDomainList().simulateSelectItem("www.web.com");
 
             let params = Object.keys(autoSuggestData["www.google.com"]);
             let autoSuggestParams = Elements.getParamList();
@@ -178,10 +178,10 @@ module Tests {
                 let settings = { autoSuggestData: JSON.stringify(autoSuggestData), trackingEnabled: false };
                 Canvas.init(settings);
 
-                Elements.getDomainList().selectItem(subjectPage);
-                Elements.getBindDomainList().selectItem(targetPage);
+                Elements.getDomainList().simulateSelectItem(subjectPage);
+                Elements.getBindDomainList().simulateSelectItem(targetPage);
 
-                Canvas.click(Elements.getSaveButton());
+                Elements.getSaveButton().simulateClick();
 
                 detailedObjectComparison(expected, JSON.parse(settings.autoSuggestData), "autoSuggestData");
             });
@@ -215,7 +215,7 @@ module Tests {
                 let settings = { autoSuggestData: JSON.stringify(autoSuggestData), trackingEnabled: false };
                 Canvas.init(settings);
 
-                Elements.getDomainList().selectItem(subjectPage);
+                Elements.getDomainList().simulateSelectItem(subjectPage);
 
                 let autoSuggestPageToBind = Elements.getBindDomainList();
                 expectedPagesToBind.forEach((val, index) => {
@@ -224,7 +224,7 @@ module Tests {
                 });
             });
 
-        it("when binding check if other pages have current page as alias", () => {
+        it("binding checks if other pages have current page as alias", () => {
             autoSuggestData = {
                 "www.google.com": {
                     "param1": ["a1", "a2", "a3", "a10"],
@@ -245,10 +245,10 @@ module Tests {
             let settings = { autoSuggestData: JSON.stringify(autoSuggestData), trackingEnabled: false };
             Canvas.init(settings);
 
-            Elements.getDomainList().selectItem("www.new-mother-page.com");
-            Elements.getBindDomainList().selectItem("www.google.com");
+            Elements.getDomainList().simulateSelectItem("www.new-mother-page.com");
+            Elements.getBindDomainList().simulateSelectItem("www.google.com");
 
-            Canvas.click(Elements.getSaveButton());
+            Elements.getSaveButton().simulateClick()
 
             let expected = {
                 "www.google.com": {
@@ -268,7 +268,45 @@ module Tests {
                 }
             };
 
-            detailedObjectComparison(expected, JSON.parse(settings.autoSuggestData), "autoSuggestData")
+            detailedObjectComparison(expected, JSON.parse(settings.autoSuggestData), "autoSuggestData");
         });
+
+        it("deleting mother domain unbinds children", () => {
+            autoSuggestData = {
+                "www.google.com": {
+                    "param1": ["a1", "a2", "a3", "a10"],
+                    "param2": ["b1", "b2", "b3"],
+                    "param3": ["c1"]
+                },
+                "www.something.com": {
+                    "[suggestionAlias]": ["www.google.com"]
+                },
+                "www.web.com": {
+                    "[suggestionAlias]": ["www.google.com"]
+                }
+            };
+
+            let settings = { autoSuggestData: JSON.stringify(autoSuggestData), trackingEnabled: false };
+            Canvas.init(settings);
+
+            spyOn(Canvas.getWindow()["UrlEditor"].Options.Suggestions, "confirmWrapper").and.returnValue(true);
+
+            Elements.getDomainList().simulateSelectItem("www.google.com");
+            // click Delete
+            Elements.getDomainList().getButtonSimbling().simulateClick();
+
+            let expected = {
+                "www.something.com": {
+                    "param1": ["a1", "a2", "a3", "a10"],
+                    "param2": ["b1", "b2", "b3"],
+                    "param3": ["c1"]
+                },
+                "www.web.com": {
+                    "[suggestionAlias]": ["www.something.com"]
+                }
+            };
+
+            detailedObjectComparison(expected, JSON.parse(settings.autoSuggestData), "autoSuggestData");
+        })
     });
 }

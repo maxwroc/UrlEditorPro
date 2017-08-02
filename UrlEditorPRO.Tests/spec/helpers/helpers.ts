@@ -101,7 +101,9 @@
         }
 
         if (validationFailed) {
-            console.log("Failed - objects not the same expected/actual [" + path + "]", expected, actual);
+            console.log("Failed - objects not the same expected/actual [" + path + "]");
+            console.log(JSON.stringify(expected, null, 2));
+            console.log(JSON.stringify(actual, null, 2));
         }
     }
 }

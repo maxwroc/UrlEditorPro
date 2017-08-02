@@ -151,17 +151,19 @@ module Tests.Canvas {
                 return extendSelectElem(<HTMLSelectElement>getElementById("autoSuggestPageToBind", true));
             }
             static getSaveButton() {
-                return <HTMLInputElement>getElementBySelector("#autoSuggestPageToBind + input", true);
+                return extendButtonElement(<HTMLInputElement>getElementBySelector("#autoSuggestPageToBind + input", true));
             }
         }
     }
 
     export interface HTMLSelectElementExt extends HTMLSelectElement {
-        selectItem(name: string): void;
+        simulateSelectItem(name: string): void;
+        getButtonSimbling(): HTMLInputElementExt;
     }
 
     function extendSelectElem(selectElem: HTMLSelectElement) {
-        selectElem["selectItem"] = (name: string) => {
+        let ext = <HTMLSelectElementExt>selectElem;
+        ext.simulateSelectItem = (name: string) => {
             for (var index = 0; index < selectElem.options.length; index++) {
                 if (selectElem.options[index].text == name) {
                     selectElem.selectedIndex = index;
@@ -172,8 +174,25 @@ module Tests.Canvas {
 
             console.log("Select element without searched option", selectElem);
             throw new Error("Option with given name not found:" + name);
+        };
+
+        ext.getButtonSimbling = () => {
+            return extendButtonElement($(selectElem).next("input"));
         }
 
-        return <HTMLSelectElementExt>selectElem;
+        return ext;
+    }
+
+    export interface HTMLInputElementExt extends HTMLInputElement {
+        simulateClick: () => void;
+    }
+
+    function extendButtonElement(inputElem: HTMLInputElement) {
+        let ext = <HTMLInputElementExt>inputElem;
+        ext.simulateClick = () => {
+            Canvas.click(inputElem);
+        }
+
+        return ext;
     }
 }

@@ -499,6 +499,4 @@ module Tests.Autosuggest {
             return Array.from(suggestions);
         }
     }
-
-
 }

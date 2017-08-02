@@ -31,6 +31,10 @@ module UrlEditor.Options.Suggestions {
         }
     }
 
+    export function confirmWrapper(message: string): boolean {
+        return confirm(message);
+    }
+
     function handleClick(evt: Event) {
         let elem = <HTMLInputElement>evt.target;
 
@@ -118,11 +122,15 @@ module UrlEditor.Options.Suggestions {
 
         let subjectElem = <HTMLSelectElement>elem.previousElementSibling;
 
+        let page = new Page(pageElem.value);
+
         // check if deleting page
         if (subjectElem == pageElem && autoSuggestData[subjectElem.value]) {
-            if (confirm("Do you want to dletete all (" + Object.keys(autoSuggestData[subjectElem.value]).length + ") parameters for page: " + subjectElem.value)) {
+            let message = "Do you want to dletete all (" + Object.keys(page.getParams()).length + ") parameters for page: " + subjectElem.value;
+            if (page.isAlias() || Suggestions.confirmWrapper(message)) {
                 Tracking.trackEvent(Tracking.Category.AutoSuggest, "delete page data");
-                delete autoSuggestData[subjectElem.value];
+
+                page.delete();
 
                 // remove element from the list
                 let select = <HTMLSelectElement><any>subjectElem;
@@ -138,10 +146,12 @@ module UrlEditor.Options.Suggestions {
             }
         }
         // check if deleting param
-        else if (subjectElem == paramElem && autoSuggestData[pageElem.value][subjectElem.value]) {
-            if (confirm("Do you want to dletete all (" + Object.keys(autoSuggestData[pageElem.value][subjectElem.value]).length + ") values for parameter: " + subjectElem.value)) {
+        else if (subjectElem == paramElem && page.getParams()[paramElem.value]) {
+            let message = "Do you want to detete all (" + page.getParamValues(paramElem.value).length + ") values together with parameter: " + subjectElem.value;
+            if (Suggestions.confirmWrapper(message)) {
                 Tracking.trackEvent(Tracking.Category.AutoSuggest, "delete param data");
-                delete autoSuggestData[pageElem.value][subjectElem.value];
+
+                page.deleteParam(paramElem.value);
 
                 // remove element from the list
                 let select = <HTMLSelectElement><any>subjectElem;
@@ -153,19 +163,19 @@ module UrlEditor.Options.Suggestions {
             }
         }
         // check if deleting value
-        else if (autoSuggestData[pageElem.value] &&
-            autoSuggestData[pageElem.value][paramElem.value] &&
-            autoSuggestData[pageElem.value][paramElem.value].indexOf(subjectElem.value) != -1) {
-            if (confirm("Do you want to delete '" + subjectElem.value + "' value from param '" + paramElem.value + "'")) {
+        else if (page.getParamValues(paramElem.value).indexOf(subjectElem.value) != -1) {
+            if (Suggestions.confirmWrapper("Do you want to delete '" + subjectElem.value + "' value from param '" + paramElem.value + "'")) {
                 Tracking.trackEvent(Tracking.Category.AutoSuggest, "delete param value");
-                autoSuggestData[pageElem.value][paramElem.value] = autoSuggestData[pageElem.value][paramElem.value].filter(val => val != subjectElem.value);
+
+                page.deleteParamValue(paramElem.value, subjectElem.value);
+
                 subjectElem.parentElement.parentElement.removeChild(subjectElem.parentElement);
                 saveData = true;
             }
         }
 
         if (saveData) {
-            settings.setValue("autoSuggestData", JSON.stringify(autoSuggestData));
+            saveAutoSuggestData();
         }
     }
 
@@ -225,8 +235,8 @@ module UrlEditor.Options.Suggestions {
         }
 
         bindWith(page: Page) {
-            let localTopDomain = this.getTopDomain(this);
-            let bindDomain = this.getTopDomain(page);
+            let localTopDomain = this.getTopDomain(this.domain);
+            let bindDomain = this.getTopDomain(page.domain);
 
             if (localTopDomain == bindDomain) {
                 return;
@@ -240,7 +250,7 @@ module UrlEditor.Options.Suggestions {
                     autoSuggestData[domain][HOST_ALIAS_KEY][0] = localTopDomain;
                 }
             });
-            
+
             autoSuggestData[bindDomain] = {};
             autoSuggestData[bindDomain][HOST_ALIAS_KEY] = [localTopDomain];
         }
@@ -250,8 +260,61 @@ module UrlEditor.Options.Suggestions {
             autoSuggestData[rel.child] = autoSuggestData[rel.parent]
         }
 
-        private getTopDomain(page: Page) {
-            let topDomain = page.domain;
+        delete() {
+            // check if it is top domain
+            if (!this.isAlias()) {
+                let newTopDomain;
+                // make sure the other domains which were linked to the current one will be updated
+                Object.keys(autoSuggestData).forEach(domain => {
+                    if (this.isAlias(domain) && this.getTopDomain(domain) == this.domain) {
+                        if (!newTopDomain) {
+                            newTopDomain = domain;
+                            autoSuggestData[domain] = this.getParams();
+                        } else {
+                            autoSuggestData[domain][HOST_ALIAS_KEY][0] = newTopDomain;
+                        }
+                    }
+                });
+            }
+
+            delete autoSuggestData[this.domain];
+        }
+
+        deleteParam(name: string) {
+            delete autoSuggestData[this.getTopDomain()][name];
+
+            let remainningParams = Object.keys(this.getParams());
+            if (remainningParams.length = 0) {
+                // if no params left remove the domain
+                this.delete();
+            }
+        }
+
+        deleteParamValue(paramName: string, valueToRemove: string) {
+            let remainingValues = autoSuggestData[this.getTopDomain()][paramName].filter(val => val != valueToRemove);
+            autoSuggestData[this.getTopDomain()][paramName] = remainingValues;
+
+            // remove param if no values left
+            if (remainingValues.length) {
+                this.deleteParam(paramName);
+            }
+        }
+
+        isAlias(name: string = null) {
+            return !!autoSuggestData[name || this.domain][HOST_ALIAS_KEY];
+        }
+
+        getParams() {
+            return autoSuggestData[this.getTopDomain()]
+        }
+
+        getParamValues(name: string) {
+            return autoSuggestData[this.getTopDomain()][name];
+        }
+
+        private getTopDomain(page: string = this.domain) {
+            let topDomain = page;
+            // just in case if there is nesting (which shouldn't happen)
             while (autoSuggestData[topDomain][HOST_ALIAS_KEY]) {
                 topDomain = autoSuggestData[topDomain][HOST_ALIAS_KEY][0];
             }
@@ -271,10 +334,10 @@ module UrlEditor.Options.Suggestions {
 
                     if (parentLookupEnabled) {
                         // trying to find root
-                        parentDomain = this.getTopDomain(targetPage);
+                        parentDomain = this.getTopDomain(targetPage.domain);
                     } else {
                         throw new Error("Binding failed. Both pages are aliases.");
-                    }    
+                    }
                 }
 
                 // swap
@@ -293,7 +356,7 @@ module UrlEditor.Options.Suggestions {
                         // merging arrays
                         (autoSuggestData[parentDomain][paramName] || []).concat(autoSuggestData[domainToBind][paramName])
                     ));
-                
+
                 // only update if it's different
                 if ((autoSuggestData[parentDomain][paramName] || []).length != autoSuggestData[domainToBind][paramName].length) {
                     autoSuggestData[parentDomain][paramName] = result;
