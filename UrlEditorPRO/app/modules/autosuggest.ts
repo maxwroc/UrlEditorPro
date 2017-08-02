@@ -1,6 +1,7 @@
 ﻿/// <reference path="settings.ts" />
 /// <reference path="tracking.ts" />
 /// <reference path="shared_interfaces.d.ts" />
+/// <reference path="../shared/autosuggestpage.ts" />
 
 module UrlEditor {
 
@@ -23,6 +24,7 @@ module UrlEditor {
         private settings: Settings;
 
         private parsedData: IAutoSuggestData;
+        private pageData: Shared.AutoSuggestPage;
 
         private suggestions: Suggestions;
 

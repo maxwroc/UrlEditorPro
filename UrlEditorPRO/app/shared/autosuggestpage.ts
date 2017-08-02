@@ -4,36 +4,73 @@ module UrlEditor.Shared {
     const UNBIND = "[Unbind] ";
     const HOST_ALIAS_KEY = "[suggestionAlias]";
 
-    export let autoSuggestData: IAutoSuggestData;
+    export class AutoSuggestData {
 
-    export class AutoSuggestPage {
-        constructor(public domain: string) {
+        private autoSuggestData: IAutoSuggestData;
+
+        constructor(private settings: Settings) {
         }
 
-        bindWith(page: AutoSuggestPage) {
-            let localTopDomain = this.getTopDomain(this.domain);
-            let bindDomain = this.getTopDomain(page.domain);
+        getData() {
+            if (!this.autoSuggestData) {
+                this.autoSuggestData = JSON.parse(this.settings.autoSuggestData);
+            }
 
-            if (localTopDomain == bindDomain) {
+            return this.autoSuggestData;
+        }
+
+        getDomains() {
+            return Object.keys(this.getData());
+        }
+
+        exists(domain: string) {
+            return !!this.getData()[domain];
+        }
+
+        getPage(domain: string) {
+            if (!this.exists(domain)) {
+                throw new Error(`Domain data not found! (${domain})`);
+            }
+
+            return new AutoSuggestPage(this, domain);
+        }
+
+        save() {
+            this.settings.setValue("autoSuggestData", JSON.stringify(this.autoSuggestData));
+        }
+    }
+
+    export class AutoSuggestPage {
+        private data: IAutoSuggestData;
+
+        constructor(private dataObj: AutoSuggestData, public domain: string) {
+            this.data = dataObj.getData();
+        }
+
+        bindWith(domainToBind: string) {
+            let localTopDomain = this.getTopDomain(this.domain);
+            domainToBind = this.getTopDomain(domainToBind);
+
+            if (localTopDomain == domainToBind) {
                 return;
             }
 
-            this.mergeParams(localTopDomain, bindDomain);
+            this.mergeParams(localTopDomain, domainToBind);
 
             // update other domains if they were bind to the bindDomain
-            Object.keys(autoSuggestData).forEach(domain => {
-                if (autoSuggestData[domain][HOST_ALIAS_KEY] && autoSuggestData[domain][HOST_ALIAS_KEY][0] == bindDomain) {
-                    autoSuggestData[domain][HOST_ALIAS_KEY][0] = localTopDomain;
+            this.dataObj.getDomains().forEach(domain => {
+                if (this.data[domain][HOST_ALIAS_KEY] && this.data[domain][HOST_ALIAS_KEY][0] == domainToBind) {
+                    this.data[domain][HOST_ALIAS_KEY][0] = localTopDomain;
                 }
             });
 
-            autoSuggestData[bindDomain] = {};
-            autoSuggestData[bindDomain][HOST_ALIAS_KEY] = [localTopDomain];
+            this.data[domainToBind] = {};
+            this.data[domainToBind][HOST_ALIAS_KEY] = [localTopDomain];
         }
 
-        unbind(page: AutoSuggestPage) {
-            let rel = this.resolveRelationship(page);
-            autoSuggestData[rel.child] = autoSuggestData[rel.parent]
+        unbind(domain: string) {
+            let rel = this.resolveRelationship(domain);
+            this.data[rel.child] = this.data[rel.parent]
         }
 
         delete() {
@@ -41,23 +78,23 @@ module UrlEditor.Shared {
             if (!this.isAlias()) {
                 let newTopDomain;
                 // make sure the other domains which were linked to the current one will be updated
-                Object.keys(autoSuggestData).forEach(domain => {
+                this.dataObj.getDomains().forEach(domain => {
                     if (this.isAlias(domain) && this.getTopDomain(domain) == this.domain) {
                         if (!newTopDomain) {
                             newTopDomain = domain;
-                            autoSuggestData[domain] = this.getParams();
+                            this.data[domain] = this.getParams();
                         } else {
-                            autoSuggestData[domain][HOST_ALIAS_KEY][0] = newTopDomain;
+                            this.data[domain][HOST_ALIAS_KEY][0] = newTopDomain;
                         }
                     }
                 });
             }
 
-            delete autoSuggestData[this.domain];
+            delete this.data[this.domain];
         }
 
         deleteParam(name: string) {
-            delete autoSuggestData[this.getTopDomain()][name];
+            delete this.data[this.getTopDomain()][name];
 
             let remainningParams = Object.keys(this.getParams());
             if (remainningParams.length = 0) {
@@ -67,8 +104,8 @@ module UrlEditor.Shared {
         }
 
         deleteParamValue(paramName: string, valueToRemove: string) {
-            let remainingValues = autoSuggestData[this.getTopDomain()][paramName].filter(val => val != valueToRemove);
-            autoSuggestData[this.getTopDomain()][paramName] = remainingValues;
+            let remainingValues = this.data[this.getTopDomain()][paramName].filter(val => val != valueToRemove);
+            this.data[this.getTopDomain()][paramName] = remainingValues;
 
             // remove param if no values left
             if (remainingValues.length) {
@@ -77,40 +114,44 @@ module UrlEditor.Shared {
         }
 
         isAlias(name: string = null) {
-            return !!autoSuggestData[name || this.domain][HOST_ALIAS_KEY];
+            return !!this.data[name || this.domain][HOST_ALIAS_KEY];
         }
 
         getParams() {
-            return autoSuggestData[this.getTopDomain()]
+            return this.data[this.getTopDomain()]
+        }
+
+        getParamNames() {
+            return Object.keys(this.getParams());
         }
 
         getParamValues(name: string) {
-            return autoSuggestData[this.getTopDomain()][name];
+            return this.data[this.getTopDomain()][name];
         }
 
-        private getTopDomain(page: string = this.domain) {
+        getTopDomain(page: string = this.domain) {
             let topDomain = page;
             // just in case if there is nesting (which shouldn't happen)
-            while (autoSuggestData[topDomain][HOST_ALIAS_KEY]) {
-                topDomain = autoSuggestData[topDomain][HOST_ALIAS_KEY][0];
+            while (this.data[topDomain][HOST_ALIAS_KEY]) {
+                topDomain = this.data[topDomain][HOST_ALIAS_KEY][0];
             }
 
             return topDomain;
         }
 
-        private resolveRelationship(targetPage: AutoSuggestPage, parentLookupEnabled = false) {
+        private resolveRelationship(domain: string, parentLookupEnabled = false) {
             let result = {
                 parent: this.domain,
-                child: targetPage.domain
+                child: domain
             };
 
-            if (autoSuggestData[this.domain][HOST_ALIAS_KEY]) {
-                let parentDomain = targetPage.domain;
-                if (autoSuggestData[parentDomain][HOST_ALIAS_KEY]) {
+            if (this.data[this.domain][HOST_ALIAS_KEY]) {
+                let parentDomain = domain;
+                if (this.data[parentDomain][HOST_ALIAS_KEY]) {
 
                     if (parentLookupEnabled) {
                         // trying to find root
-                        parentDomain = this.getTopDomain(targetPage.domain);
+                        parentDomain = this.getTopDomain(domain);
                     } else {
                         throw new Error("Binding failed. Both pages are aliases.");
                     }
@@ -125,17 +166,17 @@ module UrlEditor.Shared {
         }
 
         private mergeParams(parentDomain, domainToBind) {
-            Object.keys(autoSuggestData[domainToBind]).forEach(paramName => {
+            Object.keys(this.data[domainToBind]).forEach(paramName => {
                 let result = Array.from(
                     // Set by default removes all dupes
                     new Set(
                         // merging arrays
-                        (autoSuggestData[parentDomain][paramName] || []).concat(autoSuggestData[domainToBind][paramName])
+                        (this.data[parentDomain][paramName] || []).concat(this.data[domainToBind][paramName])
                     ));
 
                 // only update if it's different
-                if ((autoSuggestData[parentDomain][paramName] || []).length != autoSuggestData[domainToBind][paramName].length) {
-                    autoSuggestData[parentDomain][paramName] = result;
+                if ((this.data[parentDomain][paramName] || []).length != this.data[domainToBind][paramName].length) {
+                    this.data[parentDomain][paramName] = result;
                 }
             });
         }

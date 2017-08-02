@@ -7,12 +7,12 @@ module UrlEditor.Options.Suggestions {
     const HOST_ALIAS_KEY = "[suggestionAlias]";
     const Page = Shared.AutoSuggestPage;
 
-    let autoSuggestData: IAutoSuggestData;
+    let autoSuggestData: Shared.AutoSuggestData;
     let settings: Settings;
 
-    let pageElem: HTMLSelectElement;
-    let paramElem: HTMLSelectElement;
-    let bindToElem: HTMLSelectElement;
+    let domainsElem: HTMLSelectElement;
+    let paramNamesElem: HTMLSelectElement;
+    let bindToDomainElem: HTMLSelectElement;
     let paramValuesContainer: HTMLDivElement;
 
     export function init(setts: Settings) {
@@ -22,15 +22,16 @@ module UrlEditor.Options.Suggestions {
         recentlyUsedParamsModule.addEventListener("click", handleClick)
         recentlyUsedParamsModule.addEventListener("change", handleSelect)
 
-        pageElem = Helpers.ge<HTMLSelectElement>("autoSuggestPages");
-        paramElem = Helpers.ge<HTMLSelectElement>("autoSuggestParams");
-        bindToElem = Helpers.ge<HTMLSelectElement>("autoSuggestPageToBind");
+        domainsElem = Helpers.ge<HTMLSelectElement>("autoSuggestPages");
+        paramNamesElem = Helpers.ge<HTMLSelectElement>("autoSuggestParams");
+        bindToDomainElem = Helpers.ge<HTMLSelectElement>("autoSuggestPageToBind");
         paramValuesContainer = Helpers.ge<HTMLDivElement>("autoSuggestParamValues");
 
-        if (settings.autoSuggestData) {
-            autoSuggestData = <IAutoSuggestData>JSON.parse(settings.autoSuggestData);
-            Shared.autoSuggestData = autoSuggestData; // TODO figure out a better way to pass the data
-            populateComboBox(pageElem, Object.keys(autoSuggestData), "-- select page --");
+        autoSuggestData = new Shared.AutoSuggestData(settings);
+
+        let domainList = autoSuggestData.getDomains();
+        if (domainList.length) {
+            populateComboBox(domainsElem, domainList, "-- select page --");
         }
     }
 
@@ -44,54 +45,46 @@ module UrlEditor.Options.Suggestions {
         if (elem.tagName == "INPUT") {
             switch (elem.name) {
                 case "saveBinding":
-                    saveBinding(autoSuggestData);
+                    saveBinding();
                     break;
 
                 case "delete":
-                    if (autoSuggestData) {
-                        handleSuggestionDelete(elem);
-                    }
+                    handleSuggestionDelete(elem);
                     break;
             }
         }
     }
 
-    function getBasePageName(pageName: string) {
-        return autoSuggestData[pageName] &&
-            autoSuggestData[pageName][HOST_ALIAS_KEY] &&
-            autoSuggestData[pageName][HOST_ALIAS_KEY][0];
-    }
-
     function handleSelect(evt) {
         let elem = <HTMLSelectElement>evt.target;
+        let page: Shared.AutoSuggestPage;
         if (elem.tagName == "SELECT") {
             switch (elem.name) {
                 case "page":
-                    let alias = getBasePageName(elem.value);
+                    page = autoSuggestData.getPage(elem.value);
 
-                    let pageData = alias ? autoSuggestData[alias] : autoSuggestData[elem.value]
-                    if (pageData) {
-                        populateComboBox(paramElem, Object.keys(pageData), "-- select param --", elem.value);
-                    }
+                    populateComboBox(paramNamesElem, page.getParamNames(), "-- select param --", elem.value);
 
                     let selectedIndex = 0;
                     let defaultText = "-- select website to (un)bind --";
 
-                    let filteredWebsites = Object.keys(autoSuggestData)
+                    let filteredWebsites = autoSuggestData.getDomains()
                         // remove subject page
-                        .filter(x => x != elem.value && (!getBasePageName(x) || getBasePageName(x) == elem.value))
+                        .filter(x => x != elem.value && (!page.isAlias(x) || page.getTopDomain(x) == elem.value))
                         // add "unbind" if bind already
                         .map(x => {
-                            if (x == alias || getBasePageName(x) == elem.value) {
+                            if (x == page.getTopDomain() || page.getTopDomain(x) == elem.value) {
                                 x = "[Unbind] " + x;
                             }
                             return x;
                         });
 
-                    populateComboBox(bindToElem, filteredWebsites, defaultText, elem.value, selectedIndex);
+                    populateComboBox(bindToDomainElem, filteredWebsites, defaultText, elem.value, selectedIndex);
                     break;
                 case "param":
-                    let paramData = autoSuggestData[elem["source"]][elem.value] || [];
+                    let domainName = elem["source"];
+                    page = autoSuggestData.getPage(domainName);
+                    let paramData = page.getParamValues(elem.value) || [];
 
                     // clear param list
                     paramValuesContainer.innerHTML = "";
@@ -121,15 +114,18 @@ module UrlEditor.Options.Suggestions {
 
     function handleSuggestionDelete(elem: HTMLInputElement) {
 
-        let saveData = false;
+        if (!autoSuggestData.exists(domainsElem.value)) {
+            // gracefully fail
+            return;
+        }
 
+        let saveData = false;
+        let page = autoSuggestData.getPage(domainsElem.value);
         let subjectElem = <HTMLSelectElement>elem.previousElementSibling;
 
-        let page = new Page(pageElem.value);
-
         // check if deleting page
-        if (subjectElem == pageElem && autoSuggestData[subjectElem.value]) {
-            let message = "Do you want to dletete all (" + Object.keys(page.getParams()).length + ") parameters for page: " + subjectElem.value;
+        if (subjectElem == domainsElem) {
+            let message = "Do you want to dletete all (" + page.getParamNames().length + ") parameters for page: " + subjectElem.value;
             if (page.isAlias() || Suggestions.confirmWrapper(message)) {
                 Tracking.trackEvent(Tracking.Category.AutoSuggest, "delete page data");
 
@@ -139,9 +135,9 @@ module UrlEditor.Options.Suggestions {
                 let select = <HTMLSelectElement><any>subjectElem;
                 select.remove(select.selectedIndex);
                 // remove all param values
-                let paramsSelect = <HTMLSelectElement><any>paramElem;
-                paramElem.innerHTML = "";
-                paramElem.value = "";
+                let paramsSelect = <HTMLSelectElement><any>paramNamesElem;
+                paramNamesElem.innerHTML = "";
+                paramNamesElem.value = "";
                 // remove all visible values
                 paramValuesContainer.innerHTML = "";
 
@@ -149,12 +145,12 @@ module UrlEditor.Options.Suggestions {
             }
         }
         // check if deleting param
-        else if (subjectElem == paramElem && page.getParams()[paramElem.value]) {
-            let message = "Do you want to detete all (" + page.getParamValues(paramElem.value).length + ") values together with parameter: " + subjectElem.value;
+        else if (subjectElem == paramNamesElem && page.getParams()[paramNamesElem.value]) {
+            let message = "Do you want to detete all (" + page.getParamValues(paramNamesElem.value).length + ") values together with parameter: " + subjectElem.value;
             if (Suggestions.confirmWrapper(message)) {
                 Tracking.trackEvent(Tracking.Category.AutoSuggest, "delete param data");
 
-                page.deleteParam(paramElem.value);
+                page.deleteParam(paramNamesElem.value);
 
                 // remove element from the list
                 let select = <HTMLSelectElement><any>subjectElem;
@@ -166,11 +162,11 @@ module UrlEditor.Options.Suggestions {
             }
         }
         // check if deleting value
-        else if (page.getParamValues(paramElem.value).indexOf(subjectElem.value) != -1) {
-            if (Suggestions.confirmWrapper("Do you want to delete '" + subjectElem.value + "' value from param '" + paramElem.value + "'")) {
+        else if (page.getParamValues(paramNamesElem.value).indexOf(subjectElem.value) != -1) {
+            if (Suggestions.confirmWrapper("Do you want to delete '" + subjectElem.value + "' value from param '" + paramNamesElem.value + "'")) {
                 Tracking.trackEvent(Tracking.Category.AutoSuggest, "delete param value");
 
-                page.deleteParamValue(paramElem.value, subjectElem.value);
+                page.deleteParamValue(paramNamesElem.value, subjectElem.value);
 
                 subjectElem.parentElement.parentElement.removeChild(subjectElem.parentElement);
                 saveData = true;
@@ -178,7 +174,7 @@ module UrlEditor.Options.Suggestions {
         }
 
         if (saveData) {
-            saveAutoSuggestData();
+            autoSuggestData.save();
         }
     }
 
@@ -202,9 +198,9 @@ module UrlEditor.Options.Suggestions {
         }
     }
 
-    function saveBinding(autoSuggestData: IAutoSuggestData) {
-        let subjectPage = pageElem.value
-        let targetPage = bindToElem.value;
+    function saveBinding() {
+        let subjectPage = domainsElem.value
+        let targetPage = bindToDomainElem.value;
         let unbinding = false;
 
         if (subjectPage.startsWith("-- ") || targetPage.startsWith("-- ")) {
@@ -216,21 +212,16 @@ module UrlEditor.Options.Suggestions {
             unbinding = true;
         }
 
-        if (targetPage && autoSuggestData[targetPage]) {
+        if (targetPage && autoSuggestData.exists(targetPage)) {
 
             if (unbinding) {
-                new Page(subjectPage).unbind(new Page(targetPage));
+                autoSuggestData.getPage(subjectPage).unbind(targetPage);
             }
             else {
-                new Page(subjectPage).bindWith(new Page(targetPage));
+                autoSuggestData.getPage(subjectPage).bindWith(targetPage);
             }
 
-            saveAutoSuggestData();
+            autoSuggestData.save();
         }
     }
-
-    function saveAutoSuggestData() {
-        settings.setValue("autoSuggestData", JSON.stringify(autoSuggestData));
-    }
-
 }

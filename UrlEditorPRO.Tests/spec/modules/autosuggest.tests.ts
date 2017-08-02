@@ -419,6 +419,10 @@ module Tests.Autosuggest {
 
             detailedObjectComparison(autoSuggestData, JSON.parse(storage.autoSuggestData), "autoSuggestData", true/*exactMatch*/);
         });
+
+        it("Suggestions is properly saved if the data object is empty (default initial state)", () => {
+
+        });
     });
 
     class ParamContainer {

@@ -209,6 +209,9 @@ module Tests {
                     },
                     "www.bind.to.sth.else.com": {
                         "[suggestionAlias]": ["www.else.com"]
+                    },
+                    "www.else.com": {
+                        "param1": ["test1"]
                     }
                 };
 
