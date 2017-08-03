@@ -129,10 +129,13 @@ module Tests.Canvas {
         }
 
         static getGoButton() {
-            return <HTMLInputElement>getElementById("go", true);
+            return extendButtonElement(<HTMLInputElement>getElementById("go", true));
         }
         static getVersion() {
             return <HTMLSpanElement>getElementById("version", true);
+        }
+        static getAddParamButton() {
+            return extendButtonElement(<HTMLInputElement>getElementById("add_param"));
         }
     }
 

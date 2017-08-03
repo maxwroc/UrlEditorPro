@@ -1,10 +1,10 @@
-///<reference path="../modules/shared_interfaces.d.ts" />
+/// <reference path="interfaces.shared.d.ts" />
 
-module UrlEditor.Shared {
+module UrlEditor.Shared.AutoSuggest {
     const UNBIND = "[Unbind] ";
     const HOST_ALIAS_KEY = "[suggestionAlias]";
 
-    export class AutoSuggestData {
+    export class Data {
 
         private autoSuggestData: IAutoSuggestData;
 
@@ -38,7 +38,7 @@ module UrlEditor.Shared {
                 }
             }
 
-            return new AutoSuggestPage(this, domain);
+            return new Page(this, domain);
         }
 
         save() {
@@ -46,10 +46,10 @@ module UrlEditor.Shared {
         }
     }
 
-    export class AutoSuggestPage {
+    export class Page {
         private data: IAutoSuggestData;
 
-        constructor(private dataObj: AutoSuggestData, public domain: string) {
+        constructor(private dataObj: Data, public domain: string) {
             this.data = dataObj.getData();
         }
 

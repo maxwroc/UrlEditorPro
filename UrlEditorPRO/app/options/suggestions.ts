@@ -1,13 +1,14 @@
 ///<reference path="../modules/autosuggest.ts" />
-///<reference path="../shared/autosuggestpage.ts" />
+///<reference path="../shared/autosuggest.shared.ts" />
 
 module UrlEditor.Options.Suggestions {
 
     const UNBIND = "[Unbind] ";
     const HOST_ALIAS_KEY = "[suggestionAlias]";
-    const Page = Shared.AutoSuggestPage;
+    const Page = Shared.AutoSuggest.Page;
+    const AutoSuggestData = Shared.AutoSuggest.Data;
 
-    let autoSuggestData: Shared.AutoSuggestData;
+    let autoSuggestData: Shared.AutoSuggest.Data;
     let settings: Settings;
 
     let domainsElem: HTMLSelectElement;
@@ -27,7 +28,7 @@ module UrlEditor.Options.Suggestions {
         bindToDomainElem = Helpers.ge<HTMLSelectElement>("autoSuggestPageToBind");
         paramValuesContainer = Helpers.ge<HTMLDivElement>("autoSuggestParamValues");
 
-        autoSuggestData = new Shared.AutoSuggestData(settings);
+        autoSuggestData = new AutoSuggestData(settings);
 
         let domainList = autoSuggestData.getDomains();
         if (domainList.length) {
@@ -57,7 +58,7 @@ module UrlEditor.Options.Suggestions {
 
     function handleSelect(evt) {
         let elem = <HTMLSelectElement>evt.target;
-        let page: Shared.AutoSuggestPage;
+        let page: Shared.AutoSuggest.Page;
         if (elem.tagName == "SELECT") {
             switch (elem.name) {
                 case "page":

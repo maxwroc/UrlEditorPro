@@ -1,9 +1,11 @@
 ﻿/// <reference path="settings.ts" />
 /// <reference path="tracking.ts" />
-/// <reference path="shared_interfaces.d.ts" />
-/// <reference path="../shared/autosuggestpage.ts" />
+/// <reference path="../shared/interfaces.shared.d.ts" />
+/// <reference path="../shared/autosuggest.shared.ts" />
 
 module UrlEditor {
+
+    const AutoSuggestData = Shared.AutoSuggest.Data;
 
     export interface IAutoSuggestData {
         [pageHostName: string]: IAutoSuggestPageData;
@@ -23,9 +25,9 @@ module UrlEditor {
 
         private settings: Settings;
 
-        private autoSuggestData: Shared.AutoSuggestData;
+        private autoSuggestData: Shared.AutoSuggest.Data;
 
-        private pageData: Shared.AutoSuggestPage;
+        private pageData: Shared.AutoSuggest.Page;
 
         private suggestions: Suggestions;
 
@@ -34,7 +36,7 @@ module UrlEditor {
         constructor(settings: Settings, doc: Document, baseUrl: Uri, private isInIncognitoMode: boolean) {
             this.settings = settings;
             this.baseUrl = new Uri(baseUrl.url());
-            this.autoSuggestData = new Shared.AutoSuggestData(settings);
+            this.autoSuggestData = new AutoSuggestData(settings);
             this.pageData = this.autoSuggestData.getPage(this.baseUrl.hostname());
 
             // initialize suggestions container

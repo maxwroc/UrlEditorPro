@@ -3,6 +3,8 @@
 
 module Tests.Autosuggest {
 
+    const Elements = Canvas.PopupElements;
+
     describe("Autosuggest test validating if", () => {
 
         let autoSuggestData: UrlEditor.IAutoSuggestData;
@@ -155,9 +157,9 @@ module Tests.Autosuggest {
             Canvas.type(lastParamContainer.getNameElem(), "new_param");
             Canvas.type(lastParamContainer.getValueElem(), "new_value");
 
-            waitUntil(() => Canvas.PopupElements.getFullUrl().textContent.endsWith("new_value"))
+            waitUntil(() => Elements.getFullUrl().textContent.endsWith("new_value"))
                 .then(() => {
-                    Canvas.click(Canvas.PopupElements.getGoButton());
+                    Elements.getGoButton().simulateClick();
 
                     // create expected data object
                     autoSuggestData["www.google.com"]["new_param"] = ["new_value"];
@@ -189,9 +191,9 @@ module Tests.Autosuggest {
             Canvas.type(lastParamContainer.getNameElem(), "new_param");
             Canvas.type(lastParamContainer.getValueElem(), "new_value");
 
-            waitUntil(() => Canvas.PopupElements.getFullUrl().textContent.endsWith("new_value"))
+            waitUntil(() => Elements.getFullUrl().textContent.endsWith("new_value"))
                 .then(() => {
-                    Canvas.click(Canvas.PopupElements.getGoButton());
+                    Canvas.click(Elements.getGoButton());
 
                     // create expected data object
                     autoSuggestData["www.google.com"]["new_param"] = ["new_value"];
@@ -214,7 +216,7 @@ module Tests.Autosuggest {
             valueElem.value = "";
             Canvas.type(valueElem, "new_value")
 
-            Canvas.click(Canvas.PopupElements.getGoButton());
+            Canvas.click(Elements.getGoButton());
 
             // create expected data object
             autoSuggestData["www.google.com"]["param1"].unshift("new_value");
@@ -239,9 +241,9 @@ module Tests.Autosuggest {
             Canvas.type(lastParamContainer.getNameElem(), "new_param");
             Canvas.type(lastParamContainer.getValueElem(), "new_value");
 
-            waitUntil(() => Canvas.PopupElements.getFullUrl().textContent.endsWith("new_value"))
+            waitUntil(() => Elements.getFullUrl().textContent.endsWith("new_value"))
                 .then(() => {
-                    Canvas.click(Canvas.PopupElements.getGoButton());
+                    Canvas.click(Elements.getGoButton());
 
                     // create expected data object
                     autoSuggestData["www.something-new.com"] = {
@@ -249,6 +251,34 @@ module Tests.Autosuggest {
                     };
 
                     detailedObjectComparison(autoSuggestData, JSON.parse(storage.autoSuggestData), "autoSuggestData", true/*exactMatch*/);
+                    done();
+                });
+        });
+
+        it("new param is added to suggestion data when suggestion data didn't exist before", (done) => {
+            // no autosuggest data
+            let storage = <any>{ trackingEnabled: false };
+            Canvas.init(storage);
+
+            chrome.tabs.getSelected.fireCallbacks(chrome.mocks.getTab());
+
+            Elements.getAddParamButton().simulateClick();
+
+            let lastParamContainer = ParamContainer.getLast();
+            Canvas.type(lastParamContainer.getNameElem(), "new_param");
+            Canvas.type(lastParamContainer.getValueElem(), "new_value");
+
+            waitUntil(() => Elements.getFullUrl().textContent.endsWith("new_value"))
+                .then(() => {
+                    Elements.getGoButton().simulateClick();
+
+                    let expected = {
+                        "www.google.com": {
+                            "new_param": ["new_value"]
+                        }
+                    };
+
+                    detailedObjectComparison(expected, JSON.parse(storage.autoSuggestData), "autoSuggestData", true/*exactMatch*/);
                     done();
                 });
         });
@@ -418,10 +448,6 @@ module Tests.Autosuggest {
             delete autoSuggestData["www.binddomain2.com"];
 
             detailedObjectComparison(autoSuggestData, JSON.parse(storage.autoSuggestData), "autoSuggestData", true/*exactMatch*/);
-        });
-
-        it("Suggestions is properly saved if the data object is empty (default initial state)", () => {
-
         });
     });
 
