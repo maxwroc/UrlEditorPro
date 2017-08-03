@@ -23,7 +23,8 @@ module UrlEditor {
 
         private settings: Settings;
 
-        private parsedData: IAutoSuggestData;
+        private autoSuggestData: Shared.AutoSuggestData;
+
         private pageData: Shared.AutoSuggestPage;
 
         private suggestions: Suggestions;
@@ -33,6 +34,8 @@ module UrlEditor {
         constructor(settings: Settings, doc: Document, baseUrl: Uri, private isInIncognitoMode: boolean) {
             this.settings = settings;
             this.baseUrl = new Uri(baseUrl.url());
+            this.autoSuggestData = new Shared.AutoSuggestData(settings);
+            this.pageData = this.autoSuggestData.getPage(this.baseUrl.hostname());
 
             // initialize suggestions container
             this.suggestions = new Suggestions(doc, this);
@@ -49,8 +52,6 @@ module UrlEditor {
 
             // check if we shouldn't save param data
             if (!this.settings.autoSuggestSaveNew ||
-                // check if auto-suggest was not triggered at least once
-                !this.parsedData ||
                 // check if host is not the same
                 this.baseUrl.hostname() != submittedUri.hostname() ||
                 (this.isInIncognitoMode && !this.settings.autoSuggestEnabledOnIncognito)) {
@@ -83,35 +84,17 @@ module UrlEditor {
             });
 
             if (paramsToSave) {
-                let pageData = this.getCurrentPageData();
-
-                // make sure that the entry exists
-                if (!pageData) {
-                    pageData = this.parsedData[submittedUri.hostname()] = {};
-                }
+                let page = this.autoSuggestData.getPage(submittedUri.hostname());
 
                 Object.keys(paramsToSave).forEach(name => {
-                    // make sure collection of values for parameter name exists
-                    pageData[name] = pageData[name] || [];
 
                     // iterate over newly added param values
                     paramsToSave[name].forEach(val => {
-                        // check if value already exists
-                        let foundOnPosition = pageData[name].indexOf(val);
-                        if (foundOnPosition != -1) {
-                            // remove it as we want to add it on the beginning of the collection later
-                            pageData[name].splice(foundOnPosition, 1);
-                        }
-
-                        // add value on the beginning
-                        pageData[name].unshift(val);
+                        page.add(name, val);
                     });
                 });
 
-                // save in settings
-                this.settings.setValue("autoSuggestData", JSON.stringify(this.parsedData));
-                // clear data cache
-                this.parsedData = undefined;
+                this.autoSuggestData.save();
             }
 
             // create new Uri object to avoid keeping same reference
@@ -119,77 +102,14 @@ module UrlEditor {
         }
 
         deleteSuggestion(paramName: string, paramValue?: string) {
-            let pageData = this.getCurrentPageData();
-
-            if (pageData) {
-
-                if (paramValue != undefined) { // removing value suggestion
-                    if (pageData[paramName]) {
-                        // remove suggestion from settings
-                        pageData[paramName] = pageData[paramName].filter(val => val != paramValue);
-                    }
-                }
-                else { // removing param suggestion
-                    delete pageData[paramName];
-                }
-
-                this.cleanDataFromEmptyValues();
-
-                this.settings.setValue("autoSuggestData", JSON.stringify(this.parsedData));
+            if (paramValue != undefined) { // removing value suggestion
+                this.pageData.deleteParamValue(paramName, paramValue);
             }
-        }
-
-        private cleanDataFromEmptyValues() {
-            for (let domain in this.parsedData) {
-
-                let baseDomain = this.parsedData[domain][AutoSuggest.HOST_ALIAS_KEY] &&
-                    this.parsedData[domain][AutoSuggest.HOST_ALIAS_KEY][0];
-                if (baseDomain) {
-                    // if base domain is missing it means that it was removed in previous step
-                    if (!this.parsedData[baseDomain]) {
-                        delete this.parsedData[domain];
-                        // restart clean up
-                        this.cleanDataFromEmptyValues();
-                        return;
-                    }
-
-                    // no need to check rest of the conditions
-                    continue;
-                }
-
-                let paramNames = Object.keys(this.parsedData[domain]);
-                if (paramNames.length == 0) {
-                    delete this.parsedData[domain];
-                    // we need to start from the beginning
-                    this.cleanDataFromEmptyValues();
-                    return;
-                }
-                else {
-                    for (let paramName of paramNames) {
-                        let paramValues = Object.keys(this.parsedData[domain][paramName]);
-                        if (paramValues.length == 0) {
-                            delete this.parsedData[domain][paramName];
-                            // we need to restart cleaning
-                            this.cleanDataFromEmptyValues();
-                            return;
-                        }
-                    }
-                }
-            };
-        }
-
-        private getCurrentPageData() {
-            let pageData = this.parsedData[this.getResolvedDomain()];
-            return pageData;
-        }
-
-        private getResolvedDomain() {
-            let domain = this.baseUrl.hostname();
-            if (this.parsedData[domain] && this.parsedData[domain][AutoSuggest.HOST_ALIAS_KEY]) {
-                domain = this.parsedData[domain][AutoSuggest.HOST_ALIAS_KEY][0];
+            else { // removing param suggestion
+                this.pageData.deleteParam(paramName);
             }
 
-            return domain;
+            this.autoSuggestData.save();
         }
 
         private onDomEvent(elem: HTMLInputElement) {
@@ -220,24 +140,18 @@ module UrlEditor {
                 return;
             }
 
-            // parse the data if it wasn't already
-            if (this.parsedData == undefined) {
-                this.parsedData = JSON.parse(this.settings.autoSuggestData);
-            }
-
-            let pageData = this.getCurrentPageData();
-            if (pageData) {
-                let suggestions: string[] = [];
-
+            if (this.autoSuggestData.exists(this.baseUrl.hostname())) {
                 let prefix: string;
+                let suggestions: string[] = [];
+                let page = this.autoSuggestData.getPage(this.baseUrl.hostname());
 
-                // check if name is being edited
+                // check if param name is being edited
                 if (value == undefined) {
-                    suggestions = Object.keys(pageData);
+                    suggestions = page.getParamNames();
                     prefix = name;
                 }
-                else if (pageData[name]) {
-                    suggestions = pageData[name];
+                else if (page.getParamValues(name)) {
+                    suggestions = page.getParamValues(name);
                     prefix = value;
                 }
 

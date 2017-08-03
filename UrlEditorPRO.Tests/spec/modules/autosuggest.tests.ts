@@ -286,7 +286,7 @@ module Tests.Autosuggest {
             detailedObjectComparison(autoSuggestData, JSON.parse(storage.autoSuggestData), "autoSuggestData", true/*exactMatch*/);
         });
 
-        all("clicking on delete button removes param value", [[false], [true]], (testDomainAlias: boolean) => {
+        all("clicking on delete button removes param value (is domain alias cases)", [[false], [true]], (testDomainAlias: boolean) => {
             if (testDomainAlias) {
                 // add new alias to the data
                 autoSuggestData["www.alias.com"] = {

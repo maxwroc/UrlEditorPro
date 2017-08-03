@@ -27,9 +27,15 @@ module UrlEditor.Shared {
             return !!this.getData()[domain];
         }
 
-        getPage(domain: string) {
+        getPage(domain: string, throwWhenDataMissing = false) {
             if (!this.exists(domain)) {
-                throw new Error(`Domain data not found! (${domain})`);
+                if (throwWhenDataMissing) {
+                    throw new Error(`Domain data not found! (${domain})`);
+                }
+                else {
+                    // initialize data object
+                    this.getData()[domain] = {};
+                }
             }
 
             return new AutoSuggestPage(this, domain);
@@ -73,18 +79,43 @@ module UrlEditor.Shared {
             this.data[rel.child] = this.data[rel.parent]
         }
 
+        add(paramName: string, paramValue: string) {
+            let params = this.getParams();
+
+            // initialize if doesn't exist
+            params[paramName] = params[paramName] || [];
+
+            // check if value already exists
+            let foundOnPosition = params[paramName].indexOf(paramValue);
+            if (foundOnPosition != -1) {
+                // remove it as we want to add it on the beginning of the collection later
+                params[paramName].splice(foundOnPosition, 1);
+            }
+
+            // add value on the beginning
+            params[paramName].unshift(paramValue);
+        }
+
         delete() {
             // check if it is top domain
             if (!this.isAlias()) {
                 let newTopDomain;
+                let params = this.getParamNames();
+
                 // make sure the other domains which were linked to the current one will be updated
                 this.dataObj.getDomains().forEach(domain => {
                     if (this.isAlias(domain) && this.getTopDomain(domain) == this.domain) {
-                        if (!newTopDomain) {
-                            newTopDomain = domain;
-                            this.data[domain] = this.getParams();
-                        } else {
-                            this.data[domain][HOST_ALIAS_KEY][0] = newTopDomain;
+                        if (params.length == 0) {
+                            // if there are no params we should remove all linked domains
+                            delete this.data[domain];
+                        }
+                        else {
+                            if (!newTopDomain) {
+                                newTopDomain = domain;
+                                this.data[domain] = this.getParams();
+                            } else {
+                                this.data[domain][HOST_ALIAS_KEY][0] = newTopDomain;
+                            }
                         }
                     }
                 });
@@ -97,7 +128,7 @@ module UrlEditor.Shared {
             delete this.data[this.getTopDomain()][name];
 
             let remainningParams = Object.keys(this.getParams());
-            if (remainningParams.length = 0) {
+            if (remainningParams.length == 0) {
                 // if no params left remove the domain
                 this.delete();
             }
@@ -108,7 +139,7 @@ module UrlEditor.Shared {
             this.data[this.getTopDomain()][paramName] = remainingValues;
 
             // remove param if no values left
-            if (remainingValues.length) {
+            if (remainingValues.length == 0) {
                 this.deleteParam(paramName);
             }
         }
