@@ -38,13 +38,13 @@ gulp.task('templates-html2js', function () {
     return gulp.src('UrlEditorPRO/app/*.html')
         .pipe(html2string({
             base: 'UrlEditorPRO/app/',
-            createObj: true, // Indicate wether to define the global object that stores 
-            // the global template strings 
-            objName: 'TEMPLATES'  // Name of the global template store variable 
-            //say the converted string for myTemplate.html will be saved to TEMPLATE['myTemplate.html'] 
+            createObj: true, // Indicate wether to define the global object that stores
+            // the global template strings
+            objName: 'TEMPLATES'  // Name of the global template store variable
+            //say the converted string for myTemplate.html will be saved to TEMPLATE['myTemplate.html']
         }))
         .pipe(concat('templates.js'))
-        .pipe(gulp.dest('UrlEditorPRO.Tests/spec/')); //Output folder 
+        .pipe(gulp.dest('UrlEditorPRO.Tests/spec/')); //Output folder
 });
 
 gulp.task('run-tests', function () {
@@ -61,5 +61,6 @@ gulp.task('test', ['build-test'], function() {
 
 gulp.task('watch-test', function () {
     gulp.watch('UrlEditorPRO/app/**/*.ts', ['build']);
+    gulp.watch('UrlEditorPRO/app/**/*.html', ['templates-html2js']);
     gulp.watch('UrlEditorPRO.Tests/spec/**/*.ts', ['build-test-internal']);
 });

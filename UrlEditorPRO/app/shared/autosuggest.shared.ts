@@ -1,3 +1,4 @@
+/// <reference path="testhooks.ts" />
 /// <reference path="interfaces.shared.d.ts" />
 
 module UrlEditor.Shared.AutoSuggest {
@@ -42,6 +43,7 @@ module UrlEditor.Shared.AutoSuggest {
         }
 
         save() {
+            debug(["autosuggest", "save"], this.autoSuggestData);
             this.settings.setValue("autoSuggestData", JSON.stringify(this.autoSuggestData));
         }
     }
