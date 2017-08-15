@@ -12,7 +12,8 @@ gulp.task('build', function () {
             noImplicitAny: false,
             target: "es6",
             sourceMap: false,
-            declaration: false
+            declaration: false,
+            outFile: 'app.js'
         }))
         .pipe(gulp.dest('UrlEditorPRO/app/'));
 });
