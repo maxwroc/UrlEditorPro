@@ -43,7 +43,7 @@ module UrlEditor.Shared.AutoSuggest {
         }
 
         save() {
-            debug(["autosuggest", "save"], this.autoSuggestData);
+            debug([DebugFeatures.autosuggest, DebugFeatures.save], this.autoSuggestData);
             this.settings.setValue("autoSuggestData", JSON.stringify(this.autoSuggestData));
         }
     }

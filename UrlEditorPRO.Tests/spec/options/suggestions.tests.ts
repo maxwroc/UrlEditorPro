@@ -311,5 +311,19 @@ module Tests {
 
             detailedObjectComparison(expected, JSON.parse(settings.autoSuggestData), "autoSuggestData");
         });
+
+        it("Resets selection after saving", () => {
+            Canvas.init({ autoSuggestData: JSON.stringify(autoSuggestData), trackingEnabled: false });
+
+            Elements.getDomainList().simulateSelectItem("www.google.com");
+            Elements.getBindDomainList().simulateSelectItem("www.web.com");
+            Elements.getParamList().simulateSelectItem("param1");
+
+            Elements.getSaveButton().simulateClick();
+
+            expect(Elements.getDomainList().value).toEqual("-- select page --");
+            expect(Elements.getBindDomainList().value).toEqual("-- select website to (un)bind --");
+            expect(Elements.getParamList().value).toEqual("-- select param --");
+        });
     });
 }

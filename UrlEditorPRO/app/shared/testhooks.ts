@@ -1,20 +1,25 @@
 module UrlEditor {
-    let activeFeatures: string[] = [];
+    let activeFeatures: DebugFeatures[] = [];
     let breakOnDebugCall = false;
 
-    export function debug(featureNames: string | string[], ...params: any[]) {
-        if (typeof featureNames == "string") {
+    export enum DebugFeatures {
+        autosuggest,
+        save
+    }
+
+    export function debug(featureNames: DebugFeatures | DebugFeatures[], ...params: any[]) {
+        if (typeof featureNames == "number") {
             featureNames = [featureNames];
         }
 
         if (featureNames.some(item => activeFeatures.indexOf(item) != -1)) {
+            console.log(featureNames.map(f => DebugFeatures[f]) , params[0]);
             debugger;
-            console.log(featureNames, params[0]);
         }
     }
 
-    export function turnOnDebugging(features: string | string[], breakOnDebug = undefined) {
-        if (typeof features == "string") {
+    export function turnOnDebugging(features: DebugFeatures | DebugFeatures[], breakOnDebug = undefined) {
+        if (typeof features == "number") {
             features = [features];
         }
 

@@ -21,7 +21,7 @@ module UrlEditor.Options.Suggestions {
 
         let recentlyUsedParamsModule = Helpers.ge("recentlyUsedParamsModule");
         recentlyUsedParamsModule.addEventListener("click", handleClick)
-        recentlyUsedParamsModule.addEventListener("change", handleSelect)
+        recentlyUsedParamsModule.addEventListener("change", evt => handleSelect(<HTMLSelectElement>evt.target))
 
         domainsElem = Helpers.ge<HTMLSelectElement>("autoSuggestPages");
         paramNamesElem = Helpers.ge<HTMLSelectElement>("autoSuggestParams");
@@ -47,6 +47,8 @@ module UrlEditor.Options.Suggestions {
             switch (elem.name) {
                 case "saveBinding":
                     saveBinding();
+                    domainsElem.selectedIndex = 0;
+                    handleSelect(domainsElem);
                     break;
 
                 case "delete":
@@ -56,8 +58,7 @@ module UrlEditor.Options.Suggestions {
         }
     }
 
-    function handleSelect(evt) {
-        let elem = <HTMLSelectElement>evt.target;
+    function handleSelect(elem: HTMLSelectElement) {
         let page: Shared.AutoSuggest.Page;
         if (elem.tagName == "SELECT") {
             switch (elem.name) {
@@ -65,6 +66,8 @@ module UrlEditor.Options.Suggestions {
                     page = autoSuggestData.getPage(elem.value);
 
                     populateComboBox(paramNamesElem, page.getParamNames(), "-- select param --", elem.value);
+                    // clear param list
+                    paramValuesContainer.innerHTML = "";
 
                     let selectedIndex = 0;
                     let defaultText = "-- select website to (un)bind --";
