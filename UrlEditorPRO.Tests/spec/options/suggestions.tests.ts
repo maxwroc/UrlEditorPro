@@ -30,7 +30,16 @@ module Tests {
 
             // make sure that DOM is ready
             waitUntil(() => Canvas.ready).then(() => done());
-        })
+        });
+
+        it("fields are initialized with proper values", () => {
+            Canvas.init({ autoSuggestData: JSON.stringify(autoSuggestData), trackingEnabled: false });
+
+            expect(Elements.getDomainList().getValueText()).toEqual("-- select domain --");
+            expect(Elements.getParamList().getValueText()).toEqual("-- select domain first --");
+            expect(Elements.getValueList().innerHTML.replace(/[\s\r\n]/g, "")).toEqual("");
+            expect(Elements.getBindDomainList().getValueText()).toEqual("-- select domain first --");
+        });
 
         it("pages combo box is populated", () => {
 
@@ -312,7 +321,7 @@ module Tests {
             detailedObjectComparison(expected, JSON.parse(settings.autoSuggestData), "autoSuggestData");
         });
 
-        it("Resets selection after saving", () => {
+        it("resets fields after saving", () => {
             Canvas.init({ autoSuggestData: JSON.stringify(autoSuggestData), trackingEnabled: false });
 
             Elements.getDomainList().simulateSelectItem("www.google.com");
@@ -321,9 +330,9 @@ module Tests {
 
             Elements.getSaveButton().simulateClick();
 
-            expect(Elements.getDomainList().value).toEqual("-- select page --");
-            expect(Elements.getBindDomainList().value).toEqual("-- select website to (un)bind --");
-            expect(Elements.getParamList().value).toEqual("-- select param --");
+            expect(Elements.getDomainList().value).toEqual("-- select domain --");
+            expect(Elements.getBindDomainList().value).toEqual("-- select domain first --");
+            expect(Elements.getParamList().value).toEqual("-- select domain first --");
         });
     });
 }

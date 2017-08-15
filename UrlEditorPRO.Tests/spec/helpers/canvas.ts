@@ -162,6 +162,7 @@ module Tests.Canvas {
     export interface HTMLSelectElementExt extends HTMLSelectElement {
         simulateSelectItem(name: string): void;
         getButtonSimbling(): HTMLInputElementExt;
+        getValueText(): string;
     }
 
     function extendSelectElem(selectElem: HTMLSelectElement) {
@@ -182,6 +183,8 @@ module Tests.Canvas {
         ext.getButtonSimbling = () => {
             return extendButtonElement($(selectElem).next("input"));
         }
+
+        ext.getValueText = () => selectElem.item(selectElem.selectedIndex).textContent;
 
         return ext;
     }

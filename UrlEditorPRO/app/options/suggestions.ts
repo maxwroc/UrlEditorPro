@@ -32,7 +32,7 @@ module UrlEditor.Options.Suggestions {
 
         let domainList = autoSuggestData.getDomains();
         if (domainList.length) {
-            populateComboBox(domainsElem, domainList, "-- select page --");
+            populateComboBox(domainsElem, domainList, "-- select domain --");
         }
     }
 
@@ -63,6 +63,13 @@ module UrlEditor.Options.Suggestions {
         if (elem.tagName == "SELECT") {
             switch (elem.name) {
                 case "page":
+                    if(elem.value.startsWith("--")) {
+                        populateComboBox(paramNamesElem, [], "-- select domain first --");
+                        populateComboBox(bindToDomainElem, [], "-- select domain first --");
+                        paramValuesContainer.innerHTML = "";
+                        return;
+                    }
+
                     page = autoSuggestData.getPage(elem.value);
 
                     populateComboBox(paramNamesElem, page.getParamNames(), "-- select param --", elem.value);

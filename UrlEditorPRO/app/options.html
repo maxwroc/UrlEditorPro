@@ -187,10 +187,10 @@
                             <div><span><input type="checkbox" name="autoSuggestEnabledOnIncognito" /></span><span>Save new parameters on incognito mode</span></div>
                         </div>
                         <div class="section grid grid-space grid-last-small">
-                            <div>Select a website to view parameters saved</div>
+                            <div>Select domain to view parameters saved</div>
                             <div>
                                 <select name="page" id="autoSuggestPages">
-                                    <option value="--">-- select page --</option>
+                                    <option value="--">-- select domain --</option>
                                 </select>
                                 <input name="delete" type="button" value="Delete" />
                             </div>
@@ -199,6 +199,7 @@
                             <div>Select a param to view values saved</div>
                             <div>
                                 <select name="param" id="autoSuggestParams">
+                                    <option value="--">-- select domain first --</option>
                                 </select>
                                 <input name="delete" type="button" value="Delete" />
                             </div>
@@ -209,10 +210,10 @@
                             </div>
                         </div>
                         <div class="section grid grid-space grid-last-small">
-                            <div>Bind with other host</div>
+                            <div>Bind with other domain</div>
                             <div>
                                 <select name="bindToHost" id="autoSuggestPageToBind">
-                                    <option value="--">-- select website first --</option>
+                                    <option value="--">-- select domain first --</option>
                                 </select>
                                 <input name="saveBinding" type="button" value="Save" />
                             </div>
