@@ -13,7 +13,8 @@ module UrlEditor {
         }
 
         if (featureNames.some(item => activeFeatures.indexOf(item) != -1)) {
-            console.log(featureNames.map(f => DebugFeatures[f]) , params[0]);
+            params.unshift(featureNames.map(f => DebugFeatures[f]));
+            console.log.apply(window, params);
             debugger;
         }
     }
