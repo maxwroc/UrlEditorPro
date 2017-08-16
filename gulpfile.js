@@ -17,8 +17,19 @@ gulp.task('build-root', function () {
         .pipe(gulp.dest('UrlEditorPRO/app/'));
 });
 
-gulp.task('build', ['build-root'], function () {
-    return gulp.src('UrlEditorPRO/app/modules/**/*.ts')
+gulp.task('build-options', function () {
+    return gulp.src('UrlEditorPRO/app/options/**/*.ts')
+        .pipe(typescript({
+            noImplicitAny: false,
+            target: "es6",
+            sourceMap: false,
+            declaration: false
+        }))
+        .pipe(gulp.dest('UrlEditorPRO/app/options/'));
+});
+
+gulp.task('build', ['build-root', 'build-options'], function () {
+    return gulp.src(['UrlEditorPRO/app/modules/**/*.ts', 'UrlEditorPRO/app/shared/**/*.ts'])
         .pipe(typescript({
             noImplicitAny: false,
             target: "es6",

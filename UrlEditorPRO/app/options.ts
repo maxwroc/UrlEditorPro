@@ -1,6 +1,7 @@
 ﻿/// <reference path="modules/settings.ts" />
 /// <reference path="modules/autosuggest.ts" />
 /// <reference path="modules/tracking.ts" />
+/// <reference path="options/suggestions.ts" />
 
 module UrlEditor.Options {
 

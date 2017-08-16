@@ -1,5 +1,6 @@
 ﻿/// <reference path="settings.ts" />
 /// <reference path="tracking.ts" />
+/// <reference path="url_parser.ts" />
 /// <reference path="../shared/interfaces.shared.d.ts" />
 /// <reference path="../shared/autosuggest.shared.ts" />
 
