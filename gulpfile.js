@@ -6,8 +6,19 @@ var open = require('gulp-open');
 var html2string = require('gulp-html2string');
 
 
-gulp.task('build', function () {
-    return gulp.src('UrlEditorPRO/app/**/*.ts')
+gulp.task('build-root', function () {
+    return gulp.src('UrlEditorPRO/app/*.ts')
+        .pipe(typescript({
+            noImplicitAny: false,
+            target: "es6",
+            sourceMap: false,
+            declaration: false
+        }))
+        .pipe(gulp.dest('UrlEditorPRO/app/'));
+});
+
+gulp.task('build', ['build-root'], function () {
+    return gulp.src('UrlEditorPRO/app/modules/**/*.ts')
         .pipe(typescript({
             noImplicitAny: false,
             target: "es6",
