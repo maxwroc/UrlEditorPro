@@ -7,9 +7,10 @@
 
 module UrlEditor {
 
-    function initialize() {
+
+    function initialize(storage: Storage) {
         var version = chrome.runtime.getManifest().version;
-        var settings = new Settings(localStorage);
+        var settings = new Settings(storage);
 
         // it is better to set variable before page view event (init)
         Tracking.setCustomDimension(Tracking.Dimension.Version, version);
@@ -23,11 +24,11 @@ module UrlEditor {
 
         // get currently selected tab
         chrome.tabs.getSelected(null, function (tab) {
-            
+
             var uri = new UrlEditor.Uri(tab.url);
 
             var autosuggest = new AutoSuggest(settings, document, uri, tab.incognito);
-        
+
             new UrlEditor.ViewModel(uri, document, settings, (uri, openIn) => {
 
                 switch (openIn) {
@@ -53,6 +54,8 @@ module UrlEditor {
 
         });
     };
-    
-    document.addEventListener('DOMContentLoaded', () => initialize());
+
+    document.addEventListener(
+        window.top == window.self ? "DOMContentLoaded" : "init",
+        (evt: any) => initialize(<Storage>evt.detail || localStorage));
 }

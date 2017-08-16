@@ -1,4 +1,4 @@
-﻿/// <reference path="shared_interfaces.d.ts" />
+﻿/// <reference path="../shared/interfaces.shared.d.ts" />
 /// <reference path="helpers.ts" />
 /// <reference path="param_options.ts" />
 /// <reference path="settings.ts" />
@@ -191,7 +191,7 @@ module UrlEditor {
             var elements = this.doc.getElementsByTagName("input");
             for (var i = 0, elem; elem = <HTMLInputElement>elements[i]; i++) {
                 var funcName = this.mapIdToFunction[elem.id];
-                // check if element has ID set, the mapping exists 
+                // check if element has ID set, the mapping exists
                 if (elem.id && funcName) {
                     // updating element value using a function name taken from mapping
                     this.setValueIfNotActive(elem, this.url[funcName]());
@@ -325,7 +325,7 @@ module UrlEditor {
         }
 
         private adjustElementWidthToItsContent(elem: HTMLElement) {
-            var width = this.getTextWidth((<HTMLInputElement>elem).value || elem.textContent) + 12; // + 10 padding and +2 border 
+            var width = this.getTextWidth((<HTMLInputElement>elem).value || elem.textContent) + 12; // + 10 padding and +2 border
             elem.style.width = width + "px";
         }
 
@@ -343,11 +343,11 @@ module UrlEditor {
                     else {
                         // jump to param value elem
                         let paramContainer = (<HTMLElement>evt.target).parentElement as IParamContainerElement;
-                        if (this.settings.autoJumpToValueOnEqual && 
-                            paramContainer && 
-                            paramContainer.isParamContainer && 
+                        if (this.settings.autoJumpToValueOnEqual &&
+                            paramContainer &&
+                            paramContainer.isParamContainer &&
                             paramContainer.nameElement === evt.target) {
-                                
+
                             if (!paramContainer.hasJumpedToValueOnce) {
                                 paramContainer.hasJumpedToValueOnce = true;
                                 paramContainer.valueElement.focus();

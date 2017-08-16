@@ -1,4 +1,4 @@
-﻿/// <reference path="shared_interfaces.d.ts" />
+﻿/// <reference path="../shared/interfaces.shared.d.ts" />
 
 module UrlEditor.ParamOptions {
     const clickAction = "clickAction";
@@ -21,7 +21,7 @@ module UrlEditor.ParamOptions {
     }
 
     export function show(container: IParamContainerElement, pressedButton: HTMLElement, openingByKeyboard = false) {
-        
+
         if (menuElem) {
             // update isActive states
             for (let i = 0; i < menuElem.children.length; i++) {
@@ -68,7 +68,7 @@ module UrlEditor.ParamOptions {
     }
 
     function initializeOptions(container: IParamContainerElement): void {
-        
+
         menuElem = doc.createElement("ul");
         menuElem.setAttribute("id", "paramMenu");
 
@@ -110,7 +110,7 @@ module UrlEditor.ParamOptions {
                 option.action(menuElem.currentContainer);
                 hide();
             }, true);
-            
+
             menuElem.appendChild(li);
         });
 

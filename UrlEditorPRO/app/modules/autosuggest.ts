@@ -1,7 +1,12 @@
 ﻿/// <reference path="settings.ts" />
-/// <reference path="shared_interfaces.d.ts" />
+/// <reference path="tracking.ts" />
+/// <reference path="url_parser.ts" />
+/// <reference path="../shared/interfaces.shared.d.ts" />
+/// <reference path="../shared/autosuggest.shared.ts" />
 
 module UrlEditor {
+
+    const AutoSuggestData = Shared.AutoSuggest.Data;
 
     export interface IAutoSuggestData {
         [pageHostName: string]: IAutoSuggestPageData;
@@ -17,9 +22,13 @@ module UrlEditor {
 
     export class AutoSuggest {
 
+        public static HOST_ALIAS_KEY = "[suggestionAlias]";
+
         private settings: Settings;
 
-        private parsedData: IAutoSuggestData;
+        private autoSuggestData: Shared.AutoSuggest.Data;
+
+        private pageData: Shared.AutoSuggest.Page;
 
         private suggestions: Suggestions;
 
@@ -28,24 +37,24 @@ module UrlEditor {
         constructor(settings: Settings, doc: Document, baseUrl: Uri, private isInIncognitoMode: boolean) {
             this.settings = settings;
             this.baseUrl = new Uri(baseUrl.url());
+            this.autoSuggestData = new AutoSuggestData(settings);
+            this.pageData = this.autoSuggestData.getPage(this.baseUrl.hostname());
 
             // initialize suggestions container
             this.suggestions = new Suggestions(doc, this);
 
             // bind event handlers
-            document.body.addEventListener("DOMFocusOut", evt => {
+            doc.body.addEventListener("DOMFocusOut", evt => {
                 this.suggestions.hide();
             });
-            document.body.addEventListener("DOMFocusIn", evt => this.onDomEvent(<HTMLInputElement>evt.target));
-            document.body.addEventListener("input", evt => this.onDomEvent(<HTMLInputElement>evt.target));
+            doc.body.addEventListener("DOMFocusIn", evt => this.onDomEvent(<HTMLInputElement>evt.target));
+            doc.body.addEventListener("input", evt => this.onDomEvent(<HTMLInputElement>evt.target));
         }
 
         onSubmission(submittedUri: Uri) {
-        
+
             // check if we shouldn't save param data
             if (!this.settings.autoSuggestSaveNew ||
-                // check if auto-suggest was not triggered at least once
-                !this.parsedData ||
                 // check if host is not the same
                 this.baseUrl.hostname() != submittedUri.hostname() ||
                 (this.isInIncognitoMode && !this.settings.autoSuggestEnabledOnIncognito)) {
@@ -53,79 +62,62 @@ module UrlEditor {
                 // not saving data
                 return;
             }
-            
-            var baseParams = this.baseUrl.params();
-            var submittedParams = submittedUri.params();
-            
+
+            let baseParams = this.baseUrl.params();
+            let submittedParams = submittedUri.params();
+
             // create a list of params to save
-            var paramsToSave: IMap<string[]>;
+            let paramsToSave: IMap<string[]>;
             Object.keys(submittedParams).forEach(name => {
                 // add params to save list when they were just added
                 if (baseParams[name] == undefined ||
-                    // or their value is different than before
-                    baseParams[name] != submittedParams[name]) {
+                    // or their values are different than before (this is not the most efficient way to compare arrays but it's simple and works)
+                    baseParams[name].join(",") != submittedParams[name].join(",")) {
+
                     // initilize collection whenever it is needed
                     paramsToSave = paramsToSave || {};
                     // take only values which were not saved previously
-                    paramsToSave[name] = submittedParams[name].filter(val => !baseParams[name] || baseParams[name].indexOf(val) == -1);
+                    let newValues = submittedParams[name].filter(val => !baseParams[name] || baseParams[name].indexOf(val) == -1);
+
+                    // skip empty ones
+                    if (newValues.length) {
+                        paramsToSave[name] = newValues;
+                    }
                 }
             });
 
             if (paramsToSave) {
-                var pageName = submittedUri.hostname();
-                // make sure that the entry exists
-                var pageData = this.parsedData[pageName] = this.parsedData[pageName] || {};
+                let page = this.autoSuggestData.getPage(submittedUri.hostname());
 
                 Object.keys(paramsToSave).forEach(name => {
-                    // make sure collection of values for parameter name exists
-                    pageData[name] = pageData[name] || [];
 
                     // iterate over newly added param values
                     paramsToSave[name].forEach(val => {
-                        // check if value already exists
-                        var foundOnPosition = pageData[name].indexOf(val);
-                        if (foundOnPosition != -1) {
-                            // remove it as we want to add it on the beginning of the collection later
-                            pageData[name].splice(foundOnPosition, 1);
-                        }
-
-                        // add value on the beginning
-                        pageData[name].unshift(val);
+                        page.add(name, val);
                     });
                 });
 
-                // save in settings
-                this.settings.setValue("autoSuggestData", JSON.stringify(this.parsedData));
-                // clear data cache
-                this.parsedData = undefined;
+                this.autoSuggestData.save();
             }
 
             // create new Uri object to avoid keeping same reference
             this.baseUrl = new Uri(submittedUri.url());
         }
-        
+
         deleteSuggestion(paramName: string, paramValue?: string) {
-            var pageName = this.baseUrl.hostname();
-
-            if (this.parsedData && this.parsedData[pageName]) {
-
-                if (paramValue != undefined) { // removing value suggestion
-                    if (this.parsedData[pageName][paramName]) {
-                        // remove suggestion from settings
-                        this.parsedData[pageName][paramName] = this.parsedData[pageName][paramName].filter(val => val != paramValue);
-                    }
-                }
-                else { // removing param suggestion
-                    delete this.parsedData[pageName][paramName];
-                }
-                
-                this.settings.setValue("autoSuggestData", JSON.stringify(this.parsedData));
+            if (paramValue != undefined) { // removing value suggestion
+                this.pageData.deleteParamValue(paramName, paramValue);
             }
+            else { // removing param suggestion
+                this.pageData.deleteParam(paramName);
+            }
+
+            this.autoSuggestData.save();
         }
 
         private onDomEvent(elem: HTMLInputElement) {
             if (elem.tagName == "INPUT" && elem.type == "text" && (<IParamContainerElement>elem.parentElement).isParamContainer) {
-                var name, value;
+                let name, value;
                 switch (elem.name) {
                     case "name":
                         name = elem.value;
@@ -151,24 +143,18 @@ module UrlEditor {
                 return;
             }
 
-            // parse the data if it wasn't already
-            if (this.parsedData == undefined) {
-                this.parsedData = JSON.parse(this.settings.autoSuggestData);
-            }
+            if (this.autoSuggestData.exists(this.baseUrl.hostname())) {
+                let prefix: string;
+                let suggestions: string[] = [];
+                let page = this.autoSuggestData.getPage(this.baseUrl.hostname());
 
-            var pageData = this.parsedData[this.baseUrl.hostname()]
-            if (pageData) {
-                var suggestions: string[] = [];
-
-                var prefix: string;
-
-                // check if name is being edited
+                // check if param name is being edited
                 if (value == undefined) {
-                    suggestions = Object.keys(pageData);
+                    suggestions = page.getParamNames();
                     prefix = name;
                 }
-                else if (pageData[name]) {
-                    suggestions = pageData[name];
+                else if (page.getParamValues(name)) {
+                    suggestions = page.getParamValues(name);
                     prefix = value;
                 }
 
@@ -184,7 +170,7 @@ module UrlEditor {
                     this.suggestions.show(elem);
                 }
             }
-        } 
+        }
     }
 
     class Suggestions {
@@ -209,13 +195,13 @@ module UrlEditor {
         }
 
         add(text: string) {
-            var li = this.doc.createElement("li");
+            let li = this.doc.createElement("li");
             li.textContent = text;
             li.className = "suggestion";
             li["suggestionText"] = text;
 
             // delete button
-            var del = this.doc.createElement("span");
+            let del = this.doc.createElement("span");
             del.textContent = "x";
             del.className = "delete";
             del.title = "Press Ctrl+D to remove";
@@ -237,9 +223,9 @@ module UrlEditor {
         show(elem: HTMLInputElement) {
             // show only if there is anything to show
             if (this.container.innerHTML) {
-                var pos = elem.getBoundingClientRect();
+                let pos = elem.getBoundingClientRect();
                 // pos doesn't contain scroll value so we need to add it
-                var posTop = pos.bottom + document.body.scrollTop - 3;
+                let posTop = pos.bottom + this.doc.body.scrollTop - 3;
                 this.container.style.top = posTop + "px";
                 this.container.style.left = pos.left + "px";
                 this.container.style.display = "block";
@@ -248,13 +234,13 @@ module UrlEditor {
                 this.container.style.width = "auto";
 
                 // reduce the height if it is reached page end
-                var tooBig = posTop + this.container.offsetHeight - (this.doc.body.offsetHeight + 8); // increase by 8 due to margin
+                let tooBig = posTop + this.container.offsetHeight - (this.doc.body.offsetHeight + 8); // increase by 8 due to margin
                 if (tooBig > 0) {
-                    this.container.style.height = (this.container.offsetHeight - tooBig) + "px"; 
+                    this.container.style.height = (this.container.offsetHeight - tooBig) + "px";
                 }
 
                 // reduce width if it is too wide
-                var tooWide = pos.left + this.container.offsetWidth - (this.doc.body.offsetWidth + 8);
+                let tooWide = pos.left + this.container.offsetWidth - (this.doc.body.offsetWidth + 8);
                 if (tooWide > 0) {
                     this.container.style.width = (this.container.offsetWidth - tooWide) + "px";
                 }
@@ -267,7 +253,7 @@ module UrlEditor {
 
                 this.inputElem.addEventListener("keydown", this.handler, true);
 
-                 // increase by 2px due to border size
+                // increase by 2px due to border size
                 Helpers.ensureIsVisible(this.container, this.doc.body, window.innerHeight + 2);
             }
         }
@@ -276,13 +262,12 @@ module UrlEditor {
             this.container.style.display = "none";
             if (this.inputElem) {
                 this.inputElem.removeEventListener("keydown", this.handler, true);
-                this.inputElem = undefined;
             }
             this.active = undefined;
         }
 
         private mouseEventHandler(evt: MouseEvent) {
-            var elem = <HTMLElement>evt.target;
+            let elem = <HTMLElement>evt.target;
 
             switch (elem.className) {
                 case "suggestion":
@@ -291,7 +276,7 @@ module UrlEditor {
                     Tracking.trackEvent(Tracking.Category.AutoSuggest, "used");
 
                     // trigger event which will update param in the url (via view model)
-                    var e = new Event("updated");
+                    let e = new Event("updated");
                     e.initEvent("updated", true, true);
                     this.inputElem.dispatchEvent(e)
                     break;
@@ -309,15 +294,15 @@ module UrlEditor {
         }
 
         private keyboardNavigation(evt: KeyboardEvent) {
-            var handled: boolean;
-            var elementToFocus: HTMLInputElement;
+            let handled: boolean;
+            let elementToFocus: HTMLInputElement;
 
             // allow user to navigate to other input elem
             if (evt.ctrlKey && evt.keyCode != 68) {
                 return;
             }
 
-            var suggestionToSelect: ISuggestion;
+            let suggestionToSelect: ISuggestion;
 
             switch (evt.keyCode) {
                 case 38: // up
@@ -334,7 +319,7 @@ module UrlEditor {
                         handled = true;
                         this.originalText = this.active.suggestionText;
 
-                        var nextInput = <HTMLInputElement>this.inputElem.nextElementSibling;
+                        let nextInput = <HTMLInputElement>this.inputElem.nextElementSibling;
                         if (nextInput.tagName == "INPUT" && nextInput.type == "text") {
                             elementToFocus = nextInput;
                         }
@@ -345,8 +330,8 @@ module UrlEditor {
 
                         Tracking.trackEvent(Tracking.Category.AutoSuggest, "used");
 
-                    // trigger event which will update param in the url (via view model)
-                        var e = new Event("updated");
+                        // trigger event which will update param in the url (via view model)
+                        let e = new Event("updated");
                         e.initEvent("updated", true, true);
                         this.inputElem.dispatchEvent(e)
                     }
@@ -369,7 +354,7 @@ module UrlEditor {
             if (suggestionToSelect) {
                 Tracking.trackEvent(Tracking.Category.AutoSuggest, "selected");
                 suggestionToSelect.classList.add("hv");
-                 // increase by 2px due to border size
+                // increase by 2px due to border size
                 Helpers.ensureIsVisible(suggestionToSelect, this.container, this.container.offsetHeight + 2);
             }
             else {
@@ -377,7 +362,7 @@ module UrlEditor {
             }
 
             this.active = suggestionToSelect;
-            
+
 
             if (handled) {
                 // just in case any of handled key combinations would have some default action
@@ -396,7 +381,7 @@ module UrlEditor {
         }
 
         private deleteSuggestion(suggestion: ISuggestion) {
-            var paramElem = <IParamContainerElement>this.inputElem.parentElement;
+            let paramElem = <IParamContainerElement>this.inputElem.parentElement;
 
             // check if user wants to remove value suggestion
             if (this.inputElem == paramElem.valueElement) {
@@ -406,7 +391,7 @@ module UrlEditor {
                 // removing param-name suggestion
                 this.autoSuggest.deleteSuggestion(suggestion.suggestionText);
             }
-            
+
             // remove suggestion from DOM
             this.container.removeChild(suggestion);
 

@@ -5,8 +5,11 @@
   ],
   "helpers": [
     "../../UrlEditorPro/app/modules/*.js",
+    "../../UrlEditorPro/app/options/*.js",
     "helpers/**/*.js"
   ],
-  "stopSpecOnExpectationFailure": false,
+  "jasmineNodeOpts": {
+    "stopSpecOnExpectationFailure": true
+  },
   "random": false
 }

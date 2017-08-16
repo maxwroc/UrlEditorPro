@@ -124,10 +124,9 @@
             width: 70px;
         }
     </style>
-    <script src="modules/tracking.js"></script>
-    <script src="modules/settings.js"></script>
-    <script src="modules/helpers.js"></script>
+    <script src="app.js"></script>
     <script src="options.js"></script>
+    <script src="options/suggestions.js"></script>
 </head>
 <body>
     <div class="wrapper">
@@ -172,7 +171,7 @@
                     </div>
                 </div>
             </div>
-            <div class="setting">
+            <div class="setting" id="recentlyUsedParamsModule">
                 <h3>Recently used params</h3>
                 <div class="setting-value">
                     <div class="grid highlihgt-first-column">
@@ -184,10 +183,10 @@
                             <div><span><input type="checkbox" name="autoSuggestEnabledOnIncognito" /></span><span>Save new parameters on incognito mode</span></div>
                         </div>
                         <div class="section grid grid-space grid-last-small">
-                            <div>Select a website to view parameters saved</div>
+                            <div>Select domain to view parameters saved</div>
                             <div>
                                 <select name="page" id="autoSuggestPages">
-                                    <option value="--">-- select page --</option>
+                                    <option value="--">-- select domain --</option>
                                 </select>
                                 <input name="delete" type="button" value="Delete" />
                             </div>
@@ -196,6 +195,7 @@
                             <div>Select a param to view values saved</div>
                             <div>
                                 <select name="param" id="autoSuggestParams">
+                                    <option value="--">-- select domain first --</option>
                                 </select>
                                 <input name="delete" type="button" value="Delete" />
                             </div>
@@ -204,6 +204,17 @@
                             <div>Parameter list</div>
                             <div id="autoSuggestParamValues" class="grid grid-space grid-last-small">
                             </div>
+                        </div>
+                        <div class="section grid grid-space grid-last-small">
+                            <div>Bind with other domain</div>
+                            <div>
+                                <select name="bindToHost" id="autoSuggestPageToBind">
+                                    <option value="--">-- select domain first --</option>
+                                </select>
+                                <input name="saveBinding" type="button" value="Save" />
+                            </div>
+                            <div>You can bind websites and share params between them.</div>
+                            <div>Params from both will be merged - conflicting ones will be overwritten by values from the website selected in the first field.</div>
                         </div>
                     </div>
                 </div>
