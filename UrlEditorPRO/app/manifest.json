@@ -22,7 +22,7 @@
   },
   "options_page": "options.html",
   "background": {
-    "scripts": [ "modules/url_parser.js", "background.js" ]
+    "scripts": [ "app.js", "background.js" ]
   },
   "commands": {
     "_execute_browser_action": {
