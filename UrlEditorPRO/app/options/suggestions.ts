@@ -21,7 +21,7 @@ module UrlEditor.Options.Suggestions {
 
         let recentlyUsedParamsModule = Helpers.ge("recentlyUsedParamsModule");
         recentlyUsedParamsModule.addEventListener("click", handleClick)
-        recentlyUsedParamsModule.addEventListener("change", evt => handleSelect(<HTMLSelectElement>evt.target))
+        recentlyUsedParamsModule.addEventListener("change", evt => handleChange(<HTMLElement>evt.target))
 
         domainsElem = Helpers.ge<HTMLSelectElement>("autoSuggestPages");
         paramNamesElem = Helpers.ge<HTMLSelectElement>("autoSuggestParams");
@@ -30,14 +30,25 @@ module UrlEditor.Options.Suggestions {
 
         autoSuggestData = new AutoSuggestData(settings);
 
-        let domainList = autoSuggestData.getDomains();
-        if (domainList.length) {
-            populateComboBox(domainsElem, domainList, "-- select domain --");
-        }
+        resetFields();
     }
 
     export function confirmWrapper(message: string): boolean {
         return confirm(message);
+    }
+
+    function handleChange(elem: HTMLElement) {
+        switch (elem.tagName) {
+            case "SELECT":
+                handleSelect(<HTMLSelectElement>elem);
+                break;
+            case "INPUT":
+                let input = <HTMLInputElement>elem;
+                if (input.name == "import_data") {
+                    importSuggestionsData(input);
+                }
+                break;
+        }
     }
 
     function handleClick(evt: Event) {
@@ -54,6 +65,10 @@ module UrlEditor.Options.Suggestions {
                 case "delete":
                     handleSuggestionDelete(elem);
                     break;
+
+                case "export_data":
+                    exportSuggestionsData();
+                    break;
             }
         }
     }
@@ -64,9 +79,7 @@ module UrlEditor.Options.Suggestions {
             switch (elem.name) {
                 case "page":
                     if(elem.value.startsWith("--")) {
-                        populateComboBox(paramNamesElem, [], "-- select domain first --");
-                        populateComboBox(bindToDomainElem, [], "-- select domain first --");
-                        paramValuesContainer.innerHTML = "";
+                        resetFields(/*skipDomains*/true);
                         return;
                     }
 
@@ -234,5 +247,57 @@ module UrlEditor.Options.Suggestions {
 
             autoSuggestData.save();
         }
+    }
+
+    function exportSuggestionsData() {
+        let json = JSON.stringify(autoSuggestData.getData(), null, 2),
+            blob = new Blob([json], {type: "application/json"}),
+            url = window.URL.createObjectURL(blob),
+            a = document.createElement("a");
+
+        a.style.display = "none";
+        a.href = url;
+        a.download = "UrlEditorPro_SuggestionsData.json";
+        document.body.appendChild(a);
+
+        a.click();
+
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+    }
+
+    function importSuggestionsData(input: HTMLInputElement) {
+        let file = input.files[0],
+            reader = new FileReader();
+
+        // Closure to capture the file information.
+        reader.onload = function (evt) {
+            let data: IAutoSuggestData;
+            try {
+                data = <IAutoSuggestData>JSON.parse((<any>evt).target.result);
+            }
+            catch (err) {
+                alert("Import failed. \n\n" + err.message);
+                return;
+            }
+
+            autoSuggestData.setData(data).save();
+
+            alert("Import succeessful");
+            resetFields();
+        };
+
+        // Read in the image file as a data URL.
+        reader.readAsText(file);
+    }
+
+    function resetFields(skipDomains = false) {
+        if (!skipDomains) {
+            populateComboBox(domainsElem, autoSuggestData.getDomains(), "-- select domain --");
+        }
+
+        populateComboBox(paramNamesElem, [], "-- select domain first --");
+        populateComboBox(bindToDomainElem, [], "-- select domain first --");
+        paramValuesContainer.innerHTML = "";
     }
 }

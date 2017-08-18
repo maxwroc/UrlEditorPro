@@ -20,6 +20,11 @@ module UrlEditor.Shared.AutoSuggest {
             return this.autoSuggestData;
         }
 
+        setData(data: IAutoSuggestData) {
+            this.autoSuggestData = data;
+            return this;
+        }
+
         getDomains() {
             return Object.keys(this.getData());
         }
