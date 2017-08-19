@@ -25,6 +25,8 @@ This extension can help you with changing parameters (or parts) of complex and l
 Recommended IDE: VSCode
 
 ### Working with the code
-* Manual build: `npm run build`
-* Run tests: `npm run test`
-* Build + watch: `npm run watch`
+* Build: `gulp build`
+* Build tests: `gulp build-test`
+* Run tests: `gulp test`
+* Watch app: `gulp watch`
+* Watch tests: `gulp watch-test`
