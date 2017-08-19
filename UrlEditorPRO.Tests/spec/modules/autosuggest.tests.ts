@@ -1,5 +1,7 @@
 /// <reference path="../helpers/canvas.ts" />
 /// <reference path="../helpers/helpers.ts" />
+/// <reference path="../../../UrlEditorPRO/app/shared/interfaces.shared.d.ts" />
+/// <reference path="../../../UrlEditorPRO/app/modules/autosuggest.ts" />
 
 module Tests.Autosuggest {
 

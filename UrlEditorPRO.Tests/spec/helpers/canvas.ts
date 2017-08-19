@@ -1,4 +1,5 @@
 /// <reference path="../../../typings/index.d.ts" />
+/// <reference path="../../../UrlEditorPRO/app/shared/interfaces.shared.d.ts" />
 /// <reference path="chrome_mock.ts" />
 
 declare let TEMPLATES: IMap<string>;

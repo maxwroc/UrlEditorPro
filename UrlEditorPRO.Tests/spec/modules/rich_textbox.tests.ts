@@ -1,6 +1,6 @@
 ﻿/// <reference path="../../../typings/index.d.ts" />
 /// <reference path="../helpers/helpers.ts" />
-/// <reference path="../../../urleditorpro/app/modules/rich_textbox.ts" />
+/// <reference path="../../../UrlEditorPRO/app/modules/rich_textbox.ts" />
 
 module Tests {
     describe("Rich textbox test validating if", () => {

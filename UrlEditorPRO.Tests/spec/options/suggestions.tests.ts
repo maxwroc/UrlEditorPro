@@ -1,7 +1,6 @@
-
 /// <reference path="../helpers/helpers.ts" />
 /// <reference path="../helpers/canvas.ts" />
-/// <reference path="../../../UrlEditorPro/app/modules/autosuggest.ts" />
+/// <reference path="../../../UrlEditorPRO/app/modules/autosuggest.ts" />
 
 module Tests {
 
@@ -114,7 +113,7 @@ module Tests {
                     "param3": ["c1"]
                 },
                 "www.web.com": {
-                    "[suggestionAlias]": ["www.google.com"]
+                    "[suggestionAlias]": ["www.google.com2"]
                 }
             }
 
