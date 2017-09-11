@@ -113,7 +113,7 @@ module Tests {
                     "param3": ["c1"]
                 },
                 "www.web.com": {
-                    "[suggestionAlias]": ["www.google.com2"]
+                    "[suggestionAlias]": ["www.google.com"]
                 }
             }
 
