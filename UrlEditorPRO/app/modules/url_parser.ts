@@ -1,4 +1,4 @@
-﻿/// <reference path="shared_interfaces.d.ts" />
+﻿/// <reference path="../shared/interfaces.shared.d.ts" />
 
 module UrlEditor {
 
@@ -35,7 +35,7 @@ module UrlEditor {
             let result = this.getSet(value, "port");
             return result ? parseInt(result) : undefined;
         }
-        
+
         pathname(value?: string): string {
             return this.getSet(value, "pathname");
         }
@@ -53,7 +53,7 @@ module UrlEditor {
             if (value == undefined) {
                 return current
             }
-            
+
             // sometimes port number stays in the url - we need to be sure that it won't be in the final url when it is not needed
             if (this.getSet(undefined, "port") == "0" && value.indexOf(":") == -1) {
                 value += ":80"; // set default http port number (it will disappear on final url)
@@ -104,7 +104,7 @@ module UrlEditor {
                 // return regular url with prefix (like 'view-source:')
                 return this.urlPrefix + this.anchor.href;
             }
-            
+
             let matches = url.match(prefixPattern);
             if (matches && matches.length > 1) {
                 this.urlPrefix = matches[1];
@@ -154,7 +154,7 @@ module UrlEditor {
                     return match;
                 });
             }
-            
+
             if (result.length == 0) {
                 let hash = this.hash();
                 if (hash && position > fullUrl.length - hash.length) {

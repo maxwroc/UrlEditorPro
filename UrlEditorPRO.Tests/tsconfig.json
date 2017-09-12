@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "target": "es5",
+        "target": "es6",
         "watch": false,
         "sourceMap": false,
         "outFile": "spec/aggregate.tests.js"

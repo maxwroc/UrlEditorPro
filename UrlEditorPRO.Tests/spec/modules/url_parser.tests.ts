@@ -1,6 +1,7 @@
 ﻿/// <reference path="../../../typings/index.d.ts" />
 /// <reference path="../helpers/helpers.ts" />
-/// <reference path="../../../UrlEditorPro/app/modules/url_parser.ts" />
+/// <reference path="../../../UrlEditorPRO/app/shared/interfaces.shared.d.ts" />
+/// <reference path="../../../UrlEditorPRO/app/modules/url_parser.ts" />
 
 module Tests {
     describe("Uri class", () => {

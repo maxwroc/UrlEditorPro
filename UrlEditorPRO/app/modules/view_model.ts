@@ -1,4 +1,4 @@
-﻿/// <reference path="shared_interfaces.d.ts" />
+﻿/// <reference path="../shared/interfaces.shared.d.ts" />
 /// <reference path="helpers.ts" />
 /// <reference path="param_options.ts" />
 /// <reference path="settings.ts" />
@@ -10,7 +10,7 @@ module UrlEditor {
     var port80Pattern = /:80$/;
     var maxClientWidth = 780;
     var paramsMarginSum = 86; //5 * 4 + 2 * 3 + 2 * 22 + 2 * 8;
-    
+
     /**
      * Returns following results for given params
      * 0 (CurrentTab) <- false, false
@@ -33,7 +33,7 @@ module UrlEditor {
 
         private measureElem: HTMLSpanElement;
 
-        constructor(private url: Uri, private doc: HTMLDocument, settings: Settings, private submit: (uri: Uri, openIn: OpenIn) => void) {
+        constructor(private url: Uri, private doc: HTMLDocument, private settings: Settings, private submit: (uri: Uri, openIn: OpenIn) => void) {
 
 
             this.measureElem = Helpers.ge<HTMLSpanElement>("measure");
@@ -42,8 +42,9 @@ module UrlEditor {
             doc.body.addEventListener("click", evt => this.clickEventDispatcher(evt));
             doc.body.addEventListener("input", evt => this.keyboardEventDispatcher(evt));
             doc.body.addEventListener("updated", evt => this.keyboardEventDispatcher(evt));
+            doc.body.addEventListener("DOMFocusIn", evt => this.autoSelectInputValue(evt.target as HTMLInputElement));
             doc.body.addEventListener("keydown", evt => {
-                
+
                 if (this.keyboardNavigation(evt)) {
                     return;
                 }
@@ -159,7 +160,7 @@ module UrlEditor {
             if (Helpers.isTextFieldActive()) {
                 // clear error message
                 this.setErrorMessage("", elem);
-                
+
                 this.updateFields();
             }
         }
@@ -190,7 +191,7 @@ module UrlEditor {
             var elements = this.doc.getElementsByTagName("input");
             for (var i = 0, elem; elem = <HTMLInputElement>elements[i]; i++) {
                 var funcName = this.mapIdToFunction[elem.id];
-                // check if element has ID set, the mapping exists 
+                // check if element has ID set, the mapping exists
                 if (elem.id && funcName) {
                     // updating element value using a function name taken from mapping
                     this.setValueIfNotActive(elem, this.url[funcName]());
@@ -229,7 +230,7 @@ module UrlEditor {
 
                 urlParams[name].forEach((value, valueIndex) => {
                     name = decodeURIComponent(name);
-                    param = this.createNewParamContainer(name); 
+                    param = this.createNewParamContainer(name);
 
                     // parameter name field
                     param.nameElement.value = name;
@@ -296,7 +297,7 @@ module UrlEditor {
             if (paramToFocus) {
                 paramToFocus.nameElement.focus();
             }
-            
+
             elem.parentElement.removeChild(elem);
             this.updateFields();
         }
@@ -324,7 +325,7 @@ module UrlEditor {
         }
 
         private adjustElementWidthToItsContent(elem: HTMLElement) {
-            var width = this.getTextWidth((<HTMLInputElement>elem).value || elem.textContent) + 12; // + 10 padding and +2 border 
+            var width = this.getTextWidth((<HTMLInputElement>elem).value || elem.textContent) + 12; // + 10 padding and +2 border
             elem.style.width = width + "px";
         }
 
@@ -334,11 +335,26 @@ module UrlEditor {
                 case 9: // tab
                     return true;
                 case 187: // = (+)
-                    // add new param
-                    if (evt.ctrlKey) {
+                    if (evt.ctrlKey) { // add new param
                         Tracking.trackEvent(Tracking.Category.AddParam, "keyboard");
                         this.addNewParamFields();
                         return true;
+                    }
+                    else {
+                        // jump to param value elem
+                        let paramContainer = (<HTMLElement>evt.target).parentElement as IParamContainerElement;
+                        if (this.settings.autoJumpToValueOnEqual &&
+                            paramContainer &&
+                            paramContainer.isParamContainer &&
+                            paramContainer.nameElement === evt.target) {
+
+                            if (!paramContainer.hasJumpedToValueOnce) {
+                                paramContainer.hasJumpedToValueOnce = true;
+                                paramContainer.valueElement.focus();
+                                // prevent from putting the char in the target field
+                                evt.preventDefault();
+                            }
+                        }
                     }
                     break;
                 case 189: // -
@@ -373,7 +389,7 @@ module UrlEditor {
 
                             var input = <HTMLInputElement>evt.target;
                             input.value = Helpers.isBase64Encoded(input.value) ? Helpers.b64DecodeUnicode(input.value) : Helpers.b64EncodeUnicode(input.value);
-                            
+
                             this.updateFields();
                             return true;
                         }
@@ -439,13 +455,13 @@ module UrlEditor {
                         nextElem = <HTMLInputElement>elem.nextElementSibling;
                         break;
                 }
-                
+
                 evt.preventDefault();
 
                 if (nextElem) {
                     nextElem.focus();
                 }
-                
+
                 return true;
             }
 
@@ -481,6 +497,13 @@ module UrlEditor {
             this.url.params(sortedParams);
         }
 
+        private autoSelectInputValue(input: HTMLInputElement) {
+            if (this.settings.autoSelectValue && Helpers.isTextFieldActive() && input.id != "full_url") {
+                input.selectionStart = 0;
+                input.selectionEnd = input.value.length;
+            }
+        }
+
         private setUriFromFields() {
             let currentInput = <HTMLElement>this.doc.activeElement;
 
@@ -499,7 +522,7 @@ module UrlEditor {
                             let paramName = this.encodeURIComponent(container.nameElement.value);
                             // make sure it exists
                             params[paramName] = params[paramName] || [];
-                            
+
                             let value = container.valueElement.value;
 
                             // force url-encoding if value contins ampersand
@@ -535,7 +558,7 @@ module UrlEditor {
                     this.url.params(params);
                 }
             } // if
-            
+
         } // function
 
         /**

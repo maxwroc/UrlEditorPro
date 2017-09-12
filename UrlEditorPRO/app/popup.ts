@@ -1,25 +1,16 @@
-﻿/// <reference path="modules/rich_textbox.ts" />
+﻿/// <reference path="modules/autosuggest.ts" />
+/// <reference path="modules/rich_textbox.ts" />
+/// <reference path="modules/settings.ts" />
+/// <reference path="modules/url_parser.ts" />
 /// <reference path="modules/view_model.ts" />
 /// <reference path="../../typings/index.d.ts" />
 
 module UrlEditor {
 
-    function isCharacterKeyPress(evt) {
-        if (typeof evt.which == "undefined") {
-            // This is IE, which only fires keypress events for printable keys
-            return true;
-        } else if (typeof evt.which == "number" && evt.which > 0) {
-            // In other browsers except old versions of WebKit, evt.which is
-            // only greater than zero if the keypress is a printable key.
-            // We need to filter out backspace and ctrl/alt/meta key combinations
-            return !evt.ctrlKey && !evt.metaKey && !evt.altKey;
-        }
-        return false;
-    }
 
-    function initialize() {
+    function initialize(storage: Storage) {
         var version = chrome.runtime.getManifest().version;
-        var settings = new Settings(localStorage);
+        var settings = new Settings(storage);
 
         // it is better to set variable before page view event (init)
         Tracking.setCustomDimension(Tracking.Dimension.Version, version);
@@ -31,12 +22,13 @@ module UrlEditor {
         versionElem.textContent = "UrlEditor PRO v" + version;
         !settings.trackingEnabled && (versionElem.style.color = "red");
 
+        // get currently selected tab
         chrome.tabs.getSelected(null, function (tab) {
-            
+
             var uri = new UrlEditor.Uri(tab.url);
 
             var autosuggest = new AutoSuggest(settings, document, uri, tab.incognito);
-        
+
             new UrlEditor.ViewModel(uri, document, settings, (uri, openIn) => {
 
                 switch (openIn) {
@@ -62,6 +54,8 @@ module UrlEditor {
 
         });
     };
-    
-    document.addEventListener('DOMContentLoaded', () => initialize());
+
+    document.addEventListener(
+        window.top == window.self ? "DOMContentLoaded" : "init",
+        (evt: any) => initialize(<Storage>evt.detail || localStorage));
 }

@@ -4,10 +4,11 @@
   "description": "Chrome extension helping with editing long and complex urls",
   "main": "popup.html",
   "scripts": {
-    "pretest": "tsc -p ./UrlEditorPRO.Tests/",
+    "postinstall": "node_modules/.bin/typings install",
+    "pretest": "node_modules/.bin/tsc -p ./UrlEditorPRO.Tests/",
     "test": "start UrlEditorPRO.Tests/SpecRunner.html",
-    "build": "tsc -p ./UrlEditorPRO/",
-    "work": "tsc -p ./UrlEditorPRO/ -w"
+    "build": "node_modules/.bin/tsc -p ./UrlEditorPRO/",
+    "work": "node_modules/.bin/tsc -p ./UrlEditorPRO/ -w"
   },
   "repository": {
     "type": "git",
@@ -20,8 +21,15 @@
   },
   "homepage": "https://github.com/maxwroc/UrlEditorPro#readme",
   "devDependencies": {
-    "jasmine": "^2.5.3",
-    "typescript": "^2.2.2",
+    "gulp": "^3.9.1",
+    "gulp-concat": "^2.6.1",
+    "gulp-html2string": "^0.1.1",
+    "gulp-open": "^2.0.0",
+    "gulp-rename": "^1.2.2",
+    "gulp-typescript": "^3.1.7",
+    "jasmine": "^2.6.0",
+    "jasmine-core": "^2.6.2",
+    "typescript": "^2.4.0",
     "typings": "^2.1.0"
   }
 }

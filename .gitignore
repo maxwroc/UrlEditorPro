@@ -1,7 +1,7 @@
 # Ignore app auto-generated JS files
 **/*.map
 **/UrlEditorPRO/app/**/*.js
-**/UrlEditorPRO.Tests/**/*.js
+**/UrlEditorPRO.Tests/spec/**/*.js
 typings/
 
 ## Ignore Visual Studio temporary files, build results, and

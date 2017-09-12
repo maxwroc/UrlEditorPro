@@ -1,5 +1,5 @@
 ﻿/// <reference path="helpers.ts" />
-/// <reference path="shared_interfaces.d.ts" />
+/// <reference path="../shared/interfaces.shared.d.ts" />
 
 module UrlEditor {
 
@@ -42,7 +42,7 @@ module UrlEditor {
                             // we dont need to handle it
                             return;
                         }
-                        
+
                         action = () => {
                             let selection = this.richText.getSelectionIndexes();
                             this.highlight(selection.start, undefined);

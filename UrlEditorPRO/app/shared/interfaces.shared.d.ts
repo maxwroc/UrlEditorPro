@@ -24,4 +24,5 @@ interface IParamContainerElement extends HTMLDivElement {
     urlEncoded?: boolean;
     base64Encoded?: boolean;
     isFlippable?: boolean;
+    hasJumpedToValueOnce?: boolean;
 }

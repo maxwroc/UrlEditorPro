@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
-        "target": "es5",
-        "module": "commonjs",
-        "sourceMap": true
+        "target": "es6",
+        "sourceMap": true,
+        "outFile": "app/app.js"
     }
 }

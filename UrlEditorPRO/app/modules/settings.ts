@@ -20,6 +20,16 @@
         public autoSortParams = false;
 
         /**
+         * Whether to select value on focus change
+         */
+        public autoSelectValue = true;
+
+        /**
+         * Whether to jump to value field on equal character in param name field
+         */
+        public autoJumpToValueOnEqual = true;
+
+        /**
         * Whether to show parameter suggestions
         */
         public autoSuggest = true;
