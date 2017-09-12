@@ -1,9 +1,0 @@
-addons:
-  chrome: stable
-before_script:
-  - npm install
-  - npm install -g gulp-cli
-  - "export DISPLAY=:99.0"
-  - "sh -e /etc/init.d/xvfb start"
-  - sleep 3 # give xvfb some time to start
-script: gulp test-ci
