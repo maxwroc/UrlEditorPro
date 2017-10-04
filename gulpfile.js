@@ -82,11 +82,6 @@ gulp.task('test', ['build-test'], function() {
         .pipe(open());
 });
 
-gulp.task('test-ci', ['build', 'build-test'], function() {
-    return gulp.src('UrlEditorPRO.Tests/SpecRunner.html')
-    .pipe(open());
-});
-
 gulp.task('watch-test', function () {
     gulp.watch('UrlEditorPRO/app/**/*.ts', ['build']);
     gulp.watch('UrlEditorPRO/app/**/*.html', ['templates-html2js']);
