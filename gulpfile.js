@@ -1,9 +1,12 @@
-var gulp = require('gulp');
-var typescript = require('gulp-typescript');
-var rename = require('gulp-rename');
-var concat = require('gulp-concat');
-var open = require('gulp-open');
-var html2string = require('gulp-html2string');
+var gulp =          require('gulp');
+var concat =        require('gulp-concat');
+var html2string =   require('gulp-html2string');
+var open =          require('gulp-open');
+var rename =        require('gulp-rename');
+var typescript =    require('gulp-typescript');
+var zip =           require('gulp-zip');
+
+var fs =            require('fs');
 
 
 gulp.task('build-root', function () {
@@ -80,6 +83,25 @@ gulp.task('build-test', ['templates-html2js', 'build-test-internal']);
 gulp.task('test', ['build-test'], function() {
     return gulp.src('UrlEditorPRO.Tests/SpecRunner.html')
         .pipe(open());
+});
+
+gulp.task('release', function() {
+    var manifest = require('./UrlEditorPRO/app/manifest.json');
+    var version = manifest.version;
+    if(process.argv.indexOf('--bump') != -1) {
+        var chunks = version.split('.');
+        chunks[chunks.length - 1]++;
+        version = chunks.join('.');
+        manifest.version = version;
+
+        fs.writeFileSync('./UrlEditorPRO/app/manifest.json', JSON.stringify(manifest, null, 2))
+    }
+
+    var zipName = manifest.name.replace(/\s/g, "") + "_v" + version + ".zip";
+
+    return gulp.src(['UrlEditorPRO/app/**/*', '!UrlEditorPRO/app/**/*.ts'])
+    .pipe(zip(zipName))
+    .pipe(gulp.dest('release'));
 });
 
 gulp.task('watch-test', function () {
