@@ -8,7 +8,6 @@ var zip =           require('gulp-zip');
 
 var fs =            require('fs');
 
-
 gulp.task('build-root', function () {
     return gulp.src('UrlEditorPRO/app/*.ts')
         .pipe(typescript({
