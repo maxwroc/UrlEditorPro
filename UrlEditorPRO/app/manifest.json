@@ -3,7 +3,7 @@
 
   "name": "Url Editor PRO",
   "description": "Url parser which makes editing complex URLs as easy as possible. Features: params decoding, auto-suggest, keyboard navigation..",
-  "version": "0.9.2.0",
+  "version": "0.9.2.1",
 
   "permissions": [
     "http://*/*",

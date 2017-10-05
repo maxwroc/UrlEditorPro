@@ -19,7 +19,7 @@ module UrlEditor.Options {
     function initialize(storage: Storage) {
         settings = new Settings(storage);
 
-        Tracking.init(settings.trackingEnabled);
+        Tracking.init(settings.trackingEnabled, "/options.html");
 
         document.body.addEventListener("change", evt => onChangeHandler(evt));
         document.body.addEventListener("click", evt => onClickHandler(evt));
