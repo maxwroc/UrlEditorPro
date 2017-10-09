@@ -27,6 +27,7 @@
     "gulp-open": "^2.0.0",
     "gulp-rename": "^1.2.2",
     "gulp-typescript": "^3.1.7",
+    "gulp-zip": "^4.0.0",
     "jasmine": "^2.6.0",
     "jasmine-core": "^2.6.2",
     "typescript": "^2.4.0",

@@ -24,18 +24,18 @@ module UrlEditor.Tracking {
 
     // create global analytics object
     (function internalInit(hostObject, propertyName) {
-        hostObject['GoogleAnalyticsObject'] = propertyName;
+        hostObject["GoogleAnalyticsObject"] = propertyName;
         hostObject[propertyName] = hostObject[propertyName] || function () {
             (hostObject[propertyName].q = hostObject[propertyName].q || []).push(arguments)
         };
         hostObject[propertyName].l = 1 * <any>new Date();
-    })(window, 'ga');
+    })(window, "ga");
 
     // initial tracking variavles setup
-    ga('create', 'UA-81916828-1', 'auto');
-    ga('set', 'checkProtocolTask', null); // Disables file protocol checking.
+    ga("create", "UA-81916828-1", "auto");
+    ga("set", "checkProtocolTask", null); // Disables file protocol checking.
 
-    export function init(_trackingEnabled: boolean) {
+    export function init(_trackingEnabled: boolean, page: string) {
         trackingEnabled = _trackingEnabled;
 
         if (!trackingEnabled) {
@@ -49,11 +49,11 @@ module UrlEditor.Tracking {
         var m = document.getElementsByTagName("script")[0];
         m.parentNode.insertBefore(a, m);
 
-        ga('send', 'pageview');
+        ga("send", "pageview", page);
     }
 
     export function setCustomDimension(name: string, value: string) {
-        ga('set', name, value);
+        ga("set", name, value);
     }
 
     export function trackEvent(category: Category, action: string, label?: string, value?: string | number) {
@@ -66,7 +66,7 @@ module UrlEditor.Tracking {
             return;
         }
         
-        ga('send', 'event', Category[category], action, label, value);
+        ga("send", "event", Category[category], action, label, value);
     }
 
     function addOptionalEventParam(eventData: Array<string | number>, param: string | number) {
