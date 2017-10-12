@@ -9,7 +9,9 @@
     "http://*/*",
     "https://*/*",
     "tabs",
-    "windows"
+    "windows",
+    "webRequest",
+    "webRequestBlocking"
   ],
   "icons": {
     "16": "img/edit_16.png",
