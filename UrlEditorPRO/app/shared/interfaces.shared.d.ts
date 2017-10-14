@@ -26,3 +26,15 @@ interface IParamContainerElement extends HTMLDivElement {
     isFlippable?: boolean;
     hasJumpedToValueOnce?: boolean;
 }
+
+interface IBindOnBeforeRequestHandler {
+    (filter: string, callback: (redirData: chrome.webRequest.WebRequestBodyDetails) => chrome.webRequest.BlockingResponse, extraInfoSpec: string[]): void;
+}
+
+interface IRedirectReplaceData {
+    protocol?: string,
+    hostname?: string,
+    port?: number,
+    paramsToUpdate?: IMap<string>,
+    strReplace?: string[][];
+}
