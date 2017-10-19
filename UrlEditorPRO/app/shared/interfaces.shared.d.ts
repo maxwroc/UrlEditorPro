@@ -32,6 +32,9 @@ interface IBindOnBeforeRequestHandler {
 }
 
 interface IRedirectReplaceData {
+    urlFilter: string,
+    isAutomatic?: boolean;
+    hotKey?: string,
     protocol?: string,
     hostname?: string,
     port?: number,

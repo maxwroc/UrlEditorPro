@@ -1,7 +1,10 @@
 module UrlEditor {
 
     class RedirectRule {
-        constructor(public urlFilter: string, private replaceData: IRedirectReplaceData) {
+        public urlFilter: string;
+
+        constructor(private replaceData: IRedirectReplaceData) {
+            this.urlFilter = replaceData.urlFilter;
         }
 
         getUpdatedUrl(url: string): string {
@@ -50,8 +53,8 @@ module UrlEditor {
         constructor(private bindOnBeforeRequest: IBindOnBeforeRequestHandler) {
         }
 
-        addRule(filter: string, redirectionData: IRedirectReplaceData) {
-            this.rules.push(new RedirectRule(filter, redirectionData));
+        addRule(redirectionData: IRedirectReplaceData) {
+            this.rules.push(new RedirectRule(redirectionData));
         }
 
         init() {
@@ -72,8 +75,12 @@ module UrlEditor {
         }
     }
 
-    let rules: RedirectRule[] = [];
-    rules.push(new RedirectRule("http://localhost/*traffictype=Internal_monitor*", {
+    let redirect = new RedirectionManager((urlFilter, handler, infoSpec) => {
+        chrome.webRequest.onBeforeRequest.addListener(r => handler(r), { urls: [urlFilter] }, infoSpec);
+    });
+
+    redirect.addRule({
+        urlFilter: "http://localhost/*traffictype=Internal_monitor*",
         hostname: "maksymc-srv",
         paramsToUpdate: {
             istest: null,
@@ -90,7 +97,9 @@ module UrlEditor {
             corpnet: null,
             TestSelectionId: null
         }
-    }));
+    });
+
+    redirect.init();
 
 
 }
