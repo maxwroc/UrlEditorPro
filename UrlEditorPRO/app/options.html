@@ -60,16 +60,19 @@
             margin-top: 20px;
         }
         .setting h3 {
-            width: 250px;
+            width: 200px;
+            margin-top: 20px;
+            line-height: normal;
+            padding-right: 10px
         }
         .setting-value {
             margin-top: 20px;
             flex: 1;
-            max-width: 356px; /* to prevent from expanding when wide suggestions are loaded */
+            max-width: 405px; /* to prevent from expanding when wide suggestions are loaded */
         }
 
         select {
-            max-width: 278px; /* to prevent from expanding when wide suggestions are loaded */
+            max-width: 325px; /* to prevent from expanding when wide suggestions are loaded */
         }
 
         .icon-list li {
@@ -223,6 +226,22 @@
                                 <div><span>Import</span><span><input type="file" value="Import" name="import_data" /></span></div>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+            <div class="setting" id="redirectionsModule">
+                <h3>Redirections</h3>
+                <div class="setting-value">
+                    <div>
+                        You can create redirection rules which can be applied automatically (whenever browser tries to navigate to specific url) or after given key press.
+                    </div>
+                    <div class="section">
+                        Examples:
+                        <ul>
+                            <li>Your test framework generates URL which contains a lot of redundant params and you want to get rid of them</li>
+                            <li>You want to redirect all localhost requests to some other host</li>
+                            <li>You want to navigate to some other website passing parameters from he current url</li>
+                        </ul>
                     </div>
                 </div>
             </div>
