@@ -1,10 +1,15 @@
 module UrlEditor {
 
-    class RedirectRule {
+    export class RedirectRule {
         public urlFilter: string;
 
         constructor(private replaceData: IRedirectReplaceData) {
             this.urlFilter = replaceData.urlFilter;
+        }
+
+        isUrlSupported(url: string): boolean {
+            let reg = new RegExp(this.urlFilter.replace(/[*]/g, ".*"));
+            return reg.test(url);
         }
 
         getUpdatedUrl(url: string): string {
@@ -80,8 +85,9 @@ module UrlEditor {
     });
 
     redirect.addRule({
-        urlFilter: "http://localhost/*traffictype=Internal_monitor*",
+        urlFilter: "*://localhost/*traffictype=Internal_monitor*",
         hostname: "maksymc-srv",
+        protocol: "http",
         paramsToUpdate: {
             istest: null,
             setvar: null,
@@ -95,7 +101,8 @@ module UrlEditor {
             traffictype: null,
             fdtrace: null,
             corpnet: null,
-            TestSelectionId: null
+            TestSelectionId: null,
+            disableAppCache: "1"
         }
     });
 

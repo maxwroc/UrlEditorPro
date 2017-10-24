@@ -129,10 +129,12 @@
             flex: none;
             width: 70px;
         }
+        .not_valid {
+            background-color: rgb(255, 198, 198);
+        }
     </style>
     <script src="app.js"></script>
     <script src="options.js"></script>
-    <script src="options/suggestions.js"></script>
 </head>
 <body>
     <div class="wrapper">
@@ -246,23 +248,24 @@
                             <li>You want to navigate to some other website passing parameters from he current url</li>
                         </ul>
                     </div>
-                    <div class="section">
+                    <div class="section" id="redirection_edit">
                         <div class="title">Add new rule</div>
                         <div class="grid">
-                            <div><div>Test url</div><div><textarea></textarea></div></div>
+                            <div><div>Test url</div><div><textarea name="testUrl">https://localhost/AS/API/WindowsCortanaPane/V2/init?mkt=en-US&amp;setmkt=en-US&amp;q=facebook&amp;atlahostname=localhost&amp;acc=1&amp;istest=1&amp;setvar=ms:0&amp;rb=0&amp;mockimages=1&amp;addfeaturesnoexpansion=qfMiniSerp,ppApps,bytecounts&amp;testhooks=~1&amp;currentdate=20140501&amp;searchbox=1&amp;client=windows&amp;clientversion=1999999&amp;query=notepad&amp;openpreviewpane=1&amp;mockdeviceitems=1&amp;mockjumplist=1&amp;allsystemverbs=1&amp;height=950&amp;testretry=1&amp;testtype=GridBased&amp;testcodehash=BBA4DA9831BE6057265B6A7FAEF541F8&amp;testidentifier=32aaca785b2147b5858a01e69ce5aa1d3e86471b&amp;logjserror=1&amp;bag=VP_AutoSuggest.AutoSuggest.snr_sodium.Standalone.Cortana_Web_Empty&amp;setflight=&amp;ClientIP=192.168.255.247&amp;traffictype=Internal_monitor&amp;fdtrace=1&amp;setflight=nofdtbody&amp;setlang=en-us&amp;setflight=-&amp;setflight=userbasedstrategy&amp;corpnet=0&amp;TestSelectionId=VP_AutoSuggest</textarea></div></div>
                         </div>
                         <div class="grid">
-                            <div><span>Url filter</span><span><input type="text" /></span></div>
-                            <div><span>Is automatic</span><span><input type="checkbox" /></span></div>
-                            <div><span>Hot-key</span><span><input type="text" value="Crl+4" /></span></div>
-                            <div><span>Protocol</span><span><input type="text" value="" /></span></div>
-                            <div><span>Host name</span><span><input type="text" value="" /></span></div>
-                            <div><span>Port</span><span><input type="text" value="" /></span></div>
+                            <div><span>Url filter</span><span><input type="text" name="urlFilter" /></span></div>
+                            <div><span>Is automatic</span><span><input type="checkbox" name="isAutomatic" checked /></span></div>
+                            <div><span>Hot-key</span><span><input type="text" value="Crl+4" name="hotKey" /></span></div>
+                            <div><span>Protocol</span><span><input type="text" value="" name="protocol" /></span></div>
+                            <div><span>Host name</span><span><input type="text" value="" name="hostName" /></span></div>
+                            <div><span>Port</span><span><input type="text" value="port" name="port" /></span></div>
                         </div>
-                        
+
                         <div class="grid">
                             <div><div>Result</div><div><textarea></textarea></div></div>
                         </div>
+                        <div id="errorMessages"></div>
                     </div>
                 </div>
             </div>

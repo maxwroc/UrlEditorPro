@@ -2,6 +2,7 @@
 /// <reference path="modules/autosuggest.ts" />
 /// <reference path="modules/tracking.ts" />
 /// <reference path="options/suggestions.ts" />
+/// <reference path="options/redirection.ts" />
 
 module UrlEditor.Options {
 
@@ -57,6 +58,7 @@ module UrlEditor.Options {
         });
 
         Suggestions.init(settings);
+        Redirection.init(settings);
     }
 
     function onChangeHandler(evt: Event): void {
