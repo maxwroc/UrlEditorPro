@@ -8,7 +8,7 @@ module UrlEditor {
         }
 
         isUrlSupported(url: string): boolean {
-            let reg = new RegExp(this.urlFilter.replace(/[*]/g, ".*"));
+            let reg = new RegExp("^" + this.urlFilter.replace(/[*]/g, ".*") + "$");
             return reg.test(url);
         }
 

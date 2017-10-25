@@ -49,14 +49,14 @@ module UrlEditor.Options.Redirection {
         if (editElems.testUrl.value != "") {
             let redir = new RedirectRule(getReplaceData());
 
-            if (!validator.isValidCustom(
+            if (validator.isValidCustom(
                 editElems.urlFilter,
                 () => redir.isUrlSupported(editElems.testUrl.value),
                 "Filter is not passing on given test url")) {
-                return;
+
+                editElems.resultUrl.textContent = redir.getUpdatedUrl(editElems.testUrl.value);
             }
 
-            editElems.resultUrl.textContent = redir.getUpdatedUrl(editElems.testUrl.value);
         }
 
         editElems.submit.disabled = !validator.isValid;
@@ -108,7 +108,7 @@ module UrlEditor.Options.Redirection {
             return this.isValidCustom(
                 elem,
                 () => elem.value != "",
-                `Field "${elem.parentElement.previousSibling.textContent}" cannot be empty.`,
+                `Field "${elem.previousSibling.textContent}" cannot be empty.`,
                 mark);
         }
 
