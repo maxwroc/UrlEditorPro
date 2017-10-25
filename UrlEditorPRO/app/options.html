@@ -129,8 +129,14 @@
             flex: none;
             width: 70px;
         }
+        .grid-last-right > *:last-child > *:last-child {
+            text-align: right;
+        }
         .not_valid {
             background-color: rgb(255, 198, 198);
+        }
+        .error {
+            color: red;
         }
     </style>
     <script src="app.js"></script>
@@ -251,21 +257,22 @@
                     <div class="section" id="redirection_edit">
                         <div class="title">Add new rule</div>
                         <div class="grid">
-                            <div><div>Test url</div><div><textarea name="testUrl">https://localhost/AS/API/WindowsCortanaPane/V2/init?mkt=en-US&amp;setmkt=en-US&amp;q=facebook&amp;atlahostname=localhost&amp;acc=1&amp;istest=1&amp;setvar=ms:0&amp;rb=0&amp;mockimages=1&amp;addfeaturesnoexpansion=qfMiniSerp,ppApps,bytecounts&amp;testhooks=~1&amp;currentdate=20140501&amp;searchbox=1&amp;client=windows&amp;clientversion=1999999&amp;query=notepad&amp;openpreviewpane=1&amp;mockdeviceitems=1&amp;mockjumplist=1&amp;allsystemverbs=1&amp;height=950&amp;testretry=1&amp;testtype=GridBased&amp;testcodehash=BBA4DA9831BE6057265B6A7FAEF541F8&amp;testidentifier=32aaca785b2147b5858a01e69ce5aa1d3e86471b&amp;logjserror=1&amp;bag=VP_AutoSuggest.AutoSuggest.snr_sodium.Standalone.Cortana_Web_Empty&amp;setflight=&amp;ClientIP=192.168.255.247&amp;traffictype=Internal_monitor&amp;fdtrace=1&amp;setflight=nofdtbody&amp;setlang=en-us&amp;setflight=-&amp;setflight=userbasedstrategy&amp;corpnet=0&amp;TestSelectionId=VP_AutoSuggest</textarea></div></div>
+                            <div><label>Test url</label><textarea name="testUrl">https://localhost/AS/API/WindowsCortanaPane/V2/init?mkt=en-US&amp;setmkt=en-US&amp;q=facebook&amp;atlahostname=localhost&amp;acc=1&amp;istest=1&amp;setvar=ms:0&amp;rb=0&amp;mockimages=1&amp;addfeaturesnoexpansion=qfMiniSerp,ppApps,bytecounts&amp;testhooks=~1&amp;currentdate=20140501&amp;searchbox=1&amp;client=windows&amp;clientversion=1999999&amp;query=notepad&amp;openpreviewpane=1&amp;mockdeviceitems=1&amp;mockjumplist=1&amp;allsystemverbs=1&amp;height=950&amp;testretry=1&amp;testtype=GridBased&amp;testcodehash=BBA4DA9831BE6057265B6A7FAEF541F8&amp;testidentifier=32aaca785b2147b5858a01e69ce5aa1d3e86471b&amp;logjserror=1&amp;bag=VP_AutoSuggest.AutoSuggest.snr_sodium.Standalone.Cortana_Web_Empty&amp;setflight=&amp;ClientIP=192.168.255.247&amp;traffictype=Internal_monitor&amp;fdtrace=1&amp;setflight=nofdtbody&amp;setlang=en-us&amp;setflight=-&amp;setflight=userbasedstrategy&amp;corpnet=0&amp;TestSelectionId=VP_AutoSuggest</textarea></div>
                         </div>
                         <div class="grid">
-                            <div><span>Url filter</span><span><input type="text" name="urlFilter" /></span></div>
-                            <div><span>Is automatic</span><span><input type="checkbox" name="isAutomatic" checked /></span></div>
-                            <div><span>Hot-key</span><span><input type="text" value="Crl+4" name="hotKey" /></span></div>
-                            <div><span>Protocol</span><span><input type="text" value="" name="protocol" /></span></div>
-                            <div><span>Host name</span><span><input type="text" value="" name="hostName" /></span></div>
-                            <div><span>Port</span><span><input type="text" value="port" name="port" /></span></div>
+                            <div><label>Url filter</label><input type="text" name="urlFilter" /></div>
+                            <div><label>Is automatic</label><span><input type="checkbox" name="isAutomatic" checked /></span></div>
+                            <div><label>Hot-key</label><input type="text" value="Crl+4" name="hotKey" /></div>
+                            <div><label>Protocol</label><input type="text" value="" name="protocol" /></div>
+                            <div><label>Host name</label><input type="text" value="" name="hostname" /></div>
+                            <div><label>Port</label><input type="text" value="port" name="port" /></div>
                         </div>
 
-                        <div class="grid">
-                            <div><div>Result</div><div><textarea></textarea></div></div>
+                        <div class="grid grid-last-right">
+                            <div><label>Result</label><textarea name="resultUrl"></textarea></div>
+                            <div><div></div><div><input type="button" name="submit" value="Save" disabled /></div></div>
                         </div>
-                        <div id="errorMessages"></div>
+                        <div id="errorMessages" class="error"></div>
                     </div>
                 </div>
             </div>

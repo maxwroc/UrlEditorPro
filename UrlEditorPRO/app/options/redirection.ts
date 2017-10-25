@@ -8,12 +8,14 @@ module UrlEditor.Options.Redirection {
 
     let editElems = {
         testUrl: <HTMLTextAreaElement>null,
+        resultUrl: <HTMLTextAreaElement>null,
         urlFilter: <HTMLInputElement>null,
         isAutomatic: <HTMLInputElement>null,
         hotKey: <HTMLInputElement>null,
         protocol: <HTMLInputElement>null,
-        hostName: <HTMLInputElement>null,
+        hostname: <HTMLInputElement>null,
         port: <HTMLInputElement>null,
+        submit: <HTMLInputElement>null,
     }
 
     let edit_testUrlElem: HTMLTextAreaElement;
@@ -33,26 +35,36 @@ module UrlEditor.Options.Redirection {
     }
 
     function handleChange(evt: Event) {
+        validateEditFields();
+    }
+
+    function validateEditFields() {
         let validator = new Validator("errorMessages");
-        if (!validator.isNotEmpty(editElems.testUrl) ||
-            !validator.isNotEmpty(editElems.urlFilter)) {
+        if (!validator.isNotEmpty(editElems.urlFilter)) {
             return;
         }
 
-        let redir = new RedirectRule(getReplaceData());
+        validator.isNumber(editElems.port);
 
-        if (!validator.isValidCustom(
-            editElems.urlFilter,
-            () => redir.isUrlSupported(editElems.testUrl.value),
-            "Filter is not passing on given test url")) {
-            return;
+        if (editElems.testUrl.value != "") {
+            let redir = new RedirectRule(getReplaceData());
+
+            if (!validator.isValidCustom(
+                editElems.urlFilter,
+                () => redir.isUrlSupported(editElems.testUrl.value),
+                "Filter is not passing on given test url")) {
+                return;
+            }
+
+            editElems.resultUrl.textContent = redir.getUpdatedUrl(editElems.testUrl.value);
         }
 
+        editElems.submit.disabled = !validator.isValid;
     }
 
     function getReplaceData(): IRedirectReplaceData {
         let result: IRedirectReplaceData = { urlFilter: "" };
-        Object.keys(editElems).forEach(e => {
+        ["urlFilter", "isAutomatic", "hotKey", "protocol", "hostname", "port"].forEach(e => {
             let value = null;
             if (editElems[e].type == "checkbox") {
                 result[e] = !!editElems[e].checked;
@@ -100,10 +112,19 @@ module UrlEditor.Options.Redirection {
                 mark);
         }
 
+        isNumber(elem: HTMLInputElement | HTMLTextAreaElement, allowEmptyVal = true, mark = true) {
+            let parsedVal = parseInt(elem.value);
+            return this.isValidCustom(
+                elem,
+                () => (elem.value == "" && allowEmptyVal) || parsedVal.toString() == elem.value,
+                `Field "${elem.parentElement.previousSibling.textContent} is not a number."`,
+                mark);
+        }
+
         isValidCustom(elem: HTMLInputElement | HTMLTextAreaElement, isValid: () => boolean, errorMessage: string, mark = true) {
-            this.isValid = isValid();
+            let valid = isValid();
             if (mark) {
-                if (this.isValid) {
+                if (valid) {
                     elem.classList.remove("not_valid");
                 }
                 else {
@@ -111,11 +132,15 @@ module UrlEditor.Options.Redirection {
                 }
             }
 
-            if (!this.isValid) {
+            if (!valid) {
                 this.addError(errorMessage);
             }
 
-            return this.isValid;
+            if (!valid) {
+                this.isValid = false;
+            }
+
+            return valid;
         }
 
         private addError(msg: string) {
