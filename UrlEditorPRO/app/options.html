@@ -111,32 +111,36 @@
         .grid > * > * {
             flex: 1;
         }
-        .highlihgt-first-column > div > span:first-child {
+        .grid.highlihgt-first-column > * > *:first-child {
             font-weight: bold;
-            flex: none;
-            width: 100px;
         }
+        .grid.small-first-column > * > *:first-child {
+            flex: 0 1 auto;
+            min-width: 25%;
+        }
+        .grid.last-row-small > * > *:last-child {
+            flex: none;
+            width: 70px;
+        }
+        .grid.last-row-right > *:last-child > *:last-child {
+            text-align: right;
+        }
+        .grid-space > * > * {
+            margin: 0 2px;
+        }
+
         .setting-value .section {
             margin-top: 10px;
         }
         .section .title {
             font-weight: 600;
         }
-        .grid-space > * > * {
-            margin: 0 2px;
-        }
-        .grid-last-small > * > *:last-child {
-            flex: none;
-            width: 70px;
-        }
-        .grid-last-right > *:last-child > *:last-child {
-            text-align: right;
-        }
         .not_valid {
             background-color: rgb(255, 198, 198);
         }
-        .error {
+        .errorList {
             color: red;
+            white-space: pre-line;
         }
     </style>
     <script src="app.js"></script>
@@ -165,7 +169,7 @@
             <div class="setting">
                 <h3>Keyboard shortcuts</h3>
                 <div class="setting-value">
-                    <div class="grid highlihgt-first-column">
+                    <div class="grid highlihgt-first-column small-first-column">
                         <div>Global</div>
                         <div><span id="action-shortcut"></span><span>Lunch extension (action) pane</span></div>
                         <div><span id="goToHome-shortcut"></span><span>Go to homepage (root path)</span></div>
@@ -188,15 +192,15 @@
             <div class="setting" id="recentlyUsedParamsModule">
                 <h3>Recently used params</h3>
                 <div class="setting-value">
-                    <div class="grid highlihgt-first-column">
+                    <div class="grid highlihgt-first-column small-first-column">
                         <div><span><input type="checkbox" name="autoSuggest" toggleElem="autoSuggestOptions" /></span><span>Suggest recently used parameters</span></div>
                     </div>
                     <div id="autoSuggestOptions">
-                        <div class="grid highlihgt-first-column">
+                        <div class="grid highlihgt-first-column small-first-column">
                             <div><span><input type="checkbox" name="autoSuggestSaveNew" /></span><span>Save new parameters</span></div>
                             <div><span><input type="checkbox" name="autoSuggestEnabledOnIncognito" /></span><span>Save new parameters on incognito mode</span></div>
                         </div>
-                        <div class="section grid grid-space grid-last-small">
+                        <div class="section grid grid-space last-row-small">
                             <div>Select domain to view parameters saved</div>
                             <div>
                                 <select name="page" id="autoSuggestPages">
@@ -205,7 +209,7 @@
                                 <input name="delete" type="button" value="Delete" />
                             </div>
                         </div>
-                        <div class="section grid grid-space grid-last-small">
+                        <div class="section grid grid-space last-row-small">
                             <div>Select a param to view values saved</div>
                             <div>
                                 <select name="param" id="autoSuggestParams">
@@ -216,10 +220,10 @@
                         </div>
                         <div class="section">
                             <div>Parameter list</div>
-                            <div id="autoSuggestParamValues" class="grid grid-space grid-last-small">
+                            <div id="autoSuggestParamValues" class="grid grid-space last-row-small">
                             </div>
                         </div>
-                        <div class="section grid grid-space grid-last-small">
+                        <div class="section grid grid-space last-row-small">
                             <div>Bind with other domain</div>
                             <div>
                                 <select name="bindToHost" id="autoSuggestPageToBind">
@@ -232,7 +236,7 @@
                         </div>
                         <div class="section">
                             <div>Import/export suggestions data</div>
-                            <div class="grid highlihgt-first-column">
+                            <div class="grid highlihgt-first-column small-first-column">
                                 <div><span>Export</span><span><input type="button" value="Export" name="export_data" /></span></div>
                                 <div><span>Import</span><span><input type="file" value="Import" name="import_data" /></span></div>
                             </div>
@@ -257,22 +261,22 @@
                     <div class="section" id="redirection_edit">
                         <div class="title">Add new rule</div>
                         <div class="grid">
-                            <div><label>Test url</label><textarea name="testUrl">https://localhost/AS/API/WindowsCortanaPane/V2/init?mkt=en-US&amp;setmkt=en-US&amp;q=facebook&amp;atlahostname=localhost&amp;acc=1&amp;istest=1&amp;setvar=ms:0&amp;rb=0&amp;mockimages=1&amp;addfeaturesnoexpansion=qfMiniSerp,ppApps,bytecounts&amp;testhooks=~1&amp;currentdate=20140501&amp;searchbox=1&amp;client=windows&amp;clientversion=1999999&amp;query=notepad&amp;openpreviewpane=1&amp;mockdeviceitems=1&amp;mockjumplist=1&amp;allsystemverbs=1&amp;height=950&amp;testretry=1&amp;testtype=GridBased&amp;testcodehash=BBA4DA9831BE6057265B6A7FAEF541F8&amp;testidentifier=32aaca785b2147b5858a01e69ce5aa1d3e86471b&amp;logjserror=1&amp;bag=VP_AutoSuggest.AutoSuggest.snr_sodium.Standalone.Cortana_Web_Empty&amp;setflight=&amp;ClientIP=192.168.255.247&amp;traffictype=Internal_monitor&amp;fdtrace=1&amp;setflight=nofdtbody&amp;setlang=en-us&amp;setflight=-&amp;setflight=userbasedstrategy&amp;corpnet=0&amp;TestSelectionId=VP_AutoSuggest</textarea></div>
-                        </div>
-                        <div class="grid">
+                            </div>
+                        <div class="grid small-first-column">
                             <div><label>Url filter</label><input type="text" name="urlFilter" /></div>
                             <div><label>Is automatic</label><span><input type="checkbox" name="isAutomatic" checked /></span></div>
                             <div><label>Hot-key</label><input type="text" value="Crl+4" name="hotKey" /></div>
                             <div><label>Protocol</label><input type="text" value="" name="protocol" /></div>
                             <div><label>Host name</label><input type="text" value="" name="hostname" /></div>
-                            <div><label>Port</label><input type="text" value="port" name="port" /></div>
+                            <div><label>Port</label><input type="text" name="port" /></div>
                         </div>
 
-                        <div class="grid grid-last-right">
-                            <div><label>Result</label><textarea name="resultUrl"></textarea></div>
+                        <div class="grid last-row-right small-first-column">
+                            <div><label>Test url</label><textarea name="testUrl">https://localhost/AS/API/WindowsCortanaPane/V2/init?mkt=en-US&amp;setmkt=en-US&amp;q=facebook&amp;atlahostname=localhost&amp;acc=1&amp;istest=1&amp;setvar=ms:0&amp;rb=0&amp;mockimages=1&amp;addfeaturesnoexpansion=qfMiniSerp,ppApps,bytecounts&amp;testhooks=~1&amp;currentdate=20140501&amp;searchbox=1&amp;client=windows&amp;clientversion=1999999&amp;query=notepad&amp;openpreviewpane=1&amp;mockdeviceitems=1&amp;mockjumplist=1&amp;allsystemverbs=1&amp;height=950&amp;testretry=1&amp;testtype=GridBased&amp;testcodehash=BBA4DA9831BE6057265B6A7FAEF541F8&amp;testidentifier=32aaca785b2147b5858a01e69ce5aa1d3e86471b&amp;logjserror=1&amp;bag=VP_AutoSuggest.AutoSuggest.snr_sodium.Standalone.Cortana_Web_Empty&amp;setflight=&amp;ClientIP=192.168.255.247&amp;traffictype=Internal_monitor&amp;fdtrace=1&amp;setflight=nofdtbody&amp;setlang=en-us&amp;setflight=-&amp;setflight=userbasedstrategy&amp;corpnet=0&amp;TestSelectionId=VP_AutoSuggest</textarea></div>
+                            <div><label>Result url</label><textarea name="resultUrl"></textarea></div>
                             <div><div></div><div><input type="button" name="submit" value="Save" disabled /></div></div>
                         </div>
-                        <div id="errorMessages" class="error"></div>
+                        <div id="errorMessages" class="errorList"></div>
                     </div>
                 </div>
             </div>

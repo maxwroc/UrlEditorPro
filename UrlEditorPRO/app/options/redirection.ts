@@ -108,7 +108,7 @@ module UrlEditor.Options.Redirection {
             return this.isValidCustom(
                 elem,
                 () => elem.value != "",
-                `Field "${elem.parentElement.previousSibling.textContent} cannot be empty."`,
+                `Field "${elem.parentElement.previousSibling.textContent}" cannot be empty.`,
                 mark);
         }
 
@@ -117,7 +117,7 @@ module UrlEditor.Options.Redirection {
             return this.isValidCustom(
                 elem,
                 () => (elem.value == "" && allowEmptyVal) || parsedVal.toString() == elem.value,
-                `Field "${elem.parentElement.previousSibling.textContent} is not a number."`,
+                `Field "${elem.previousSibling.textContent}" is not a number.`,
                 mark);
         }
 
