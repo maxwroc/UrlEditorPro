@@ -16,6 +16,8 @@ module UrlEditor.Options.Redirection {
         hostname: <HTMLInputElement>null,
         port: <HTMLInputElement>null,
         submit: <HTMLInputElement>null,
+        addParam: <HTMLInputElement>null,
+        addReplaceString: <HTMLInputElement>null
     }
 
     let edit_testUrlElem: HTMLTextAreaElement;
@@ -30,12 +32,53 @@ module UrlEditor.Options.Redirection {
         populateEditElements("redirection_edit");
     }
 
-    function handleClick() {
-
+    function handleClick(evt: Event) {
+        switch (evt.target) {
+            case editElems.addParam:
+                addDoubleInputFields(editElems.addParam);
+                break;
+            case editElems.addReplaceString:
+                addDoubleInputFields(editElems.addReplaceString);
+                break;
+        }
     }
 
     function handleChange(evt: Event) {
         validateEditFields();
+    }
+
+    function addDoubleInputFields(elem: HTMLInputElement) {
+        let newRow = document.createElement("div");
+        let label = document.createElement("label");
+        label.style.visibility = "hidden";
+        newRow.appendChild(label);
+
+        let container = document.createElement("div");
+        container.className = "split-half";
+
+        let field1 = document.createElement("input") as HTMLInputElement;
+        field1.type = "text";
+        field1.name = "field1";
+        container.appendChild(field1);
+
+        let field2 = document.createElement("input") as HTMLInputElement;
+        field2.type = "text";
+        field2.name = "field2";
+        container.appendChild(field2);
+
+        newRow.appendChild(container);
+
+        let nullBtn = document.createElement("input") as HTMLInputElement;
+        nullBtn.type = "button";
+        nullBtn.value = "null";
+        nullBtn.className = "small";
+        newRow.appendChild(nullBtn);
+        let button = document.createElement("input") as HTMLInputElement;
+        button.type = "button";
+        button.value = "-";
+        button.className = "small";
+        newRow.appendChild(button);
+        elem.parentElement.parentElement.insertBefore(newRow, elem.parentElement.nextElementSibling);
     }
 
     function validateEditFields() {

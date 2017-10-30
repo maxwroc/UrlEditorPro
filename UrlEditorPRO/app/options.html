@@ -128,6 +128,15 @@
         .grid-space > * > * {
             margin: 0 2px;
         }
+        .split-half {
+            display: flex;
+        }
+        .split-half > * {
+            width: 50%;
+        }
+        .grid .small {
+            flex: none;
+        }
 
         .setting-value .section {
             margin-top: 10px;
@@ -269,8 +278,8 @@
                             <div><label>Protocol</label><input type="text" value="" name="protocol" /></div>
                             <div><label>Host name</label><input type="text" value="" name="hostname" /></div>
                             <div><label>Port</label><input type="text" name="port" /></div>
-                            <div><label>Params</label><input type="button" value="Add new param to update" /></div>
-                            <div><label>Replace</label><input type="button" value="Add new string to replace" /></div>
+                            <div><label>Params</label><input type="button" value="Add new param to update" name="addParam" /></div>
+                            <div><label>Replace</label><input type="button" value="Add new string to replace" name="addReplaceString" /></div>
                         </div>
 
                         <div class="grid last-row-right small-first-column">
