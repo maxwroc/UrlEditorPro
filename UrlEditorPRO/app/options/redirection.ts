@@ -72,13 +72,27 @@ module UrlEditor.Options.Redirection {
         nullBtn.type = "button";
         nullBtn.value = "null";
         nullBtn.className = "small";
+        nullBtn.addEventListener("click", () => {
+            if (field2.disabled) {
+                field2.disabled = false;
+                field2.value = "";
+            }
+            else {
+                field2.disabled = true;
+                field2.value = "[null]";
+            }
+        })
         newRow.appendChild(nullBtn);
+
+        let rowContainer = elem.parentElement.parentElement;
         let button = document.createElement("input") as HTMLInputElement;
         button.type = "button";
         button.value = "-";
         button.className = "small";
+        button.addEventListener("click", () => rowContainer.removeChild(newRow));
+
         newRow.appendChild(button);
-        elem.parentElement.parentElement.insertBefore(newRow, elem.parentElement.nextElementSibling);
+        rowContainer.insertBefore(newRow, elem.parentElement.nextElementSibling);
     }
 
     function validateEditFields() {
