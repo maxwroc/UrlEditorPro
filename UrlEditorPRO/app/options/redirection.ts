@@ -7,6 +7,7 @@ module UrlEditor.Options.Redirection {
     let settings: Settings;
 
     let editElems = {
+        redirectionsModule: <HTMLDivElement>null,
         testUrl: <HTMLTextAreaElement>null,
         resultUrl: <HTMLTextAreaElement>null,
         urlFilter: <HTMLInputElement>null,
@@ -25,9 +26,9 @@ module UrlEditor.Options.Redirection {
 
     export function init(setts: Settings) {
         settings = setts;
-        let redirectionsModule = Helpers.ge("redirectionsModule");
-        redirectionsModule.addEventListener("click", handleClick);
-        redirectionsModule.addEventListener("input", handleChange);
+        editElems.redirectionsModule = Helpers.ge("redirectionsModule");
+        editElems.redirectionsModule.addEventListener("click", handleClick);
+        editElems.redirectionsModule.addEventListener("input", handleChange);
 
         populateEditElements("redirection_edit");
     }
@@ -35,10 +36,10 @@ module UrlEditor.Options.Redirection {
     function handleClick(evt: Event) {
         switch (evt.target) {
             case editElems.addParam:
-                addDoubleInputFields(editElems.addParam);
+                addDoubleInputFields(editElems.addParam, "params");
                 break;
             case editElems.addReplaceString:
-                addDoubleInputFields(editElems.addReplaceString);
+                addDoubleInputFields(editElems.addReplaceString, "strings");
                 break;
         }
     }
@@ -47,8 +48,10 @@ module UrlEditor.Options.Redirection {
         validateEditFields();
     }
 
-    function addDoubleInputFields(elem: HTMLInputElement) {
+    function addDoubleInputFields(elem: HTMLInputElement, className: string) {
         let newRow = document.createElement("div");
+        newRow.className = className;
+
         let label = document.createElement("label");
         label.style.visibility = "hidden";
         newRow.appendChild(label);
@@ -81,6 +84,7 @@ module UrlEditor.Options.Redirection {
                 field2.disabled = true;
                 field2.value = "[null]";
             }
+            validateEditFields();
         })
         newRow.appendChild(nullBtn);
 
@@ -89,7 +93,10 @@ module UrlEditor.Options.Redirection {
         button.type = "button";
         button.value = "-";
         button.className = "small";
-        button.addEventListener("click", () => rowContainer.removeChild(newRow));
+        button.addEventListener("click", () => {
+            rowContainer.removeChild(newRow);
+            validateEditFields();
+        });
 
         newRow.appendChild(button);
         rowContainer.insertBefore(newRow, elem.parentElement.nextElementSibling);
@@ -132,6 +139,16 @@ module UrlEditor.Options.Redirection {
                 }
             }
         });
+
+        let paramInputs = editElems.redirectionsModule.querySelectorAll(".params input[name='field1'], .params input[name='field2']");
+        for (var i = 0; i < paramInputs.length; i += 2) {
+            let nameElem = paramInputs[i] as HTMLInputElement
+            if (nameElem.value) {
+                let valueElem = paramInputs[i + 1] as HTMLInputElement;
+                result.paramsToUpdate = result.paramsToUpdate || {};
+                result.paramsToUpdate[nameElem.value] = valueElem.disabled ? null : valueElem.value;
+            }
+        }
 
         return result;
     }
