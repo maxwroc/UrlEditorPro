@@ -150,6 +150,16 @@ module UrlEditor.Options.Redirection {
             }
         }
 
+        let strReplaceInputs = editElems.redirectionsModule.querySelectorAll(".strings input[name='field1'], .strings input[name='field2']");
+        for (var i = 0; i < strReplaceInputs.length; i += 2) {
+            let nameElem = strReplaceInputs[i] as HTMLInputElement
+            if (nameElem.value) {
+                let valueElem = strReplaceInputs[i + 1] as HTMLInputElement;
+                result.strReplace = result.strReplace || [];
+                result.strReplace.push([nameElem.value, valueElem.value]);
+            }
+        }
+
         return result;
     }
 
