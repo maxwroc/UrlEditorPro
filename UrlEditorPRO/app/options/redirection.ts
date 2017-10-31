@@ -31,6 +31,8 @@ module UrlEditor.Options.Redirection {
         editElems.redirectionsModule.addEventListener("input", handleChange);
 
         populateEditElements("redirection_edit");
+
+        editElems.hotKey.addEventListener("keydown", evt => handleHotKeyAssignment(evt));
     }
 
     function handleClick(evt: Event) {
@@ -46,6 +48,21 @@ module UrlEditor.Options.Redirection {
 
     function handleChange(evt: Event) {
         validateEditFields();
+    }
+
+    function handleHotKeyAssignment(evt: KeyboardEvent) {
+        // we don't want the box to be manually edited
+        evt.preventDefault();
+
+        let result = "";
+
+        result += evt.ctrlKey ? "Ctrl + " : "";
+        result += evt.shiftKey ? "Shift + " : "";
+        result += evt.altKey ? "Alt + " : "";
+
+        result += evt.keyCode;
+
+        editElems.hotKey.value = result;
     }
 
     function addDoubleInputFields(elem: HTMLInputElement, className: string) {
