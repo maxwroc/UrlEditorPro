@@ -54,15 +54,16 @@ module UrlEditor.Options.Redirection {
         // we don't want the box to be manually edited
         evt.preventDefault();
 
-        let result = "";
+        if ((evt.ctrlKey || evt.altKey) && [17, 18].indexOf(evt.keyCode) == -1) {
+            let result = "";
+            result += evt.ctrlKey ? "Ctrl + " : "";
+            result += evt.shiftKey ? "Shift + " : "";
+            result += evt.altKey ? "Alt + " : "";
 
-        result += evt.ctrlKey ? "Ctrl + " : "";
-        result += evt.shiftKey ? "Shift + " : "";
-        result += evt.altKey ? "Alt + " : "";
+            result += evt.keyCode; //String.fromCharCode(evt.keyCode);
 
-        result += evt.keyCode;
-
-        editElems.hotKey.value = result;
+            editElems.hotKey.value = result;
+        }
     }
 
     function addDoubleInputFields(elem: HTMLInputElement, className: string) {
