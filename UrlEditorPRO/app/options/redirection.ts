@@ -54,8 +54,13 @@ module UrlEditor.Options.Redirection {
         // we don't want the box to be manually edited
         evt.preventDefault();
 
+        if (evt.keyCode == 8) {
+            editElems.hotKey.value = "";
+        }
+
         if ((evt.ctrlKey || evt.altKey) && [17, 18].indexOf(evt.keyCode) == -1) {
             let result = "";
+
             result += evt.ctrlKey ? "Ctrl + " : "";
             result += evt.shiftKey ? "Shift + " : "";
             result += evt.altKey ? "Alt + " : "";
