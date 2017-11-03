@@ -2,9 +2,11 @@ module UrlEditor {
 
     export class RedirectRule {
         public urlFilter: string;
+        public isAutomatic: boolean;
 
-        constructor(private replaceData: IRedirectReplaceData) {
+        constructor(private replaceData: IRedirectionRuleData) {
             this.urlFilter = replaceData.urlFilter;
+            this.isAutomatic = replaceData.isAutomatic;
         }
 
         isUrlSupported(url: string): boolean {
@@ -54,11 +56,12 @@ module UrlEditor {
 
     export class RedirectionManager {
         private rules: RedirectRule[] = [];
+        public onMatchingRule: Function;
 
         constructor(private bindOnBeforeRequest: IBindOnBeforeRequestHandler) {
         }
 
-        addRule(redirectionData: IRedirectReplaceData) {
+        addRule(redirectionData: IRedirectionRuleData) {
             this.rules.push(new RedirectRule(redirectionData));
         }
 
@@ -67,6 +70,7 @@ module UrlEditor {
                 this.bindOnBeforeRequest(
                     r.urlFilter,
                     requestDetails => {
+
                         let newUrl = r.getUpdatedUrl(requestDetails.url);
                         if (newUrl != requestDetails.url) {
                             return <chrome.webRequest.BlockingResponse>{
@@ -85,6 +89,7 @@ module UrlEditor {
     });
 
     redirect.addRule({
+        name: "zzzz",
         urlFilter: "*://localhost/*traffictype=Internal_monitor*",
         hostname: "maksymc-srv",
         protocol: "http",

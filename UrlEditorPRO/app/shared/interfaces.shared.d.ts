@@ -31,7 +31,8 @@ interface IBindOnBeforeRequestHandler {
     (filter: string, callback: (redirData: chrome.webRequest.WebRequestBodyDetails) => chrome.webRequest.BlockingResponse, extraInfoSpec: string[]): void;
 }
 
-interface IRedirectReplaceData {
+interface IRedirectionRuleData {
+    name: string,
     urlFilter: string,
     isAutomatic?: boolean;
     hotKey?: string,

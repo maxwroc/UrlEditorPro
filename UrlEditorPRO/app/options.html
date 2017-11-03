@@ -154,6 +154,29 @@
         #redirection_edit .strings > input:nth-of-type(1) {
             display: none;
         }
+
+        .slider-wrapper {
+            overflow: hidden;
+            width: 100%;
+        }
+        .slider {
+            white-space: nowrap
+        }
+        .slider > * {
+            width: 100%;
+            display: inline-block;
+            vertical-align: top;
+        }
+
+        .redir-rules {
+            overflow-y: auto;
+        }
+        .redir-rules > *:nth-child(2n+1) {
+            background-color: #e4e4e4;
+        }
+        .redir-rules > *:nth-child(2n+2) {
+            background-color: #f7f7f7;
+        }
     </style>
     <script src="app.js"></script>
     <script src="options.js"></script>
@@ -270,27 +293,39 @@
                             <li>You want to navigate to some other website passing parameters from he current url</li>
                         </ul>
                     </div>
-                    <div class="section" id="redirection_edit">
-                        <div class="title">Add new rule</div>
-                        <div class="grid">
+                    <div class="slider-wrapper">
+                        <div class="slider">
+                            <div class="section" id="redirection_edit">
+                                <div class="title">list <input type="button" value="Add new rule" /></div>
+                                <ul class="grid highlihgt-first-column redir-rules">
+                                    <li><div>Test url</div><div>http*://localhost/*</div></li>
+                                    <li><div>Test url</div><div>http*://localhost/*</div></li>
+                                    <li><div>Test url</div><div>http*://localhost/*</div></li>
+                                    <li><div>Test url</div><div>http*://localhost/*</div></li>
+                                </ul>
                             </div>
-                        <div class="grid small-first-column">
-                            <div><label>Url filter</label><input type="text" name="urlFilter" placeholder="e.g. http*://localhost/?*&amp;paramName=*" /></div>
-                            <div><label>Is automatic</label><span><input type="checkbox" name="isAutomatic" checked /></span></div>
-                            <div><label>Hot-key</label><input type="text" name="hotKey" placeholder="Click here and press key combination" /></div>
-                            <div><label>Protocol</label><input type="text" value="" name="protocol" /></div>
-                            <div><label>Host name</label><input type="text" value="" name="hostname" /></div>
-                            <div><label>Port</label><input type="text" name="port" /></div>
-                            <div><label>Params</label><input type="button" value="Add new param to update" name="addParam" /></div>
-                            <div><label>Replace</label><input type="button" value="Add new string to replace" name="addReplaceString" /></div>
-                        </div>
+                            <div class="section" id="redirection_edit">
+                                <div class="title">Add new rule</div>
+                                <div class="grid small-first-column">
+                                    <div><label>Rule name</label><input type="text" value="" name="name" /></div>
+                                    <div><label>Url filter</label><input type="text" name="urlFilter" placeholder="e.g. http*://localhost/?*&amp;paramName=*" /></div>
+                                    <div><label>Is automatic</label><span><input type="checkbox" name="isAutomatic" checked /></span></div>
+                                    <div><label>Hot-key</label><input type="text" name="hotKey" placeholder="Click here and press key combination" /></div>
+                                    <div><label>Protocol</label><input type="text" value="" name="protocol" /></div>
+                                    <div><label>Host name</label><input type="text" value="" name="hostname" /></div>
+                                    <div><label>Port</label><input type="text" name="port" /></div>
+                                    <div><label>Params</label><input type="button" value="Add new param to update" name="addParam" /></div>
+                                    <div><label>Replace</label><input type="button" value="Add new string to replace" name="addReplaceString" /></div>
+                                </div>
 
-                        <div class="grid last-row-right small-first-column">
-                            <div><label>Test url</label><textarea name="testUrl">https://localhost/AS/API/WindowsCortanaPane/V2/init?mkt=en-US&amp;setmkt=en-US&amp;q=facebook&amp;atlahostname=localhost&amp;acc=1&amp;istest=1&amp;setvar=ms:0&amp;rb=0&amp;mockimages=1&amp;addfeaturesnoexpansion=qfMiniSerp,ppApps,bytecounts&amp;testhooks=~1&amp;currentdate=20140501&amp;searchbox=1&amp;client=windows&amp;clientversion=1999999&amp;query=notepad&amp;openpreviewpane=1&amp;mockdeviceitems=1&amp;mockjumplist=1&amp;allsystemverbs=1&amp;height=950&amp;testretry=1&amp;testtype=GridBased&amp;testcodehash=BBA4DA9831BE6057265B6A7FAEF541F8&amp;testidentifier=32aaca785b2147b5858a01e69ce5aa1d3e86471b&amp;logjserror=1&amp;bag=VP_AutoSuggest.AutoSuggest.snr_sodium.Standalone.Cortana_Web_Empty&amp;setflight=&amp;ClientIP=192.168.255.247&amp;traffictype=Internal_monitor&amp;fdtrace=1&amp;setflight=nofdtbody&amp;setlang=en-us&amp;setflight=-&amp;setflight=userbasedstrategy&amp;corpnet=0&amp;TestSelectionId=VP_AutoSuggest</textarea></div>
-                            <div><label>Result url</label><textarea name="resultUrl"></textarea></div>
-                            <div><div></div><div><input type="button" name="submit" value="Save" disabled /></div></div>
+                                <div class="grid last-row-right small-first-column">
+                                    <div><label>Test url</label><textarea name="testUrl">https://localhost/AS/API/WindowsCortanaPane/V2/init?mkt=en-US&amp;setmkt=en-US&amp;q=facebook&amp;atlahostname=localhost&amp;acc=1&amp;istest=1&amp;setvar=ms:0&amp;rb=0&amp;mockimages=1&amp;addfeaturesnoexpansion=qfMiniSerp,ppApps,bytecounts&amp;testhooks=~1&amp;currentdate=20140501&amp;searchbox=1&amp;client=windows&amp;clientversion=1999999&amp;query=notepad&amp;openpreviewpane=1&amp;mockdeviceitems=1&amp;mockjumplist=1&amp;allsystemverbs=1&amp;height=950&amp;testretry=1&amp;testtype=GridBased&amp;testcodehash=BBA4DA9831BE6057265B6A7FAEF541F8&amp;testidentifier=32aaca785b2147b5858a01e69ce5aa1d3e86471b&amp;logjserror=1&amp;bag=VP_AutoSuggest.AutoSuggest.snr_sodium.Standalone.Cortana_Web_Empty&amp;setflight=&amp;ClientIP=192.168.255.247&amp;traffictype=Internal_monitor&amp;fdtrace=1&amp;setflight=nofdtbody&amp;setlang=en-us&amp;setflight=-&amp;setflight=userbasedstrategy&amp;corpnet=0&amp;TestSelectionId=VP_AutoSuggest</textarea></div>
+                                    <div><label>Result url</label><textarea name="resultUrl"></textarea></div>
+                                    <div><div></div><div><input type="button" name="submit" value="Save" disabled /></div></div>
+                                </div>
+                                <div id="errorMessages" class="errorList"></div>
+                            </div>
                         </div>
-                        <div id="errorMessages" class="errorList"></div>
                     </div>
                 </div>
             </div>

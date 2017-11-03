@@ -11,7 +11,8 @@
     "tabs",
     "windows",
     "webRequest",
-    "webRequestBlocking"
+    "webRequestBlocking",
+    "contextMenus"
   ],
   "icons": {
     "16": "img/edit_16.png",

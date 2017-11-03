@@ -10,6 +10,7 @@ module UrlEditor.Options.Redirection {
         redirectionsModule: <HTMLDivElement>null,
         testUrl: <HTMLTextAreaElement>null,
         resultUrl: <HTMLTextAreaElement>null,
+        name: <HTMLInputElement>null,
         urlFilter: <HTMLInputElement>null,
         isAutomatic: <HTMLInputElement>null,
         hotKey: <HTMLInputElement>null,
@@ -127,7 +128,7 @@ module UrlEditor.Options.Redirection {
 
     function validateEditFields() {
         let validator = new Validator("errorMessages");
-        if (!validator.isNotEmpty(editElems.urlFilter)) {
+        if (!validator.isNotEmpty(editElems.name) || !validator.isNotEmpty(editElems.urlFilter)) {
             return;
         }
 
@@ -149,9 +150,9 @@ module UrlEditor.Options.Redirection {
         editElems.submit.disabled = !validator.isValid;
     }
 
-    function getReplaceData(): IRedirectReplaceData {
-        let result: IRedirectReplaceData = { urlFilter: "" };
-        ["urlFilter", "isAutomatic", "hotKey", "protocol", "hostname", "port"].forEach(e => {
+    function getReplaceData(): IRedirectionRuleData {
+        let result: IRedirectionRuleData = { name: "", urlFilter: "" };
+        ["name", "urlFilter", "isAutomatic", "hotKey", "protocol", "hostname", "port"].forEach(e => {
             let value = null;
             if (editElems[e].type == "checkbox") {
                 result[e] = !!editElems[e].checked;
