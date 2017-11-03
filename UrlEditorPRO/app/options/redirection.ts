@@ -19,7 +19,11 @@ module UrlEditor.Options.Redirection {
         port: <HTMLInputElement>null,
         submit: <HTMLInputElement>null,
         addParam: <HTMLInputElement>null,
-        addReplaceString: <HTMLInputElement>null
+        addReplaceString: <HTMLInputElement>null,
+        editRule: <HTMLInputElement>null,
+        deleteRule: <HTMLInputElement>null,
+        cancel: <HTMLInputElement>null,
+        slider: <HTMLDivElement>null
     }
 
     let edit_testUrlElem: HTMLTextAreaElement;
@@ -31,9 +35,17 @@ module UrlEditor.Options.Redirection {
         editElems.redirectionsModule.addEventListener("click", handleClick);
         editElems.redirectionsModule.addEventListener("input", handleChange);
 
-        populateEditElements("redirection_edit");
+        populateEditElements("redirectionsModule");
 
         editElems.hotKey.addEventListener("keydown", evt => handleHotKeyAssignment(evt));
+    }
+
+    function getSlider() {
+        if (!editElems.slider) {
+            editElems.slider = editElems.redirectionsModule.querySelector(".slider") as HTMLDivElement;
+        }
+
+        return editElems.slider;
     }
 
     function handleClick(evt: Event) {
@@ -43,6 +55,12 @@ module UrlEditor.Options.Redirection {
                 break;
             case editElems.addReplaceString:
                 addDoubleInputFields(editElems.addReplaceString, "strings");
+                break;
+            case editElems.editRule:
+                getSlider().style.left = "-100%";
+                break;
+            case editElems.cancel:
+                getSlider().style.left = "";
                 break;
         }
     }
