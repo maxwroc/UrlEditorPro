@@ -35,6 +35,7 @@ module UrlEditor.Options.Redirection {
         editElems.redirectionsModule.addEventListener("click", handleClick);
         editElems.redirectionsModule.addEventListener("input", handleChange);
 
+        // TODO do it only after click add/edit
         populateEditElements("redirectionsModule");
 
         editElems.hotKey.addEventListener("keydown", evt => handleHotKeyAssignment(evt));

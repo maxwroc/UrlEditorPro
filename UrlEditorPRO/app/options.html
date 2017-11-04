@@ -171,16 +171,25 @@
             display: inline-block;
             vertical-align: top;
             padding-right: 5px;
+            white-space: normal;
         }
 
         .redir-rules {
             overflow-y: auto;
+        }
+        .redir-rules > * > * {
+            padding: 1px 5px;
         }
         .redir-rules > *:nth-child(2n+1) {
             background-color: #e4e4e4;
         }
         .redir-rules > *:nth-child(2n+2) {
             background-color: #f7f7f7;
+        }
+        .redir-rules > *:hover {
+            background-color: #a7a7a7;
+            cursor: pointer;
+            color: white;
         }
     </style>
     <script src="app.js"></script>
@@ -287,22 +296,34 @@
             <div class="setting" id="redirectionsModule">
                 <h3>Redirections</h3>
                 <div class="setting-value">
-                    <div>
-                        You can create redirection rules which can be applied automatically (whenever browser tries to navigate to specific url) or after given key press.
-                    </div>
-                    <div class="section">
-                        Examples:
-                        <ul>
-                            <li>Your test framework generates URL which contains a lot of redundant params and you want to get rid of them</li>
-                            <li>You want to redirect all localhost requests to some other host</li>
-                            <li>You want to navigate to some other website passing parameters from he current url</li>
-                        </ul>
-                    </div>
                     <div class="slider-wrapper">
                         <div class="slider">
                             <div class="section">
-                                <div class="title">list <input type="button" value="Add new rule" name="editRule" /></div>
+                                <div>
+                                    You can create redirection rules which can be applied automatically (whenever browser tries to navigate to specific url) or after given key press.
+                                </div>
+                                <div class="section">
+                                    Examples:
+                                    <ul>
+                                        <li>Your test framework generates URL which contains a lot of redundant params and you want to get rid of them</li>
+                                        <li>You want to redirect all localhost requests to some other host</li>
+                                        <li>You want to navigate to some other website passing parameters from he current url</li>
+                                    </ul>
+                                </div>
+                                <div><input type="button" value="Add new rule" name="editRule" /></div>
                                 <ul class="grid highlihgt-first-column redir-rules">
+                                    <li><div>Test url</div><div>http*://localhost/*</div></li>
+                                    <li><div>Test url</div><div>http*://localhost/*</div></li>
+                                    <li><div>Test url</div><div>http*://localhost/*</div></li>
+                                    <li><div>Test url</div><div>http*://localhost/*</div></li>
+                                    <li><div>Test url</div><div>http*://localhost/*</div></li>
+                                    <li><div>Test url</div><div>http*://localhost/*</div></li>
+                                    <li><div>Test url</div><div>http*://localhost/*</div></li>
+                                    <li><div>Test url</div><div>http*://localhost/*</div></li>
+                                    <li><div>Test url</div><div>http*://localhost/*</div></li>
+                                    <li><div>Test url</div><div>http*://localhost/*</div></li>
+                                    <li><div>Test url</div><div>http*://localhost/*</div></li>
+                                    <li><div>Test url</div><div>http*://localhost/*</div></li>
                                     <li><div>Test url</div><div>http*://localhost/*</div></li>
                                     <li><div>Test url</div><div>http*://localhost/*</div></li>
                                     <li><div>Test url</div><div>http*://localhost/*</div></li>
