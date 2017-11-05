@@ -174,27 +174,27 @@
             white-space: normal;
         }
 
-        .redir-rules {
+        #rules_list {
             overflow-y: auto;
             max-height: 120px;
         }
-        .redir-rules > * > * {
+        #rules_list > * > * {
             padding: 1px 5px;
         }
-        .redir-rules > *:nth-child(2n+1) {
+        #rules_list > *:nth-child(2n+1) {
             background-color: #e4e4e4;
         }
-        .redir-rules > *:nth-child(2n+2) {
+        #rules_list > *:nth-child(2n+2) {
             background-color: #f7f7f7;
         }
-        .redir-rules > *:hover {
+        #rules_list > *:hover {
             background-color: #a7a7a7;
             cursor: pointer;
             color: white;
         }
 
         .truncate,
-        .redir-rules > * > * {
+        #rules_list > * > * {
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -318,8 +318,8 @@
                                         <li>You want to navigate to some other website passing parameters from he current url</li>
                                     </ul>
                                 </div>
-                                <div><input type="button" value="Add new rule" name="editRule" /></div>
-                                <ul class="grid highlihgt-first-column redir-rules">
+                                <div><input type="button" value="Add new rule" name="addRule" /></div>
+                                <ul class="grid highlihgt-first-column" id="rules_list">
                                     <li><div>Test url</div><div>http*://localhost/*</div></li>
                                     <li><div>Test url</div><div>http*://localhost/*</div></li>
                                     <li><div>Test url</div><div>http*://localhost/*</div></li>

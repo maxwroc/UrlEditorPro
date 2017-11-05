@@ -1,3 +1,6 @@
+///<reference path="settings.ts" />
+///<reference path="url_parser.ts" />
+
 module UrlEditor {
 
     export class RedirectRule {
@@ -55,23 +58,35 @@ module UrlEditor {
     }
 
     export class RedirectionManager {
-        private rules: RedirectRule[] = [];
+        private redirData: IMap<IRedirectionRuleData>;
         public onMatchingRule: Function;
 
-        constructor(private bindOnBeforeRequest: IBindOnBeforeRequestHandler) {
+        constructor(private setts: Settings) {
         }
 
-        addRule(redirectionData: IRedirectionRuleData) {
-            this.rules.push(new RedirectRule(redirectionData));
+        save() {
+            if (this.redirData) {
+                this.setts.setValue("redirectionRules", JSON.stringify(this.redirData));
+            }
         }
 
-        init() {
-            this.rules.forEach(r => {
-                this.bindOnBeforeRequest(
-                    r.urlFilter,
+        getData(): IMap<IRedirectionRuleData> {
+            if (!this.redirData) {
+                this.redirData = JSON.parse(this.setts.redirectionRules);
+            }
+
+            return this.redirData;
+        }
+
+        initOnBeforeRequest(bindOnBeforeRequest: IBindOnBeforeRequestHandler) {
+            let rulesData = this.getData();
+            Object.keys(rulesData).forEach(name => {
+                let data = rulesData[name];
+                bindOnBeforeRequest(
+                    data.urlFilter,
                     requestDetails => {
-
-                        let newUrl = r.getUpdatedUrl(requestDetails.url);
+                        let rule = new RedirectRule(data);
+                        let newUrl = rule.getUpdatedUrl(requestDetails.url);
                         if (newUrl != requestDetails.url) {
                             return <chrome.webRequest.BlockingResponse>{
                                 redirectUrl: newUrl
@@ -83,35 +98,4 @@ module UrlEditor {
             });
         }
     }
-
-    let redirect = new RedirectionManager((urlFilter, handler, infoSpec) => {
-        chrome.webRequest.onBeforeRequest.addListener(r => handler(r), { urls: [urlFilter] }, infoSpec);
-    });
-
-    redirect.addRule({
-        name: "zzzz",
-        urlFilter: "*://localhost/*traffictype=Internal_monitor*",
-        hostname: "maksymc-srv",
-        protocol: "http",
-        paramsToUpdate: {
-            istest: null,
-            setvar: null,
-            rb: null,
-            setmkt: null,
-            testtype: null,
-            testcodehash: null,
-            testidentifier: null,
-            logjserror: null,
-            ClientIP: null,
-            traffictype: null,
-            fdtrace: null,
-            corpnet: null,
-            TestSelectionId: null,
-            disableAppCache: "1"
-        }
-    });
-
-    redirect.init();
-
-
 }
