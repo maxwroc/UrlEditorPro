@@ -21,7 +21,6 @@ module UrlEditor.Options.Redirection {
         settings = setts;
         editElems.redirectionsModule = Helpers.ge("redirectionsModule");
         editElems.redirectionsModule.addEventListener("click", handleClick);
-        editElems.redirectionsModule.addEventListener("input", handleChange);
 
         redirManager = new RedirectionManager(setts);
         editElems.rulesList = Helpers.ge("rules_list");
@@ -41,13 +40,7 @@ module UrlEditor.Options.Redirection {
             case "addRule":
                 ruleEditor.open();
                 break;
-            default:
-                ruleEditor.onChange(evt);
         }
-    }
-
-    function handleChange(evt: Event) {
-        ruleEditor.onChange(evt);
     }
 
     function populateRulesList() {
@@ -117,7 +110,7 @@ module UrlEditor.Options.Redirection {
 
         }
 
-        onChange(evt: Event) {
+        private handleClick(evt: Event) {
             switch (evt.target) {
                 case RuleEditor.elems.addParam:
                     this.addDoubleInputFields(RuleEditor.elems.addParam, "params");
@@ -129,10 +122,18 @@ module UrlEditor.Options.Redirection {
                     this.close();
                     break;
             }
+
+            evt.stopPropagation();
+        }
+
+        private handleChange(evt: Event) {
+            evt.stopPropagation();
+
+            this.validateEditFields();
         }
 
         private initializeStaticFields() {
-            RuleEditor.elems.container = Helpers.ge("redirectionsModule");
+            RuleEditor.elems.container = Helpers.ge("rules_editor");
             let resultNodes = RuleEditor.elems.container.querySelectorAll("textarea, input");
             let editElementsNames = Object.keys(RuleEditor.elems);
             for (let i = 0, field: HTMLInputElement; field = <HTMLInputElement>resultNodes[i]; i++) {
@@ -141,13 +142,15 @@ module UrlEditor.Options.Redirection {
                 }
             }
 
-            RuleEditor.elems.slider = RuleEditor.elems.container.querySelector(".slider") as HTMLDivElement;
+            RuleEditor.elems.slider = RuleEditor.elems.container.parentElement as HTMLDivElement;
 
             RuleEditor.elems.hotKey.addEventListener("keydown", evt => this.handleHotKeyAssignment(evt));
+            RuleEditor.elems.container.addEventListener("click", evt => this.handleClick(evt));
+            RuleEditor.elems.container.addEventListener("input", evt => this.handleChange(evt));
         }
 
         private clearFields() {
-
+            this.ruleData = null;
         }
 
         private populateFields() {
