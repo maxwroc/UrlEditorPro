@@ -64,8 +64,16 @@ module UrlEditor {
         constructor(private setts: Settings) {
         }
 
-        save() {
+        save(data: IRedirectionRuleData, name?: string) {
             if (this.redirData) {
+                // check if rule was renamed
+                if (name && data.name != name) {
+                    // remove the old entry
+                    delete this.redirData[name];
+                }
+
+                this.redirData[data.name] = data;
+
                 this.setts.setValue("redirectionRules", JSON.stringify(this.redirData));
             }
         }

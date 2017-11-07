@@ -25,7 +25,7 @@ module UrlEditor.Options.Redirection {
         redirManager = new RedirectionManager(setts);
         editElems.rulesList = Helpers.ge("rules_list");
 
-        ruleEditor = new RuleEditor();
+        ruleEditor = new RuleEditor(redirManager, () => populateRulesList());
 
         populateRulesList();
     }
@@ -45,6 +45,7 @@ module UrlEditor.Options.Redirection {
 
     function populateRulesList() {
         let data = redirManager.getData();
+        editElems.rulesList.innerHTML = "";
         Object.keys(data).forEach(name => {
             let li = document.createElement("li");
 
@@ -91,6 +92,10 @@ module UrlEditor.Options.Redirection {
 
         private ruleData?: IRedirectionRuleData;
 
+        constructor(private manager: RedirectionManager, private onSave: () => void) {
+
+        }
+
         open(ruleData?: IRedirectionRuleData) {
 
             if (!RuleEditor.elems.name) {
@@ -98,6 +103,8 @@ module UrlEditor.Options.Redirection {
             }
 
             this.ruleData = ruleData;
+            this.populateFields();
+
             RuleEditor.elems.slider.style.left = "-100%";
         }
 
@@ -107,7 +114,9 @@ module UrlEditor.Options.Redirection {
         }
 
         save() {
-
+            this.manager.save(this.getReplaceData(), this.ruleData ? this.ruleData.name : null);
+            this.close();
+            this.onSave();
         }
 
         private handleClick(evt: Event) {
@@ -120,6 +129,9 @@ module UrlEditor.Options.Redirection {
                     break;
                 case RuleEditor.elems.cancel:
                     this.close();
+                    break;
+                case RuleEditor.elems.submit:
+                    this.save();
                     break;
             }
 
@@ -151,27 +163,41 @@ module UrlEditor.Options.Redirection {
 
         private clearFields() {
             this.ruleData = null;
+
+            RuleEditor.elems.container.querySelectorAll(".params").forEach(e => e.parentElement.removeChild(e));
+            RuleEditor.elems.container.querySelectorAll(".strings").forEach(e => e.parentElement.removeChild(e));
         }
 
         private populateFields() {
             // populate basic fields
             RuleEditor.fieldsToApply.forEach(name => {
-                if (this.ruleData[name] != undefined) {
+                if (this.ruleData && this.ruleData[name] != undefined) {
                     if (RuleEditor.elems[name].type == "checkbox") {
                         RuleEditor.elems[name].checked = this.ruleData[name];
                     }
                     else {
-                        RuleEditor.elems[name] = this.ruleData[name];
+                        RuleEditor.elems[name].value = this.ruleData[name];
+                    }
+                }
+                else {
+                    // clear field
+                    if (RuleEditor.elems[name].type == "checkbox") {
+                        RuleEditor.elems[name].checked = false;
+                    }
+                    else {
+                        RuleEditor.elems[name].value = "";
                     }
                 }
             });
 
-            if (this.ruleData.paramsToUpdate) {
-
+            if (this.ruleData && this.ruleData.paramsToUpdate) {
+                Object.keys(this.ruleData.paramsToUpdate).forEach(name =>
+                    this.addDoubleInputFields(RuleEditor.elems.addParam, "params", name, this.ruleData.paramsToUpdate[name]));
             }
 
-            if (this.ruleData.strReplace) {
-
+            if (this.ruleData && this.ruleData.strReplace) {
+                this.ruleData.strReplace.forEach(replaceSet =>
+                    this.addDoubleInputFields(RuleEditor.elems.addReplaceString, "strings", replaceSet[0], replaceSet[1]));
             }
         }
 
@@ -236,7 +262,7 @@ module UrlEditor.Options.Redirection {
             RuleEditor.elems.submit.disabled = !validator.isValid;
         }
 
-        private addDoubleInputFields(elem: HTMLInputElement, className: string) {
+        private addDoubleInputFields(buttonElem: HTMLInputElement, className: string, field1Val = "", field2Val = "") {
             let newRow = document.createElement("div");
             newRow.className = className;
 
@@ -250,11 +276,14 @@ module UrlEditor.Options.Redirection {
             let field1 = document.createElement("input") as HTMLInputElement;
             field1.type = "text";
             field1.name = "field1";
+            field1.value = field1Val;
             container.appendChild(field1);
 
             let field2 = document.createElement("input") as HTMLInputElement;
             field2.type = "text";
             field2.name = "field2";
+            field2.value = field2Val === null ? "[null]" : field2Val;
+            field2.disabled = field2Val === null;
             container.appendChild(field2);
 
             newRow.appendChild(container);
@@ -276,7 +305,7 @@ module UrlEditor.Options.Redirection {
             })
             newRow.appendChild(nullBtn);
 
-            let rowContainer = elem.parentElement.parentElement;
+            let rowContainer = buttonElem.parentElement.parentElement;
             let button = document.createElement("input") as HTMLInputElement;
             button.type = "button";
             button.value = "-";
@@ -287,7 +316,7 @@ module UrlEditor.Options.Redirection {
             });
 
             newRow.appendChild(button);
-            rowContainer.insertBefore(newRow, elem.parentElement.nextElementSibling);
+            rowContainer.insertBefore(newRow, buttonElem.parentElement.nextElementSibling);
         }
 
 
