@@ -28,7 +28,7 @@ interface IParamContainerElement extends HTMLDivElement {
 }
 
 interface IBindOnBeforeRequestHandler {
-    (filter: string, callback: (redirData: chrome.webRequest.WebRequestBodyDetails) => chrome.webRequest.BlockingResponse, extraInfoSpec: string[]): void;
+    (filter: string, name: string, callback: (redirData: chrome.webRequest.WebRequestBodyDetails, force: boolean) => chrome.webRequest.BlockingResponse, extraInfoSpec: string[]): void;
 }
 
 interface IRedirectionRuleData {

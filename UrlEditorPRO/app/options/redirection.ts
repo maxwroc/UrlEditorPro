@@ -239,14 +239,21 @@ module UrlEditor.Options.Redirection {
         }
 
         private validateEditFields() {
+            const pattern = /(\*|https?|file|ftp):\/\/\/?(\*|\*\.[a-zA-Z0-9.]+|[a-zA-Z0-9.]+)(\*$|\/.+)/;
             let validator = new Validator("errorMessages");
+
             if (!validator.isNotEmpty(RuleEditor.elems.name) || !validator.isNotEmpty(RuleEditor.elems.urlFilter)) {
                 return;
             }
 
             validator.isNumber(RuleEditor.elems.port);
 
-            if (RuleEditor.elems.testUrl.value != "") {
+            let isValidFilter = validator.isValidCustom(
+                RuleEditor.elems.urlFilter,
+                val => pattern.test(val),
+                "Invalid filter pattern. Look at: https://developer.chrome.com/extensions/match_patterns");
+
+            if (isValidFilter && RuleEditor.elems.testUrl.value != "") {
                 let redir = new RedirectRule(this.getReplaceData());
 
                 if (validator.isValidCustom(
@@ -374,8 +381,8 @@ module UrlEditor.Options.Redirection {
                 mark);
         }
 
-        isValidCustom(elem: HTMLInputElement | HTMLTextAreaElement, isValid: () => boolean, errorMessage: string, mark = true) {
-            let valid = isValid();
+        isValidCustom(elem: HTMLInputElement | HTMLTextAreaElement, isValid: (val: string) => boolean, errorMessage: string, mark = true) {
+            let valid = isValid(elem.value);
             if (mark) {
                 if (valid) {
                     elem.classList.remove("not_valid");

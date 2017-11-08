@@ -11,18 +11,21 @@ module UrlEditor {
             });
         }
     });
-    
-    let redirect = new RedirectionManager(new Settings(localStorage));
-    redirect.initOnBeforeRequest((urlFilter, handler, infoSpec) => {
-        chrome.webRequest.onBeforeRequest.addListener(r => handler(r), { urls: [urlFilter] }, infoSpec);
-    });
 
-    chrome.contextMenus.removeAll();
-    chrome.contextMenus.create({
-          title: "first",
-          contexts: ["browser_action"],
-          onclick: function() {
-            alert('first');
-          }
+    // clearing context menu
+    //chrome.webRequest.onBeforeRequest.addListener(() => chrome.contextMenus.removeAll(), { urls: ["*"] });
+
+    let redirect = new RedirectionManager(new Settings(localStorage));
+    redirect.initOnBeforeRequest((urlFilter, name, handler, infoSpec) => {
+        chrome.webRequest.onBeforeRequest.addListener(r => {
+           return handler(r, false);
+            /*
+            chrome.contextMenus.create({
+                title: "Redirect: " + name,
+                contexts: ["browser_action"],
+                onclick: () => handler(r, true)
+            });
+            */
+        }, { urls: [urlFilter] }, infoSpec);
     });
 }

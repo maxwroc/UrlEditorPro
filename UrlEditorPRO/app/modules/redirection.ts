@@ -92,13 +92,16 @@ module UrlEditor {
                 let data = rulesData[name];
                 bindOnBeforeRequest(
                     data.urlFilter,
-                    requestDetails => {
-                        let rule = new RedirectRule(data);
-                        let newUrl = rule.getUpdatedUrl(requestDetails.url);
-                        if (newUrl != requestDetails.url) {
-                            return <chrome.webRequest.BlockingResponse>{
-                                redirectUrl: newUrl
-                            };
+                    name,
+                    (requestDetails, force) => {
+                        if (data.isAutomatic || force) {
+                            let rule = new RedirectRule(data);
+                            let newUrl = rule.getUpdatedUrl(requestDetails.url);
+                            if (newUrl != requestDetails.url) {
+                                return <chrome.webRequest.BlockingResponse>{
+                                    redirectUrl: newUrl
+                                };
+                            }
                         }
                     },
                     ["blocking"]
