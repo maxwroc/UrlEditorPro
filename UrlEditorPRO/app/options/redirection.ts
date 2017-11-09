@@ -113,8 +113,8 @@ module UrlEditor.Options.Redirection {
             RuleEditor.elems.slider.style.left = "";
         }
 
-        save() {
-            this.manager.save(this.getReplaceData(), this.ruleData ? this.ruleData.name : null);
+        save(deleteCurrentRule = false) {
+            this.manager.save(deleteCurrentRule ? null : this.getReplaceData(), this.ruleData ? this.ruleData.name : null);
             this.close();
             this.onSave();
             chrome.runtime.sendMessage(Command.ReloadRedirectionRules);
@@ -133,6 +133,9 @@ module UrlEditor.Options.Redirection {
                     break;
                 case RuleEditor.elems.submit:
                     this.save();
+                    break;
+                case RuleEditor.elems.deleteRule:
+                    this.save(true/*deleteCurrentRule*/);
                     break;
             }
 
@@ -200,6 +203,8 @@ module UrlEditor.Options.Redirection {
                 this.ruleData.strReplace.forEach(replaceSet =>
                     this.addDoubleInputFields(RuleEditor.elems.addReplaceString, "strings", replaceSet[0], replaceSet[1]));
             }
+
+            RuleEditor.elems.deleteRule.disabled = !this.ruleData;
         }
 
         private getReplaceData(): IRedirectionRuleData {

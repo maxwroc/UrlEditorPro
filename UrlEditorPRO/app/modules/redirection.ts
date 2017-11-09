@@ -66,13 +66,17 @@ module UrlEditor {
 
         save(data: IRedirectionRuleData, name?: string) {
             if (this.redirData) {
-                // check if rule was renamed
-                if (name && data.name != name) {
+
+                // check if intention is to just delete rule or if rule was renamed
+                if (data == null || (name && data.name != name)) {
                     // remove the old entry
                     delete this.redirData[name];
                 }
 
-                this.redirData[data.name] = data;
+                // check if it's not a delete operation
+                if (data != null) {
+                    this.redirData[data.name] = data;
+                }
 
                 this.setts.setValue("redirectionRules", JSON.stringify(this.redirData));
             }
