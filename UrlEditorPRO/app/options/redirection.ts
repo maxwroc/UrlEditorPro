@@ -117,6 +117,7 @@ module UrlEditor.Options.Redirection {
             this.manager.save(this.getReplaceData(), this.ruleData ? this.ruleData.name : null);
             this.close();
             this.onSave();
+            chrome.runtime.sendMessage(Command.ReloadRedirectionRules);
         }
 
         private handleClick(evt: Event) {

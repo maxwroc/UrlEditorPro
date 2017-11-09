@@ -33,7 +33,7 @@
         "default": "Ctrl+Shift+U"
       }
     },
-    "goToHomepage": {
+    "GoToHomepage": {
       "suggested_key": {
         "default": "Ctrl+Shift+H",
         "mac": "Command+Shift+H"
