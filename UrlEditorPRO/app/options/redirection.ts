@@ -87,10 +87,12 @@ module UrlEditor.Options.Redirection {
             addReplaceString: <HTMLInputElement>null,
             deleteRule: <HTMLInputElement>null,
             cancel: <HTMLInputElement>null,
-            slider: <HTMLDivElement>null
+            slider: <HTMLDivElement>null,
+            errorMessages: <HTMLDivElement>null
         }
 
         private ruleData?: IRedirectionRuleData;
+        private validator?: Validator;
 
         constructor(private manager: RedirectionManager, private onSave: () => void) {
 
@@ -159,6 +161,7 @@ module UrlEditor.Options.Redirection {
             }
 
             RuleEditor.elems.slider = RuleEditor.elems.container.parentElement as HTMLDivElement;
+            RuleEditor.elems.errorMessages = Helpers.ge("errorMessages");
 
             RuleEditor.elems.hotKey.addEventListener("keydown", evt => this.handleHotKeyAssignment(evt));
             RuleEditor.elems.container.addEventListener("click", evt => this.handleClick(evt));
@@ -170,6 +173,14 @@ module UrlEditor.Options.Redirection {
 
             RuleEditor.elems.container.querySelectorAll(".params").forEach(e => e.parentElement.removeChild(e));
             RuleEditor.elems.container.querySelectorAll(".strings").forEach(e => e.parentElement.removeChild(e));
+
+            RuleEditor.elems.errorMessages.innerHTML = "";
+            RuleEditor.elems.submit.disabled = true;
+
+            if (this.validator) {
+                // remove all plugins
+                this.validator.clear();
+            }
         }
 
         private populateFields() {
@@ -246,15 +257,15 @@ module UrlEditor.Options.Redirection {
 
         private validateEditFields() {
             const pattern = /(\*|https?|file|ftp):\/\/\/?(\*|\*\.[a-zA-Z0-9.]+|[a-zA-Z0-9.]+)(\*$|\/.+)/;
-            let validator = new Validator("errorMessages");
+            this.validator = new Validator(RuleEditor.elems.errorMessages);
 
-            if (!validator.isNotEmpty(RuleEditor.elems.name) || !validator.isNotEmpty(RuleEditor.elems.urlFilter)) {
+            if (!this.validator.isNotEmpty(RuleEditor.elems.name) || !this.validator.isNotEmpty(RuleEditor.elems.urlFilter)) {
                 return;
             }
 
-            validator.isNumber(RuleEditor.elems.port);
+            this.validator.isNumber(RuleEditor.elems.port);
 
-            let isValidFilter = validator.isValidCustom(
+            let isValidFilter = this.validator.isValidCustom(
                 RuleEditor.elems.urlFilter,
                 val => pattern.test(val),
                 "Invalid filter pattern. Look at: https://developer.chrome.com/extensions/match_patterns");
@@ -262,7 +273,7 @@ module UrlEditor.Options.Redirection {
             if (isValidFilter && RuleEditor.elems.testUrl.value != "") {
                 let redir = new RedirectRule(this.getReplaceData());
 
-                if (validator.isValidCustom(
+                if (this.validator.isValidCustom(
                     RuleEditor.elems.urlFilter,
                     () => redir.isUrlSupported(RuleEditor.elems.testUrl.value),
                     "Filter is not passing on given test url")) {
@@ -272,7 +283,7 @@ module UrlEditor.Options.Redirection {
 
             }
 
-            RuleEditor.elems.submit.disabled = !validator.isValid;
+            RuleEditor.elems.submit.disabled = !this.validator.isValid;
         }
 
         private addDoubleInputFields(buttonElem: HTMLInputElement, className: string, field1Val = "", field2Val = "") {
@@ -361,6 +372,7 @@ module UrlEditor.Options.Redirection {
         public isValid = true;
         public errorMessages: string[] = [];
         private outputElem: HTMLDivElement;
+        private markedFields: HTMLElement[] = [];
 
         constructor(output?: string | HTMLDivElement) {
             this.outputElem = typeof (output) == "string" ? Helpers.ge(output) : output;
@@ -394,6 +406,7 @@ module UrlEditor.Options.Redirection {
                     elem.classList.remove("not_valid");
                 }
                 else {
+                    this.markedFields.push(elem);
                     elem.classList.add("not_valid")
                 }
             }
@@ -407,6 +420,10 @@ module UrlEditor.Options.Redirection {
             }
 
             return valid;
+        }
+
+        clear() {
+            this.markedFields.forEach(f => f.classList.remove("not_valid"));
         }
 
         private addError(msg: string) {
