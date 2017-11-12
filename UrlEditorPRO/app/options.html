@@ -144,6 +144,9 @@
         .setting-value .section {
             margin-top: 10px;
         }
+        .slider .section {
+            margin-top: 0;
+        }
         .section .title {
             font-weight: 600;
         }
@@ -311,10 +314,10 @@
                         <div class="slider">
                             <div class="section">
                                 <div>
-                                    You can create redirection rules which can be applied automatically (whenever browser tries to navigate to specific url) or after given key press.
+                                    You can create redirection rules which can be applied automatically (whenever browser tries to navigate to specific url).
                                 </div>
                                 <div class="section">
-                                    Examples:
+                                    Use cases examples:
                                     <ul>
                                         <li>Your test framework generates URL which contains a lot of redundant params and you want to get rid of them</li>
                                         <li>You want to redirect all localhost requests to some other host</li>
@@ -326,12 +329,11 @@
                                 </ul>
                             </div>
                             <div class="section" id="rules_editor">
-                                <div class="title">Add new rule</div>
                                 <div class="grid small-first-column">
                                     <div><label>Rule name</label><input type="text" value="" name="name" /></div>
                                     <div><label>Url filter</label><input type="text" name="urlFilter" placeholder="e.g. http*://localhost/?*&amp;paramName=*" /></div>
                                     <div><label>Is automatic</label><span><input type="checkbox" name="isAutomatic" checked /></span></div>
-                                    <div><label>Hot-key</label><input type="text" name="hotKey" placeholder="Click here and press key combination" /></div>
+                                    <div style="display: none"><label>Hot-key</label><input type="text" name="hotKey" placeholder="Click here and press key combination" /></div>
                                     <div><label>Protocol</label><input type="text" value="" name="protocol" /></div>
                                     <div><label>Host name</label><input type="text" value="" name="hostname" /></div>
                                     <div><label>Port</label><input type="text" name="port" /></div>

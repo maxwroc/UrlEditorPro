@@ -19,7 +19,7 @@ module UrlEditor {
         switch (msg) {
             case Command.ReloadRedirectionRules:
                 // remove old listeners
-                beforeRequestListeners.forEach(l => chrome.webRequest.onBeforeRedirect.removeListener(l));
+                beforeRequestListeners.forEach(l => chrome.webRequest.onBeforeRequest.removeListener(l));
                 beforeRequestListeners = [];
                 // re-initialize
                 initializeRedirections();
@@ -27,25 +27,39 @@ module UrlEditor {
         }
     })
 
-    // clearing context menu
-    //chrome.webRequest.onBeforeRequest.addListener(() => chrome.contextMenus.removeAll(), { urls: ["*"] });
-
     let beforeRequestListeners = [];
     function initializeRedirections() {
-        let redirect = new RedirectionManager(new Settings(localStorage));
+        let redirect = new RedirectionManager(new Settings(window.localStorage));
 
         redirect.initOnBeforeRequest((urlFilter, name, handler, infoSpec) => {
             beforeRequestListeners.push(r => {
                 return handler(r, false);
-                /*
-                chrome.contextMenus.create({
-                    title: "Redirect: " + name,
-                    contexts: ["browser_action"],
-                    onclick: () => handler(r, true)
-                });
-                */
             });
             chrome.webRequest.onBeforeRequest.addListener(beforeRequestListeners[beforeRequestListeners.length -1], { urls: [urlFilter] }, infoSpec);
+        });
+    }
+
+    function initializeContextMenu() {
+        chrome.contextMenus.removeAll();
+
+        chrome.tabs.getCurrent(tab => {
+            let redirect = new RedirectionManager(new Settings(localStorage));
+            let data = redirect.getData();
+            Object.keys(data).forEach(name => {
+                let rule = new RedirectRule(data[name]);
+                if (rule.isUrlSupported(tab.url)) {
+                    chrome.contextMenus.create({
+                        title: "Redirect: " + name,
+                        contexts: ["browser_action"],
+                        onclick: () => {
+                            let newUrl = rule.getUpdatedUrl(tab.url);
+                            if (tab.url != newUrl) {
+                                chrome.tabs.update(tab.id, { url: newUrl });
+                            }
+                        }
+                    });
+                }
+            })
         });
     }
 
