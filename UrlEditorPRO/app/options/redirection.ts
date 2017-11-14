@@ -40,6 +40,8 @@ module UrlEditor.Options.Redirection {
             case "addRule":
                 ruleEditor.open();
                 break;
+            case "addRuleRegEx":
+                ruleEditor.open(null, true/*advanced*/);
         }
     }
 
@@ -98,10 +100,14 @@ module UrlEditor.Options.Redirection {
 
         }
 
-        open(ruleData?: IRedirectionRuleData) {
+        open(ruleData?: IRedirectionRuleData, advanced = false) {
 
             if (!RuleEditor.elems.name) {
                 this.initializeStaticFields();
+            }
+
+            if (advanced) {
+                RuleEditor.elems.container.classList.add("adv");
             }
 
             this.ruleData = ruleData;
@@ -123,20 +129,20 @@ module UrlEditor.Options.Redirection {
         }
 
         private handleClick(evt: Event) {
-            switch (evt.target) {
-                case RuleEditor.elems.addParam:
+            switch ((<HTMLInputElement>evt.target).name) {
+                case "addParam":
                     this.addDoubleInputFields(RuleEditor.elems.addParam, "params");
                     break;
-                case RuleEditor.elems.addReplaceString:
+                case "addReplaceString":
                     this.addDoubleInputFields(RuleEditor.elems.addReplaceString, "strings");
                     break;
-                case RuleEditor.elems.cancel:
+                case "cancel":
                     this.close();
                     break;
-                case RuleEditor.elems.submit:
+                case "submit":
                     this.save();
                     break;
-                case RuleEditor.elems.deleteRule:
+                case "deleteRule":
                     this.save(true/*deleteCurrentRule*/);
                     break;
             }
@@ -171,6 +177,7 @@ module UrlEditor.Options.Redirection {
         private clearFields() {
             this.ruleData = null;
 
+            RuleEditor.elems.container.classList.remove("adv");
             RuleEditor.elems.container.querySelectorAll(".params").forEach(e => e.parentElement.removeChild(e));
             RuleEditor.elems.container.querySelectorAll(".strings").forEach(e => e.parentElement.removeChild(e));
 

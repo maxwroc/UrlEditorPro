@@ -205,6 +205,13 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
+
+        #rules_editor:not(.adv) > *:first-child > .advanced {
+            display: none;
+        }
+        #rules_editor.adv > *:first-child > *:not(.advanced):not(.both) {
+            display: none;
+        }
     </style>
     <script src="app.js"></script>
     <script src="options.js"></script>
@@ -325,20 +332,29 @@
                                     </ul>
                                 </div>
                                 <div><input type="button" value="Add new rule" name="addRule" /></div>
+                                <div><input type="button" value="Add new RegEx based rule" name="addRuleRegEx" /></div>
                                 <ul class="grid highlihgt-first-column" id="rules_list">
                                 </ul>
                             </div>
                             <div class="section" id="rules_editor">
                                 <div class="grid small-first-column">
-                                    <div><label>Rule name</label><input type="text" value="" name="name" /></div>
-                                    <div><label>Url filter</label><input type="text" name="urlFilter" placeholder="e.g. http*://localhost/?*&amp;paramName=*" /></div>
-                                    <div><label>Is automatic</label><span><input type="checkbox" name="isAutomatic" checked /></span></div>
+                                    <div class="both"><label>Rule name</label><input type="text" value="" name="name" /></div>
+                                    <div class="both"><label>Url filter</label><input type="text" name="urlFilter" placeholder="e.g. http*://localhost/?*&amp;paramName=*" /></div>
+                                    <div class="both"><label>Is automatic</label><span><input type="checkbox" name="isAutomatic" checked /></span></div>
                                     <div style="display: none"><label>Hot-key</label><input type="text" name="hotKey" placeholder="Click here and press key combination" /></div>
                                     <div><label>Protocol</label><input type="text" value="" name="protocol" /></div>
                                     <div><label>Host name</label><input type="text" value="" name="hostname" /></div>
                                     <div><label>Port</label><input type="text" name="port" /></div>
                                     <div><label>Params</label><input type="button" value="Add new param to update" name="addParam" /></div>
                                     <div><label>Replace</label><input type="button" value="Add new string to replace" name="addReplaceString" /></div>
+                                    <div class="advanced"><label>RegExp</label><input type="text" name="regexp" /></div>
+                                    <div class="advanced">
+                                        <label>Type</label>
+                                        <div><input type="radio" name="type" value="replace" checked />Replace matched</div>
+                                        <div><input type="radio" name="type" value="replace_groups" />Replace groups</div>
+                                    </div>
+                                    <div class="advanced replace"><label>Replace string</label><input type="text" name="replaceString" placeholder="e.g. http://localhost/param=$1&test=$2" /></div>
+                                    <div class="advanced replace_groups"><label>Values to insert</label><input type="text" name="replaceString" placeholder="e.g. val1|val2" /></div>
                                 </div>
 
                                 <div class="grid last-row-right small-first-column">
