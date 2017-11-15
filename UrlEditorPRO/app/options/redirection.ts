@@ -145,6 +145,13 @@ module UrlEditor.Options.Redirection {
                 case "deleteRule":
                     this.save(true/*deleteCurrentRule*/);
                     break;
+                case "type":
+                    if ((<HTMLInputElement>evt.target).value == "replace_groups") {
+                        RuleEditor.elems.container.classList.add("r_groups");
+                    }
+                    else {
+                        RuleEditor.elems.container.classList.remove("r_groups");
+                    }
             }
 
             evt.stopPropagation();
@@ -177,7 +184,7 @@ module UrlEditor.Options.Redirection {
         private clearFields() {
             this.ruleData = null;
 
-            RuleEditor.elems.container.classList.remove("adv");
+            RuleEditor.elems.container.classList.remove("adv", "r_groups");
             RuleEditor.elems.container.querySelectorAll(".params").forEach(e => e.parentElement.removeChild(e));
             RuleEditor.elems.container.querySelectorAll(".strings").forEach(e => e.parentElement.removeChild(e));
 
