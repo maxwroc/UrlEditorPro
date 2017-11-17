@@ -31,14 +31,26 @@ interface IBindOnBeforeRequestHandler {
     (filter: string, name: string, callback: (redirData: chrome.webRequest.WebRequestBodyDetails, force: boolean) => chrome.webRequest.BlockingResponse, extraInfoSpec: string[]): void;
 }
 
-interface IRedirectionRuleData {
-    name: string,
-    urlFilter: string,
-    isAutomatic?: boolean;
-    hotKey?: string,
+interface IRedirectionRuleData extends IRuleData{
     protocol?: string,
     hostname?: string,
     port?: number,
     paramsToUpdate?: IMap<string>,
     strReplace?: string[][];
+}
+
+interface IRegExpRuleData extends IRuleData {
+    regExp: string,
+    replaceString: string,
+    replaceValues: {
+        val: string,
+        change?: string
+    }[]
+}
+
+interface IRuleData {
+    name: string,
+    urlFilter: string,
+    isAutomatic?: boolean;
+    hotKey?: string
 }

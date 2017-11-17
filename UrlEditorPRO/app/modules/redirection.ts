@@ -1,5 +1,6 @@
 ///<reference path="settings.ts" />
 ///<reference path="url_parser.ts" />
+///<reference path="regexp.replacer.ts" />
 
 module UrlEditor {
 
@@ -7,7 +8,7 @@ module UrlEditor {
         public urlFilter: string;
         public isAutomatic: boolean;
 
-        constructor(private replaceData: IRedirectionRuleData) {
+        constructor(private replaceData: IRuleData) {
             this.urlFilter = replaceData.urlFilter;
             this.isAutomatic = replaceData.isAutomatic;
         }
@@ -18,28 +19,48 @@ module UrlEditor {
         }
 
         getUpdatedUrl(url: string): string {
+            return (<IRegExpRuleData>this.replaceData).regExp ?
+                this.getUpdatedUrlAdvanced(url, this.replaceData as IRegExpRuleData) :
+                this.getUpdatedUrlSimple(url, this.replaceData as IRedirectionRuleData);
+        }
+
+        private getUpdatedUrlAdvanced(url: string, data: IRegExpRuleData): string {
+            if (data.replaceString) {
+                url = url.replace(new RegExp(data.regExp, "g"), data.replaceString);
+            }
+            else {
+                let r = new RegExpGroupReplacer(data.regExp);
+                url = r.replace(url, (val, index) => {
+
+                });
+            }
+
+            return url;
+        }
+
+        private getUpdatedUrlSimple(url: string, data: IRedirectionRuleData): string {
             let uri = new UrlEditor.Uri(url);
 
-            if (this.replaceData.hostname) {
-                uri.hostname(this.replaceData.hostname);
+            if (data.hostname) {
+                uri.hostname(data.hostname);
             }
 
-            if (this.replaceData.port) {
-                uri.port(this.replaceData.port);
+            if (data.port) {
+                uri.port(data.port);
             }
 
-            if (this.replaceData.protocol) {
-                uri.protocol(this.replaceData.protocol);
+            if (data.protocol) {
+                uri.protocol(data.protocol);
             }
 
-            if (this.replaceData.paramsToUpdate) {
+            if (data.paramsToUpdate) {
                 let urlParams = uri.params();
-                Object.keys(this.replaceData.paramsToUpdate).forEach(name => {
-                    if (this.replaceData.paramsToUpdate[name] == null) {
+                Object.keys(data.paramsToUpdate).forEach(name => {
+                    if (data.paramsToUpdate[name] == null) {
                         delete urlParams[name];
                     }
                     else {
-                        urlParams[name] = [this.replaceData.paramsToUpdate[name]]; // TODO allow to pass multiple values
+                        urlParams[name] = [data.paramsToUpdate[name]]; // TODO allow to pass multiple values
                     }
                 });
                 uri.params(urlParams);
@@ -47,8 +68,8 @@ module UrlEditor {
 
             let result = uri.url();
 
-            if (this.replaceData.strReplace) {
-                this.replaceData.strReplace.forEach(keyValuePair => {
+            if (data.strReplace) {
+                data.strReplace.forEach(keyValuePair => {
                     result = result.replace(keyValuePair[0], keyValuePair[1]);
                 });
             }

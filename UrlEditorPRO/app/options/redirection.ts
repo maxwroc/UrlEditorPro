@@ -95,6 +95,7 @@ module UrlEditor.Options.Redirection {
 
         private ruleData?: IRedirectionRuleData;
         private validator?: Validator;
+        private isAdvanced: boolean;
 
         constructor(private manager: RedirectionManager, private onSave: () => void) {
 
@@ -108,6 +109,7 @@ module UrlEditor.Options.Redirection {
 
             if (advanced) {
                 RuleEditor.elems.container.classList.add("adv");
+                this.isAdvanced = true;
             }
 
             this.ruleData = ruleData;
@@ -183,10 +185,12 @@ module UrlEditor.Options.Redirection {
 
         private clearFields() {
             this.ruleData = null;
+            this.isAdvanced = false;
 
             RuleEditor.elems.container.classList.remove("adv", "r_groups");
             RuleEditor.elems.container.querySelectorAll(".params").forEach(e => e.parentElement.removeChild(e));
             RuleEditor.elems.container.querySelectorAll(".strings").forEach(e => e.parentElement.removeChild(e));
+            RuleEditor.elems.container.querySelector("input[name='type'][value='replace_string']")["checked"] = true;
 
             RuleEditor.elems.errorMessages.innerHTML = "";
             RuleEditor.elems.submit.disabled = true;
