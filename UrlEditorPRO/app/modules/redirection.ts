@@ -31,7 +31,7 @@ module UrlEditor {
             else {
                 let r = new RegExpGroupReplacer(data.regExp);
                 url = r.replace(url, (val, index) => {
-
+                    return val;
                 });
             }
 
