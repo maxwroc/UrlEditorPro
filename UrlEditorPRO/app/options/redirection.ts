@@ -72,7 +72,8 @@ module UrlEditor.Options.Redirection {
 
     class RuleEditor {
 
-        static fieldsToApply = ["name", "urlFilter", "isAutomatic", "hotKey", "protocol", "hostname", "port"];
+        static commonFiledsToApply = ["name", "urlFilter", "isAutomatic"];
+        static fieldsToApply = ["hotKey", "protocol", "hostname", "port"];
         static elems = {
             container: <HTMLDivElement>null,
             testUrl: <HTMLTextAreaElement>null,
@@ -89,9 +90,12 @@ module UrlEditor.Options.Redirection {
             addReplaceString: <HTMLInputElement>null,
             deleteRule: <HTMLInputElement>null,
             cancel: <HTMLInputElement>null,
+            regExp: <HTMLInputElement>null,
             slider: <HTMLDivElement>null,
             errorMessages: <HTMLDivElement>null
         }
+
+        static ReplaceGroupsClassName = "r_groups";
 
         private ruleData?: IRedirectionRuleData;
         private validator?: Validator;
@@ -149,10 +153,10 @@ module UrlEditor.Options.Redirection {
                     break;
                 case "type":
                     if ((<HTMLInputElement>evt.target).value == "replace_groups") {
-                        RuleEditor.elems.container.classList.add("r_groups");
+                        RuleEditor.elems.container.classList.add(RuleEditor.ReplaceGroupsClassName);
                     }
                     else {
-                        RuleEditor.elems.container.classList.remove("r_groups");
+                        RuleEditor.elems.container.classList.remove(RuleEditor.ReplaceGroupsClassName);
                     }
             }
 
@@ -187,7 +191,7 @@ module UrlEditor.Options.Redirection {
             this.ruleData = null;
             this.isAdvanced = false;
 
-            RuleEditor.elems.container.classList.remove("adv", "r_groups");
+            RuleEditor.elems.container.classList.remove("adv", RuleEditor.ReplaceGroupsClassName);
             RuleEditor.elems.container.querySelectorAll(".params").forEach(e => e.parentElement.removeChild(e));
             RuleEditor.elems.container.querySelectorAll(".strings").forEach(e => e.parentElement.removeChild(e));
             RuleEditor.elems.container.querySelector("input[name='type'][value='replace_string']")["checked"] = true;
@@ -203,7 +207,7 @@ module UrlEditor.Options.Redirection {
 
         private populateFields() {
             // populate basic fields
-            RuleEditor.fieldsToApply.forEach(name => {
+            RuleEditor.fieldsToApply.concat(RuleEditor.commonFiledsToApply).forEach(name => {
                 if (this.ruleData && this.ruleData[name] != undefined) {
                     if (RuleEditor.elems[name].type == "checkbox") {
                         RuleEditor.elems[name].checked = this.ruleData[name];
@@ -223,22 +227,62 @@ module UrlEditor.Options.Redirection {
                 }
             });
 
+            // get param replacement fields
             if (this.ruleData && this.ruleData.paramsToUpdate) {
                 Object.keys(this.ruleData.paramsToUpdate).forEach(name =>
                     this.addDoubleInputFields(RuleEditor.elems.addParam, "params", name, this.ruleData.paramsToUpdate[name]));
             }
 
+            // get string replace fields
             if (this.ruleData && this.ruleData.strReplace) {
                 this.ruleData.strReplace.forEach(replaceSet =>
                     this.addDoubleInputFields(RuleEditor.elems.addReplaceString, "strings", replaceSet[0], replaceSet[1]));
             }
 
+            RuleEditor.elems.regExp = RuleEditor.elems.container.querySelector(".advanced input[name='regExp']") as HTMLInputElement;
+
             RuleEditor.elems.deleteRule.disabled = !this.ruleData;
         }
 
-        private getReplaceData(): IRedirectionRuleData {
+        private getRegExpRuleData(): IRegExpRuleData {
+            let result: IRegExpRuleData = {
+                name: "",
+                urlFilter: "",
+                regExp: RuleEditor.elems.regExp.value
+            };
+
+            RuleEditor.commonFiledsToApply.forEach(e => {
+                let value = null;
+                if (RuleEditor.elems[e].type == "checkbox") {
+                    result[e] = !!RuleEditor.elems[e].checked;
+                }
+                else {
+                    if (RuleEditor.elems[e].value != "") {
+                        result[e] = RuleEditor.elems[e].value;
+                    }
+                }
+            });
+
+            // check if groups replacement option is active
+            if (RuleEditor.elems.container.classList.contains(RuleEditor.ReplaceGroupsClassName)) {
+                if (document.activeElement == RuleEditor.elems.regExp) {
+                    // check if we should add fields
+                }
+            }
+            else {
+
+            }
+
+            return result;
+        }
+
+        private getReplaceData(): IRuleData {
+            if (this.isAdvanced) {
+                return this.getRegExpRuleData();
+            }
+
             let result: IRedirectionRuleData = { name: "", urlFilter: "" };
-            RuleEditor.fieldsToApply.forEach(e => {
+            RuleEditor.fieldsToApply.concat(RuleEditor.commonFiledsToApply).forEach(e => {
                 let value = null;
                 if (RuleEditor.elems[e].type == "checkbox") {
                     result[e] = !!RuleEditor.elems[e].checked;
