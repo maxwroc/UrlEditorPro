@@ -263,13 +263,13 @@ module UrlEditor.Options.Redirection {
                 }
             });
 
+            let regExpElem = RuleEditor.elems.regExp;
             // check if groups replacement option is active
             if (RuleEditor.elems.container.classList.contains(RuleEditor.ReplaceGroupsClassName)) {
-                if (document.activeElement == RuleEditor.elems.regExp) {
-                    let elem = RuleEditor.elems.regExp;
-                    let rowGroupValElem = elem.parentElement.nextElementSibling;
+                if (document.activeElement == regExpElem || ["newGroupVal", "replaceString"].indexOf(document.activeElement.getAttribute("name")) != -1) {
+                    let rowGroupValElem = regExpElem.parentElement.nextElementSibling;
 
-                    let r = new RegExpGroupReplacer(elem.value);
+                    let r = new RegExpGroupReplacer(regExpElem.value);
                     // check if we should add fields
                     if (r.groupsCount > 0) {
                         for (let i = 0; i < r.groupsCount; i++) {
@@ -284,6 +284,10 @@ module UrlEditor.Options.Redirection {
                             else {
                                 rowGroupValElem = rowGroupValElem.nextElementSibling;
                             }
+
+                            let val = rowGroupValElem.children[1]["value"];
+                            result.replaceValues = result.replaceValues || [];
+                            result.replaceValues.push(val == "" ? "val" : val);
                         }
                     }
 
@@ -294,7 +298,8 @@ module UrlEditor.Options.Redirection {
                 }
             }
             else {
-
+                let rowStringReplaceElem = regExpElem.parentElement.nextElementSibling;
+                result.replaceString = rowStringReplaceElem.children[1]["value"];
             }
 
             return result;
