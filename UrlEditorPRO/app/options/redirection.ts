@@ -266,24 +266,30 @@ module UrlEditor.Options.Redirection {
             // check if groups replacement option is active
             if (RuleEditor.elems.container.classList.contains(RuleEditor.ReplaceGroupsClassName)) {
                 if (document.activeElement == RuleEditor.elems.regExp) {
-                    // check if we should add fields
                     let elem = RuleEditor.elems.regExp;
+                    let rowGroupValElem = elem.parentElement.nextElementSibling;
+
                     let r = new RegExpGroupReplacer(elem.value);
+                    // check if we should add fields
                     if (r.groupsCount > 0) {
-                        let groupValElem = elem.parentElement.nextElementSibling;
                         for (let i = 0; i < r.groupsCount; i++) {
                             // if there is no next element we need to create it
-                            if (!groupValElem.nextElementSibling || !groupValElem.nextElementSibling.classList.contains("replace_groups")) {
+                            if (!rowGroupValElem.nextElementSibling || !rowGroupValElem.nextElementSibling.classList.contains("replace_groups")) {
                                 let newRow = document.createElement("div");
                                 newRow.className = "advanced replace_groups";
                                 newRow.innerHTML = '<label>Value to insert</label><input type="text" name="newGroupVal" placeholder="e.g. &quot;val&quot; OR parseInt(val) + 1" />';
-                                this.insertAfter(groupValElem.parentElement, newRow, groupValElem);
-                                groupValElem = newRow;
+                                this.insertAfter(rowGroupValElem.parentElement, newRow, rowGroupValElem);
+                                rowGroupValElem = newRow;
                             }
                             else {
-                                groupValElem = groupValElem.nextElementSibling;
+                                rowGroupValElem = rowGroupValElem.nextElementSibling;
                             }
                         }
+                    }
+
+                    // remove redundant fields
+                    while (rowGroupValElem.nextElementSibling && rowGroupValElem.nextElementSibling.classList.contains("replace_groups")) {
+                        rowGroupValElem.parentElement.removeChild(rowGroupValElem.nextElementSibling);
                     }
                 }
             }
