@@ -117,7 +117,7 @@ module UrlEditor.Options.Redirection {
             }
 
             this.ruleData = ruleData;
-            this.populateFields();
+            this.populateFormFields();
 
             RuleEditor.elems.slider.style.left = "-100%";
         }
@@ -205,7 +205,7 @@ module UrlEditor.Options.Redirection {
             }
         }
 
-        private populateFields() {
+        private populateFormFields() {
             // populate basic fields
             RuleEditor.fieldsToApply.concat(RuleEditor.commonFiledsToApply).forEach(name => {
                 if (this.ruleData && this.ruleData[name] != undefined) {
@@ -243,7 +243,7 @@ module UrlEditor.Options.Redirection {
 
             RuleEditor.elems.deleteRule.disabled = !this.ruleData;
         }
-        
+
         private getRegExpRuleData(): IRegExpRuleData {
             let result: IRegExpRuleData = {
                 name: "",
@@ -267,6 +267,24 @@ module UrlEditor.Options.Redirection {
             if (RuleEditor.elems.container.classList.contains(RuleEditor.ReplaceGroupsClassName)) {
                 if (document.activeElement == RuleEditor.elems.regExp) {
                     // check if we should add fields
+                    let elem = RuleEditor.elems.regExp;
+                    let r = new RegExpGroupReplacer(elem.value);
+                    if (r.groupsCount > 0) {
+                        let groupValElem = elem.parentElement.nextElementSibling;
+                        for (let i = 0; i < r.groupsCount; i++) {
+                            // if there is no next element we need to create it
+                            if (!groupValElem.nextElementSibling || !groupValElem.nextElementSibling.classList.contains("replace_groups")) {
+                                let newRow = document.createElement("div");
+                                newRow.className = "advanced replace_groups";
+                                newRow.innerHTML = '<label>Value to insert</label><input type="text" name="newGroupVal" placeholder="e.g. &quot;val&quot; OR parseInt(val) + 1" />';
+                                this.insertAfter(groupValElem.parentElement, newRow, groupValElem);
+                                groupValElem = newRow;
+                            }
+                            else {
+                                groupValElem = groupValElem.nextElementSibling;
+                            }
+                        }
+                    }
                 }
             }
             else {
@@ -274,6 +292,15 @@ module UrlEditor.Options.Redirection {
             }
 
             return result;
+        }
+
+        private insertAfter(parentElem: HTMLElement, newChild: HTMLElement, refChild: Element) {
+            if (refChild.nextElementSibling) {
+                parentElem.insertBefore(newChild, refChild.nextElementSibling);
+            }
+            else {
+                parentElem.appendChild(newChild);
+            }
         }
 
         private getReplaceData(): IRuleData {
@@ -332,17 +359,19 @@ module UrlEditor.Options.Redirection {
                 val => pattern.test(val),
                 "Invalid filter pattern. Look at: https://developer.chrome.com/extensions/match_patterns");
 
-            if (isValidFilter && RuleEditor.elems.testUrl.value != "") {
-                let redir = new RedirectRule(this.getReplaceData());
+            if (isValidFilter) {
+                let data = this.getReplaceData();
+                if (RuleEditor.elems.testUrl.value != "") {
+                    let redir = new RedirectRule(data);
 
-                if (this.validator.isValidCustom(
-                    RuleEditor.elems.urlFilter,
-                    () => redir.isUrlSupported(RuleEditor.elems.testUrl.value),
-                    "Filter is not passing on given test url")) {
+                    if (this.validator.isValidCustom(
+                        RuleEditor.elems.urlFilter,
+                        () => redir.isUrlSupported(RuleEditor.elems.testUrl.value),
+                        "Filter is not passing on given test url")) {
 
                         RuleEditor.elems.resultUrl.textContent = redir.getUpdatedUrl(RuleEditor.elems.testUrl.value);
+                    }
                 }
-
             }
 
             RuleEditor.elems.submit.disabled = !this.validator.isValid;

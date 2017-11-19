@@ -12,6 +12,7 @@ module UrlEditor {
         private patternConverted: string;
 
         public groupsCount = 0;
+        private groupsCountAfterConversion = 0;
 
         private rulePattern = /(\(.*?[^\\]\))/g;
 
@@ -62,7 +63,7 @@ module UrlEditor {
          */
         private getReplaceString(newSubstrings: string[]): string {
             let result = "";
-            for (let i = 1; i <= this.groupsCount; i++) {
+            for (let i = 1; i <= this.groupsCountAfterConversion; i++) {
                 let index = this.resultIndexes.indexOf(i - 1);
                 result += index != -1 ? newSubstrings[index] : "$" + i;
             }
@@ -88,6 +89,8 @@ module UrlEditor {
               groups.push(captured);
 
               index = i + captured.length;
+              this.groupsCount++;
+
               return match;
             });
 
@@ -95,7 +98,7 @@ module UrlEditor {
               groups.push(this.pattern.substr(index));
             }
 
-            this.groupsCount = groups.length;
+            this.groupsCountAfterConversion = groups.length;
 
             this.patternConverted = groups.join("");
         }
