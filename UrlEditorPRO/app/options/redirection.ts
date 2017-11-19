@@ -236,7 +236,11 @@ module UrlEditor.Options.Redirection {
             RuleEditor.elems.deleteRule.disabled = !this.ruleData;
         }
 
-        private getReplaceData(): IRedirectionRuleData {
+        private getAdvancedReplaceData() {
+            
+        }
+
+        private getReplaceData(): IRuleData {
             let result: IRedirectionRuleData = { name: "", urlFilter: "" };
             RuleEditor.fieldsToApply.forEach(e => {
                 let value = null;

@@ -31,6 +31,13 @@ module UrlEditor {
             else {
                 let r = new RegExpGroupReplacer(data.regExp);
                 url = r.replace(url, (val, index) => {
+                    try {
+                        val = eval(data.replaceValues[index])
+                    }
+                    catch(e) {
+                        throw new Error("Failed to process value. " + e.message);
+                    }
+
                     return val;
                 });
             }
