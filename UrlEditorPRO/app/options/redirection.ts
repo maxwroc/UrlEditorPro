@@ -189,15 +189,33 @@ module UrlEditor.Options.Redirection {
 
         private clearFields() {
             this.ruleData = null;
-            this.isAdvanced = false;
 
-            RuleEditor.elems.container.classList.remove("adv", RuleEditor.ReplaceGroupsClassName);
             RuleEditor.elems.container.querySelectorAll(".params").forEach(e => e.parentElement.removeChild(e));
             RuleEditor.elems.container.querySelectorAll(".strings").forEach(e => e.parentElement.removeChild(e));
             RuleEditor.elems.container.querySelector("input[name='type'][value='replace_string']")["checked"] = true;
 
             RuleEditor.elems.errorMessages.innerHTML = "";
             RuleEditor.elems.submit.disabled = true;
+
+            if (this.isAdvanced) {
+                let row = RuleEditor.elems.regExp.parentElement.previousElementSibling;
+                while (row.nextElementSibling) {
+                    let input = row.nextElementSibling.getElementsByTagName("input")[0];
+                    input.value = "";
+                    if (row.nextElementSibling.classList.contains("replace_groups")) {
+                        row.parentElement.removeChild(row.nextElementSibling);
+                    }
+                    else {
+                        row = row.nextElementSibling as HTMLElement;
+                    }
+                }
+
+                let typeReplaceStringRadioElem = RuleEditor.elems.container.querySelector("input[name='type'][value='replace_string']") as HTMLInputElement;
+                typeReplaceStringRadioElem.checked = true;
+
+                this.isAdvanced = false;
+                RuleEditor.elems.container.classList.remove("adv", RuleEditor.ReplaceGroupsClassName);
+            }
 
             if (this.validator) {
                 // remove all plugins
