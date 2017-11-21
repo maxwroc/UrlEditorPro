@@ -9,7 +9,7 @@ var zip =           require('gulp-zip');
 var fs =            require('fs');
 
 gulp.task('build-root', function () {
-    return gulp.src(['UrlEditorPRO/app/popup.ts'])
+    return gulp.src(['UrlEditorPRO/app/popup.ts', 'UrlEditorPRO/app/sandbox.ts'])
         .pipe(typescript({
             noImplicitAny: false,
             target: "es6",
