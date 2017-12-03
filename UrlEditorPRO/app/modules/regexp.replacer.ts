@@ -44,14 +44,16 @@ module UrlEditor {
 
         /**
          * Replaces matched groups with values returned by deleagte
-         * @param subject Replaces matched groups with the result of delegate call
+         * @param subject String in which values will be replaced
          * @param converter Delegate to get value to insert
          */
         private replaceAndConvert(subject: string, converter: IReplaceValueGetter): string {
             let results: string[] = [];
             let match = subject.match(this.pattern);
-            for (let i = 1; i < match.length; i++) {
-                results.push(converter(match[i], i - 1));
+            if (match) {
+                for (let i = 1; i < match.length; i++) {
+                    results.push(converter(match[i], i - 1));
+                }
             }
 
             return this.replace(subject, results);

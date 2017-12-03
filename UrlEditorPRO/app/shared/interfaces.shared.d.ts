@@ -42,7 +42,7 @@ interface IRedirectionRuleData extends IRuleData{
 interface IRegExpRuleData extends IRuleData {
     regExp: string,
     replaceString?: string,
-    replaceValues?: string[]
+    replaceValues?: { func: string, val: string }[]
 }
 
 interface IRuleData {

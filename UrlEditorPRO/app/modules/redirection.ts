@@ -4,9 +4,24 @@
 
 module UrlEditor {
 
+
+
+    let converters: { [name: string]: (val: string, arg: string) => string } = {};
+    converters.replaceWith = (val, arg) => {
+        return arg;
+    }
+    converters.increment = (val, arg) => (parseInt(val) + parseInt(arg)).toString();
+    converters.decrease = (val, arg) => (parseInt(val) - parseInt(arg)).toString();
+    converters.urlEncode = (val) => encodeURIComponent(val);
+    converters.urlDecode = (val) => decodeURIComponent(val);
+    converters.base64Encode = (val) => Helpers.b64EncodeUnicode(val);
+    converters.base64Decode = (val) => Helpers.b64DecodeUnicode(val);
+
     export class RedirectRule {
         public urlFilter: string;
         public isAutomatic: boolean;
+
+        static converters = converters;
 
         constructor(private replaceData: IRuleData) {
             this.urlFilter = replaceData.urlFilter;
@@ -32,7 +47,8 @@ module UrlEditor {
                 let r = new RegExpGroupReplacer(data.regExp);
                 url = r.replace(url, (val, index) => {
                     try {
-                        val = eval(data.replaceValues[index])
+                        let converterData = data.replaceValues[index];
+                        val = RedirectRule.converters[converterData.func](val, converterData.val);
                     }
                     catch(e) {
                         throw new Error("Failed to process value. " + e.message);

@@ -235,33 +235,38 @@ module UrlEditor.Options.Redirection {
             let r = new RegExpGroupReplacer(ruleData.regExp);
             // check if we should add fields
             if (r.groupsCount > 0) {
+
+                ruleData.replaceValues = ruleData.replaceValues || [];
+
                 for (let i = 0; i < r.groupsCount; i++) {
+
                     // if there is no next element we need to create it
-                    if (!rowGroupValElem.nextElementSibling || !rowGroupValElem.nextElementSibling.classList.contains("replace_groups")) {
+                    if (!rowGroupValElem.nextElementSibling ||
+                        // if the next one is not correct type
+                        !rowGroupValElem.nextElementSibling.classList.contains("replace_groups")) {
+
                         let newRow = document.createElement("div");
                         newRow.className = "advanced replace_groups";
                         newRow.innerHTML = `
                         <label>Value</label>
                         <select name="groupFunc">
-                            <option value="">replace with</option>
-                            <option value="increment">increment</option>
-                            <option value="decrement">decrement</option>
-                            <option value="urlencode">urlEncode</option>
-                            <option value="urldecode">urlDecode</option>
-                            <option value="base64encode">base64Encode</option>
-                            <option value="base64decode">base64Decode</option>
+                            ${this.getGroupFunctionOptions()}
                         </select>
                         <input type="text" name="groupVal" />`;
                         this.insertAfter(rowGroupValElem.parentElement, newRow, rowGroupValElem);
                         rowGroupValElem = newRow;
+
+                        ruleData.replaceValues.push({ func: "replaceWith", val: ""});
                     }
                     else {
                         rowGroupValElem = rowGroupValElem.nextElementSibling;
-                    }
 
-                    let val = rowGroupValElem.children[1]["value"];
-                    ruleData.replaceValues = ruleData.replaceValues || [];
-                    ruleData.replaceValues.push(val == "" ? "val" : val);
+                        // add form values to data obj
+                        ruleData.replaceValues.push({
+                            func: rowGroupValElem.children[1]["value"] as string,
+                            val: rowGroupValElem.children[2]["value"] as string
+                        });
+                    }
                 }
             }
 
@@ -269,6 +274,13 @@ module UrlEditor.Options.Redirection {
             while (rowGroupValElem.nextElementSibling && rowGroupValElem.nextElementSibling.classList.contains("replace_groups")) {
                 rowGroupValElem.parentElement.removeChild(rowGroupValElem.nextElementSibling);
             }
+        }
+
+        private getGroupFunctionOptions() {
+            return Object.keys(RedirectRule.converters).reduce(
+                (prev, curr, index, arr) => `${prev}<option value="${curr}">${curr}</option>`,
+                ""
+            );
         }
 
         private insertAfter(parentElem: HTMLElement, newChild: HTMLElement, refChild: Element) {
