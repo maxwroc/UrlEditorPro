@@ -25,9 +25,13 @@ module UrlEditor {
          * @param subject String in which values will be replaced
          * @param replaceValues Values to insert or delegate
          */
-        replace(subject: string, replaceValues: string[] | IReplaceValueGetter): string {
+        replace(subject: string, replaceValues: string[] | IReplaceValueGetter, replaceString?: string): string {
             if (typeof replaceValues == "function") {
-                return this.replaceAndConvert(subject, replaceValues as IReplaceValueGetter)
+                replaceValues = this.getConvertedValues(subject, replaceValues as IReplaceValueGetter)
+            }
+
+            if (typeof replaceString != "undefined" && replaceString !== "") {
+                return replaceString.replace(/\$([0-9]+)/, (matched, val) => replaceValues[val - 1]);
             }
 
             return this.replaceMatchedWithValues(subject, replaceValues);
@@ -47,7 +51,7 @@ module UrlEditor {
          * @param subject String in which values will be replaced
          * @param converter Delegate to get value to insert
          */
-        private replaceAndConvert(subject: string, converter: IReplaceValueGetter): string {
+        private getConvertedValues(subject: string, converter: IReplaceValueGetter): string[] {
             let results: string[] = [];
             let match = subject.match(this.pattern);
             if (match) {
@@ -56,7 +60,7 @@ module UrlEditor {
                 }
             }
 
-            return this.replace(subject, results);
+            return results;
         }
 
         /**
