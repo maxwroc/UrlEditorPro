@@ -27,8 +27,6 @@ module UrlEditor.Options.Redirection {
         static commonFiledsToApply = ["name", "urlFilter", "isAutomatic"];
         static fieldsToApply = ["hotKey", "protocol", "hostname", "port"];
 
-        static ReplaceGroupsClassName = "r_groups";
-
         private ruleData?: IRedirectionRuleData;
         private validator?: Validator;
         private isAdvanced: boolean;
@@ -83,13 +81,6 @@ module UrlEditor.Options.Redirection {
                 case "deleteRule":
                     this.save(true/*deleteCurrentRule*/);
                     break;
-                case "type":
-                    if ((<HTMLInputElement>evt.target).value == "replace_groups") {
-                        elems.container.classList.add(RuleEditor.ReplaceGroupsClassName);
-                    }
-                    else {
-                        elems.container.classList.remove(RuleEditor.ReplaceGroupsClassName);
-                    }
             }
 
             evt.stopPropagation();
@@ -124,7 +115,6 @@ module UrlEditor.Options.Redirection {
 
             elems.container.querySelectorAll(".params").forEach(e => e.parentElement.removeChild(e));
             elems.container.querySelectorAll(".strings").forEach(e => e.parentElement.removeChild(e));
-            elems.container.querySelector("input[name='type'][value='replace_string']")["checked"] = true;
 
             elems.errorMessages.innerHTML = "";
             elems.submit.disabled = true;
@@ -142,11 +132,8 @@ module UrlEditor.Options.Redirection {
                     }
                 }
 
-                let typeReplaceStringRadioElem = elems.container.querySelector("input[name='type'][value='replace_string']") as HTMLInputElement;
-                typeReplaceStringRadioElem.checked = true;
-
                 this.isAdvanced = false;
-                elems.container.classList.remove("adv", RuleEditor.ReplaceGroupsClassName);
+                elems.container.classList.remove("adv");
             }
 
             if (this.validator) {
@@ -214,23 +201,19 @@ module UrlEditor.Options.Redirection {
             });
 
             let regExpElem = elems.regExp;
-            // check if groups replacement option is active
-            if (elems.container.classList.contains(RuleEditor.ReplaceGroupsClassName)) {
-                if (document.activeElement == regExpElem || ["newGroupVal", "replaceString"].indexOf(document.activeElement.getAttribute("name")) != -1) {
-                    this.handleRegExChangeForGroupReplacement(result);
-                }
-            }
-            else {
-                let rowStringReplaceElem = regExpElem.parentElement.nextElementSibling;
-                result.replaceString = rowStringReplaceElem.children[1]["value"];
+
+            if (document.activeElement == regExpElem || // if someone is editing regex rule
+                // or changing replace values
+                ["newGroupVal", "replaceString"].indexOf(document.activeElement.getAttribute("name")) != -1) {
+                this.updateGroupReplacementDataAndFields(result);
             }
 
             return result;
         }
 
-        private handleRegExChangeForGroupReplacement(ruleData: IRegExpRuleData) {
+        private updateGroupReplacementDataAndFields(ruleData: IRegExpRuleData) {
             let regExpElem = elems.regExp;
-            let rowGroupValElem = regExpElem.parentElement.nextElementSibling;
+            let rowGroupValElem = regExpElem.parentElement;
 
             let r = new RegExpGroupReplacer(ruleData.regExp);
             // check if we should add fields
@@ -259,7 +242,7 @@ module UrlEditor.Options.Redirection {
                         ruleData.replaceValues.push({ func: "replaceWith", val: ""});
                     }
                     else {
-                        rowGroupValElem = rowGroupValElem.nextElementSibling;
+                        rowGroupValElem = rowGroupValElem.nextElementSibling as HTMLElement;
 
                         // add form values to data obj
                         ruleData.replaceValues.push({

@@ -212,12 +212,6 @@
         #rules_editor.adv > *:first-child > *:not(.advanced):not(.both) {
             display: none;
         }
-        #rules_editor.r_groups .replace_string {
-            display: none;
-        }
-        #rules_editor:not(.r_groups) .replace_groups {
-            display: none;
-        }
     </style>
     <script src="app.js"></script>
     <script src="options.js"></script>
@@ -347,11 +341,6 @@
                                     <div class="both"><label>Rule name</label><input type="text" value="asdasdasdas" name="name" /></div>
                                     <div class="both"><label>Url filter</label><input type="text" name="urlFilter" placeholder="e.g. http*://localhost/?*&amp;paramName=*" value="http://l/*" /></div>
                                     <div class="both"><label>Is automatic</label><span><input type="checkbox" name="isAutomatic" checked /></span></div>
-                                    <div class="advanced">
-                                        <label>Type</label>
-                                        <div><input type="radio" name="type" value="replace_string" checked />Replace matched</div>
-                                        <div><input type="radio" name="type" value="replace_groups" />Replace groups</div>
-                                    </div>
                                     <div style="display: none"><label>Hot-key</label><input type="text" name="hotKey" placeholder="Click here and press key combination" /></div>
                                     <div><label>Protocol</label><input type="text" value="" name="protocol" /></div>
                                     <div><label>Host name</label><input type="text" value="" name="hostname" /></div>
@@ -359,7 +348,7 @@
                                     <div><label>Params</label><input type="button" value="Add new param to update" name="addParam" /></div>
                                     <div><label>Replace</label><input type="button" value="Add new string to replace" name="addReplaceString" /></div>
                                     <div class="advanced"><label>RegExp</label><input type="text" name="regExp" placeholder="e.g. .*oldName=([^&amp;]+).*paramTest=([0-9]+)" value="(.*)" /></div>
-                                    <div class="advanced replace_string"><label>Replace string</label><input type="text" name="replaceString" placeholder="e.g. http://localhost/param=$1&amp;test=$2" /></div>
+                                    <div class="advanced"><label>Replace string</label><input type="text" name="replaceString" placeholder="e.g. http://localhost/param=$1&amp;test=$2" /></div>
                                 </div>
 
                                 <div class="grid last-row-right small-first-column">
