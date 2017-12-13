@@ -18,6 +18,7 @@ module UrlEditor.Options.Redirection {
         deleteRule: <HTMLInputElement>null,
         cancel: <HTMLInputElement>null,
         regExp: <HTMLInputElement>null,
+        replaceString: <HTMLInputElement>null,
         slider: <HTMLDivElement>null,
         errorMessages: <HTMLDivElement>null
     };
@@ -204,8 +205,12 @@ module UrlEditor.Options.Redirection {
 
             if (document.activeElement == regExpElem || // if someone is editing regex rule
                 // or changing replace values
-                ["newGroupVal", "replaceString"].indexOf(document.activeElement.getAttribute("name")) != -1) {
+                ["groupVal", "replaceString"].indexOf(document.activeElement.getAttribute("name")) != -1) {
                 this.updateGroupReplacementDataAndFields(result);
+            }
+
+            if (elems.replaceString.value != "") {
+                result.replaceString = elems.replaceString.value;
             }
 
             return result;

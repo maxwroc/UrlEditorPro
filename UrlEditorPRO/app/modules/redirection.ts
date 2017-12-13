@@ -40,12 +40,11 @@ module UrlEditor {
         }
 
         private getUpdatedUrlAdvanced(url: string, data: IRegExpRuleData): string {
-            if (data.replaceString) {
-                url = url.replace(new RegExp(data.regExp, "g"), data.replaceString);
-            }
-            else {
-                let r = new RegExpGroupReplacer(data.regExp);
-                url = r.replace(url, (val, index) => {
+            //url = url.replace(new RegExp(data.regExp, "g"), data.replaceString);
+            let r = new RegExpGroupReplacer(data.regExp);
+            url = r.replace(
+                url,
+                (val, index) => {
                     try {
                         let converterData = data.replaceValues[index];
                         val = RedirectRule.converters[converterData.func](val, converterData.val);
@@ -55,8 +54,8 @@ module UrlEditor {
                     }
 
                     return val;
-                });
-            }
+                },
+                data.replaceString);
 
             return url;
         }
