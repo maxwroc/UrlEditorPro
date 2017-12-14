@@ -16,7 +16,7 @@ module UrlEditor {
 
         private rulePattern = /(\(.*?[^\\]\))/g;
 
-        constructor(private pattern: string) {
+        constructor(private pattern: string, private isGlobal: boolean) {
             this.addRemaningPatternGroups();
         }
 
@@ -43,7 +43,7 @@ module UrlEditor {
          * @param replaceValues Values to insert
          */
         private replaceMatchedWithValues(subject: string, values: string[]) {
-            return subject.replace(new RegExp(this.patternConverted, "g"), this.getReplaceString(values));
+            return subject.replace(new RegExp(this.patternConverted, this.isGlobal ? "g" : ""), this.getReplaceString(values));
         }
 
         /**

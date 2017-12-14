@@ -41,6 +41,7 @@ interface IRedirectionRuleData extends IRuleData{
 
 interface IRegExpRuleData extends IRuleData {
     regExp: string,
+    isRegExpGlobal: boolean,
     replaceString?: string,
     replaceValues?: { func: string, val: string }[]
 }

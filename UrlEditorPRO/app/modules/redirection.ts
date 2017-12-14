@@ -7,6 +7,7 @@ module UrlEditor {
 
 
     let converters: { [name: string]: (val: string, arg: string) => string } = {};
+    converters.leaveAsIs = val => val;
     converters.replaceWith = (val, arg) => {
         return arg;
     }
@@ -41,7 +42,7 @@ module UrlEditor {
 
         private getUpdatedUrlAdvanced(url: string, data: IRegExpRuleData): string {
             //url = url.replace(new RegExp(data.regExp, "g"), data.replaceString);
-            let r = new RegExpGroupReplacer(data.regExp);
+            let r = new RegExpGroupReplacer(data.regExp, data.isRegExpGlobal);
             url = r.replace(
                 url,
                 (val, index) => {

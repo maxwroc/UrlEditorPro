@@ -18,6 +18,7 @@ module UrlEditor.Options.Redirection {
         deleteRule: <HTMLInputElement>null,
         cancel: <HTMLInputElement>null,
         regExp: <HTMLInputElement>null,
+        isRegExpGlobal: <HTMLInputElement>null,
         replaceString: <HTMLInputElement>null,
         slider: <HTMLDivElement>null,
         errorMessages: <HTMLDivElement>null
@@ -186,7 +187,8 @@ module UrlEditor.Options.Redirection {
             let result: IRegExpRuleData = {
                 name: "",
                 urlFilter: "",
-                regExp: elems.regExp.value
+                regExp: elems.regExp.value,
+                isRegExpGlobal: elems.isRegExpGlobal.checked
             };
 
             RuleEditor.commonFiledsToApply.forEach(e => {
@@ -220,7 +222,7 @@ module UrlEditor.Options.Redirection {
             let regExpElem = elems.regExp;
             let rowGroupValElem = regExpElem.parentElement;
 
-            let r = new RegExpGroupReplacer(ruleData.regExp);
+            let r = new RegExpGroupReplacer(ruleData.regExp, ruleData.isRegExpGlobal);
             // check if we should add fields
             if (r.groupsCount > 0) {
 
@@ -331,13 +333,18 @@ module UrlEditor.Options.Redirection {
 
             this.validator.isNumber(elems.port);
 
-            let isValidFilter = this.validator.isValidCustom(
+            let proceed = this.validator.isValidCustom(
                 elems.urlFilter,
                 val => pattern.test(val),
                 "Invalid filter pattern. Look at: https://developer.chrome.com/extensions/match_patterns");
 
-            if (isValidFilter) {
+            if (this.isAdvanced) {
+                proceed = this.validator.isNotEmpty(elems.regExp) && proceed;
+            }
+
+            if (proceed) {
                 let data = this.getReplaceData();
+
                 if (elems.testUrl.value != "") {
                     let redir = new RedirectRule(data);
 
