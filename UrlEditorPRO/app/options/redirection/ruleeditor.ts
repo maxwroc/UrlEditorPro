@@ -43,15 +43,19 @@ module UrlEditor.Options.Redirection {
                 this.initializeStaticFields();
             }
 
-            if (advanced) {
+            if (advanced || (ruleData && (ruleData as IRegExpRuleData).regExp)) {
                 elems.container.classList.add("adv");
                 this.isAdvanced = true;
             }
 
             this.ruleData = ruleData;
-            this.populateFormFields();
+
+            if (this.ruleData) {
+                this.populateFormFields(this.ruleData);
+            }
 
             elems.slider.style.left = "-100%";
+            elems.deleteRule.disabled = !this.ruleData;
         }
 
         close() {
@@ -144,15 +148,24 @@ module UrlEditor.Options.Redirection {
             }
         }
 
-        private populateFormFields() {
+        private populateFormFields(ruleData: IRedirectionRuleData | IRegExpRuleData) {
+            let regExpRuleAlias = ruleData as IRegExpRuleData;
+            let redirRuleAlias = ruleData as IRedirectionRuleData;
+
+            let fieldsToPopulate = RuleEditor.fieldsToApply.concat(RuleEditor.commonFiledsToApply);
+
+            if (this.isAdvanced) {
+                fieldsToPopulate.push("regExp", "isRegExpGlobal", "replaceString");
+            }
+
             // populate basic fields
-            RuleEditor.fieldsToApply.concat(RuleEditor.commonFiledsToApply).forEach(name => {
-                if (this.ruleData && this.ruleData[name] != undefined) {
+            fieldsToPopulate.forEach(name => {
+                if (ruleData[name] != undefined) {
                     if (elems[name].type == "checkbox") {
-                        elems[name].checked = this.ruleData[name];
+                        elems[name].checked = ruleData[name];
                     }
                     else {
-                        elems[name].value = this.ruleData[name];
+                        elems[name].value = ruleData[name];
                     }
                 }
                 else {
@@ -161,26 +174,22 @@ module UrlEditor.Options.Redirection {
                         elems[name].checked = false;
                     }
                     else {
-                        //RuleEditor.elems[name].value = "";
+                        elems[name].value = "";
                     }
                 }
             });
 
             // get param replacement fields
-            if (this.ruleData && this.ruleData.paramsToUpdate) {
-                Object.keys(this.ruleData.paramsToUpdate).forEach(name =>
-                    this.addDoubleInputFields(elems.addParam, "params", name, this.ruleData.paramsToUpdate[name]));
+            if (redirRuleAlias.paramsToUpdate) {
+                Object.keys(redirRuleAlias.paramsToUpdate).forEach(name =>
+                    this.addDoubleInputFields(elems.addParam, "params", name, redirRuleAlias.paramsToUpdate[name]));
             }
 
             // get string replace fields
-            if (this.ruleData && this.ruleData.strReplace) {
-                this.ruleData.strReplace.forEach(replaceSet =>
+            if (redirRuleAlias.strReplace) {
+                redirRuleAlias.strReplace.forEach(replaceSet =>
                     this.addDoubleInputFields(elems.addReplaceString, "strings", replaceSet[0], replaceSet[1]));
             }
-
-            elems.regExp = elems.container.querySelector(".advanced input[name='regExp']") as HTMLInputElement;
-
-            elems.deleteRule.disabled = !this.ruleData;
         }
 
         private getRegExpRuleData(): IRegExpRuleData {
