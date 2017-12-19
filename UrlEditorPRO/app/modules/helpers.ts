@@ -134,44 +134,6 @@ module UrlEditor.Helpers {
         }
     }
 
-    function safeEvalInternal() {
-        let callbackHandler = null;
-        let loaded = false;
-
-        let iframe = document.createElement("iframe");
-        iframe.src = "sandbox.html";
-        iframe.addEventListener("load", () => loaded = true);
-        iframe.style.display = "none";
-        document.body.appendChild(iframe);
-
-        let postMessage = m => iframe.contentWindow.postMessage({ command: "eval", value: m }, '*');
-
-        window.addEventListener('message', function (event) {
-            if (event.data) {
-                callbackHandler(event.data.result, event.data.error);
-            }
-        });
-
-        return (stringToEvaluate: string, callback: (result: any, error?: string) => void) => {
-            callbackHandler = callback;
-
-            // check if we should wait for iframe to load
-            if (loaded) {
-                postMessage(stringToEvaluate);
-            }
-            else {
-                let counter = 0;
-                // waiting for the iframe to load
-                let interval = setInterval(() => {
-                    if (loaded) {
-                        postMessage(stringToEvaluate);
-                        clearInterval(interval);
-                    }
-                }, 20);
-            }
-        }
-    }
-
     function lazyInit<T extends Function>(func: () => T): T {
         let initializedFunc: T;
         return (<any>((...args: any[]) => {
@@ -182,9 +144,4 @@ module UrlEditor.Helpers {
             return initializedFunc.apply(this, args);
         })) as T
     }
-
-    /**
-     * Evaluates given string in safe env - where Chrome API is not available.
-     */
-    export let safeEval = lazyInit(safeEvalInternal);
 }
