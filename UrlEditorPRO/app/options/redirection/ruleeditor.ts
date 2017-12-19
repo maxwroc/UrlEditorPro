@@ -119,6 +119,9 @@ module UrlEditor.Options.Redirection {
         private clearFields() {
             this.ruleData = null;
 
+            elems.name.value = "";
+            elems.urlFilter.value = "";
+
             elems.container.querySelectorAll(".params").forEach(e => e.parentElement.removeChild(e));
             elems.container.querySelectorAll(".strings").forEach(e => e.parentElement.removeChild(e));
 
