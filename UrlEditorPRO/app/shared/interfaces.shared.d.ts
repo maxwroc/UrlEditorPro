@@ -43,7 +43,12 @@ interface IRegExpRuleData extends IRuleData {
     regExp: string,
     isRegExpGlobal: boolean,
     replaceString?: string,
-    replaceValues?: { func: string, val: string }[]
+    replaceValues?: IGroupReplaceValue[]
+}
+
+interface IGroupReplaceValue {
+    func: string,
+    val: string
 }
 
 interface IRuleData {

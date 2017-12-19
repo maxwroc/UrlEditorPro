@@ -31,7 +31,7 @@ module UrlEditor {
             }
 
             if (typeof replaceString != "undefined" && replaceString !== "") {
-                return replaceString.replace(/\$([0-9]+)/, (matched, val) => replaceValues[val - 1]);
+                return replaceString.replace(/\$([0-9]+)/g, (matched, val) => replaceValues[val - 1]);
             }
 
             return this.replaceMatchedWithValues(subject, replaceValues);

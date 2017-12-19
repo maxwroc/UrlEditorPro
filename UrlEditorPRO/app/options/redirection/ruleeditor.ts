@@ -179,16 +179,23 @@ module UrlEditor.Options.Redirection {
                 }
             });
 
-            // get param replacement fields
-            if (redirRuleAlias.paramsToUpdate) {
-                Object.keys(redirRuleAlias.paramsToUpdate).forEach(name =>
-                    this.addDoubleInputFields(elems.addParam, "params", name, redirRuleAlias.paramsToUpdate[name]));
+            if (this.isAdvanced) {
+                if (regExpRuleAlias.replaceValues) {
+                    this.getGroupReplacementDataAndUpdateFields(regExpRuleAlias);
+                }
             }
+            else {
+                // get param replacement fields
+                if (redirRuleAlias.paramsToUpdate) {
+                    Object.keys(redirRuleAlias.paramsToUpdate).forEach(name =>
+                        this.addDoubleInputFields(elems.addParam, "params", name, redirRuleAlias.paramsToUpdate[name]));
+                }
 
-            // get string replace fields
-            if (redirRuleAlias.strReplace) {
-                redirRuleAlias.strReplace.forEach(replaceSet =>
-                    this.addDoubleInputFields(elems.addReplaceString, "strings", replaceSet[0], replaceSet[1]));
+                // get string replace fields
+                if (redirRuleAlias.strReplace) {
+                    redirRuleAlias.strReplace.forEach(replaceSet =>
+                        this.addDoubleInputFields(elems.addReplaceString, "strings", replaceSet[0], replaceSet[1]));
+                }
             }
         }
 
@@ -215,9 +222,9 @@ module UrlEditor.Options.Redirection {
             let regExpElem = elems.regExp;
 
             if (document.activeElement == regExpElem || // if someone is editing regex rule
-                // or changing replace values
-                ["groupVal", "replaceString"].indexOf(document.activeElement.getAttribute("name")) != -1) {
-                this.updateGroupReplacementDataAndFields(result);
+                // or changing replace values or saves
+                ["groupVal", "replaceString", "submit"].indexOf(document.activeElement.getAttribute("name")) != -1) {
+                result.replaceValues = this.getGroupReplacementDataAndUpdateFields(result);
             }
 
             if (elems.replaceString.value != "") {
@@ -227,15 +234,16 @@ module UrlEditor.Options.Redirection {
             return result;
         }
 
-        private updateGroupReplacementDataAndFields(ruleData: IRegExpRuleData) {
+        private getGroupReplacementDataAndUpdateFields(ruleData: IRegExpRuleData): IGroupReplaceValue[] {
             let regExpElem = elems.regExp;
             let rowGroupValElem = regExpElem.parentElement;
+            let result: IGroupReplaceValue[];
 
             let r = new RegExpGroupReplacer(ruleData.regExp, ruleData.isRegExpGlobal);
             // check if we should add fields
             if (r.groupsCount > 0) {
 
-                ruleData.replaceValues = ruleData.replaceValues || [];
+                result = result || [];
 
                 for (let i = 0; i < r.groupsCount; i++) {
 
@@ -244,24 +252,31 @@ module UrlEditor.Options.Redirection {
                         // if the next one is not correct type
                         !rowGroupValElem.nextElementSibling.classList.contains("replace_groups")) {
 
+                        let funcName: string;
+                        let funcArg: string;
+                        if (ruleData.replaceValues && ruleData.replaceValues[i]) {
+                            funcName = ruleData.replaceValues[i].func;
+                            funcArg = ruleData.replaceValues[i].val;
+                        }
+
                         let newRow = document.createElement("div");
                         newRow.className = "advanced replace_groups";
                         newRow.innerHTML = `
                         <label>Value</label>
                         <select name="groupFunc">
-                            ${this.getGroupFunctionOptions()}
+                            ${this.getGroupFunctionOptions(funcName)}
                         </select>
-                        <input type="text" name="groupVal" />`;
+                        <input type="text" name="groupVal" value="${funcArg}" />`;
                         this.insertAfter(rowGroupValElem.parentElement, newRow, rowGroupValElem);
                         rowGroupValElem = newRow;
 
-                        ruleData.replaceValues.push({ func: "replaceWith", val: ""});
+                        result.push({ func: "replaceWith", val: ""});
                     }
                     else {
                         rowGroupValElem = rowGroupValElem.nextElementSibling as HTMLElement;
 
                         // add form values to data obj
-                        ruleData.replaceValues.push({
+                        result.push({
                             func: rowGroupValElem.children[1]["value"] as string,
                             val: rowGroupValElem.children[2]["value"] as string
                         });
@@ -273,11 +288,13 @@ module UrlEditor.Options.Redirection {
             while (rowGroupValElem.nextElementSibling && rowGroupValElem.nextElementSibling.classList.contains("replace_groups")) {
                 rowGroupValElem.parentElement.removeChild(rowGroupValElem.nextElementSibling);
             }
+
+            return result;
         }
 
-        private getGroupFunctionOptions() {
+        private getGroupFunctionOptions(selectedFunction?: string) {
             return Object.keys(RedirectRule.converters).reduce(
-                (prev, curr, index, arr) => `${prev}<option value="${curr}">${curr}</option>`,
+                (prev, curr, index, arr) => `${prev}<option value="${curr}"${curr == selectedFunction ? " selected" : ""}>${curr}</option>`,
                 ""
             );
         }
