@@ -5,29 +5,33 @@ module UrlEditor.Options.Redirection {
         container: <HTMLDivElement>null,
         testUrl: <HTMLTextAreaElement>null,
         resultUrl: <HTMLTextAreaElement>null,
+
         name: <HTMLInputElement>null,
         urlFilter: <HTMLInputElement>null,
         isAutomatic: <HTMLInputElement>null,
+
         hotKey: <HTMLInputElement>null,
         protocol: <HTMLInputElement>null,
         hostname: <HTMLInputElement>null,
         port: <HTMLInputElement>null,
-        submit: <HTMLInputElement>null,
         addParam: <HTMLInputElement>null,
         addReplaceString: <HTMLInputElement>null,
-        deleteRule: <HTMLInputElement>null,
-        cancel: <HTMLInputElement>null,
+
         regExp: <HTMLInputElement>null,
         isRegExpGlobal: <HTMLInputElement>null,
         replaceString: <HTMLInputElement>null,
+
+        submit: <HTMLInputElement>null,
+        deleteRule: <HTMLInputElement>null,
+        cancel: <HTMLInputElement>null,
         slider: <HTMLDivElement>null,
         errorMessages: <HTMLDivElement>null
     };
 
-    export class RuleEditor {
+    const commonFileds = ["name", "urlFilter", "isAutomatic"];
+    const simpleRuleFields = ["hotKey", "protocol", "hostname", "port"];
 
-        static commonFiledsToApply = ["name", "urlFilter", "isAutomatic"];
-        static fieldsToApply = ["hotKey", "protocol", "hostname", "port"];
+    export class RuleEditor {
 
         private ruleData?: IRedirectionRuleData;
         private validator?: Validator;
@@ -155,7 +159,7 @@ module UrlEditor.Options.Redirection {
             let regExpRuleAlias = ruleData as IRegExpRuleData;
             let redirRuleAlias = ruleData as IRedirectionRuleData;
 
-            let fieldsToPopulate = RuleEditor.fieldsToApply.concat(RuleEditor.commonFiledsToApply);
+            let fieldsToPopulate = simpleRuleFields.concat(commonFileds);
 
             if (this.isAdvanced) {
                 fieldsToPopulate.push("regExp", "isRegExpGlobal", "replaceString");
@@ -210,7 +214,7 @@ module UrlEditor.Options.Redirection {
                 isRegExpGlobal: elems.isRegExpGlobal.checked
             };
 
-            RuleEditor.commonFiledsToApply.forEach(e => {
+            commonFileds.forEach(e => {
                 let value = null;
                 if (elems[e].type == "checkbox") {
                     result[e] = !!elems[e].checked;
@@ -317,7 +321,7 @@ module UrlEditor.Options.Redirection {
             }
 
             let result: IRedirectionRuleData = { name: "", urlFilter: "" };
-            RuleEditor.fieldsToApply.concat(RuleEditor.commonFiledsToApply).forEach(e => {
+            simpleRuleFields.concat(commonFileds).forEach(e => {
                 let value = null;
                 if (elems[e].type == "checkbox") {
                     result[e] = !!elems[e].checked;
