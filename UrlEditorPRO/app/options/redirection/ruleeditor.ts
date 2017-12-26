@@ -14,6 +14,7 @@ module UrlEditor.Options.Redirection {
         protocol: <HTMLInputElement>null,
         hostname: <HTMLInputElement>null,
         port: <HTMLInputElement>null,
+        path: <HTMLInputElement>null,
         addParam: <HTMLInputElement>null,
         addReplaceString: <HTMLInputElement>null,
 
@@ -29,7 +30,7 @@ module UrlEditor.Options.Redirection {
     };
 
     const commonFileds = ["name", "urlFilter", "isAutomatic"];
-    const simpleRuleFields = ["hotKey", "protocol", "hostname", "port"];
+    const simpleRuleFields = ["hotKey", "protocol", "hostname", "port", "path"];
 
     export class RuleEditor {
 

@@ -35,6 +35,7 @@ interface IRedirectionRuleData extends IRuleData{
     protocol?: string,
     hostname?: string,
     port?: number,
+    path?: string,
     paramsToUpdate?: IMap<string>,
     strReplace?: string[][];
 }

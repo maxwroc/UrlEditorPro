@@ -72,6 +72,10 @@ module UrlEditor {
                 uri.port(data.port);
             }
 
+            if (data.path) {
+                uri.pathname(data.path);
+            }
+
             if (data.protocol) {
                 uri.protocol(data.protocol);
             }
