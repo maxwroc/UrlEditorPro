@@ -123,11 +123,13 @@ module UrlEditor.Options.Redirection {
         private clearFields() {
             this.ruleData = null;
 
-            elems.name.value = "";
-            elems.urlFilter.value = "";
+            commonFileds.concat(simpleRuleFields).forEach(name => {
+                if (elems[name].checked === true) {
+                    elems[name].checked = false;
+                }
 
-            elems.container.querySelectorAll(".params").forEach(e => e.parentElement.removeChild(e));
-            elems.container.querySelectorAll(".strings").forEach(e => e.parentElement.removeChild(e));
+                elems[name].value = "";
+            });
 
             elems.errorMessages.innerHTML = "";
             elems.submit.disabled = true;
@@ -147,6 +149,10 @@ module UrlEditor.Options.Redirection {
 
                 this.isAdvanced = false;
                 elems.container.classList.remove("adv");
+            }
+            else {
+                elems.container.querySelectorAll(".params").forEach(e => e.parentElement.removeChild(e));
+                elems.container.querySelectorAll(".strings").forEach(e => e.parentElement.removeChild(e));
             }
 
             if (this.validator) {
