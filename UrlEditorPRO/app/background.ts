@@ -39,15 +39,18 @@ module UrlEditor {
         });
     }
 
-    function initializeContextMenu() {
+    function initializeContextMenu(tabId: number) {
         chrome.contextMenus.removeAll();
 
-        chrome.tabs.getCurrent(tab => {
+        chrome.tabs.get(tabId, tab => {
             let redirect = new RedirectionManager(new Settings(localStorage));
             let data = redirect.getData();
+
             Object.keys(data).forEach(name => {
                 let rule = new RedirectRule(data[name]);
-                if (rule.isUrlSupported(tab.url)) {
+
+                // skip all autromatic rules and ones which are not for the current url
+                if (!rule.isAutomatic && rule.isUrlSupported(tab.url)) {
                     chrome.contextMenus.create({
                         title: "Redirect: " + name,
                         contexts: ["browser_action"],
@@ -62,6 +65,14 @@ module UrlEditor {
             })
         });
     }
+
+    chrome.tabs.onActivated.addListener(activeInfo => initializeContextMenu(activeInfo.tabId));
+    chrome.tabs.onUpdated.addListener((tabId, changedInfo) => {
+        // check if url of the current tab has changed
+        if (changedInfo.url) {
+            initializeContextMenu(tabId);
+        }
+    });
 
     initializeRedirections();
 }
