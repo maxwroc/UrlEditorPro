@@ -54,10 +54,12 @@ module UrlEditor.Options.Redirection {
 
             let nameElem = document.createElement("div");
             nameElem.textContent = name;
+            nameElem.title = nameElem.textContent;
             li.appendChild(nameElem);
 
             let filterElem = document.createElement("div");
             filterElem.textContent = data[name].urlFilter;
+            filterElem.title = filterElem.textContent;
             li.appendChild(filterElem);
 
             li.addEventListener("click", evt => {
