@@ -32,7 +32,7 @@ gulp.task('build-options', function () {
 });
 
 gulp.task('build-background', function () {
-    return gulp.src(['UrlEditorPRO/app/modules/redirection.ts', 'UrlEditorPRO/app/background.ts'])
+    return gulp.src(['UrlEditorPRO/app/modules/tracking.ts', 'UrlEditorPRO/app/modules/redirection.ts', 'UrlEditorPRO/app/background.ts'])
         .pipe(typescript({
             noImplicitAny: false,
             target: "es6",

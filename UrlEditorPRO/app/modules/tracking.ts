@@ -11,7 +11,8 @@ module UrlEditor.Tracking {
         AutoSuggest,
         Settings,
         Submit,
-        Sort
+        Sort,
+        Redirect
     }
 
     export class Dimension {
@@ -35,8 +36,9 @@ module UrlEditor.Tracking {
     ga("create", "UA-81916828-1", "auto");
     ga("set", "checkProtocolTask", null); // Disables file protocol checking.
 
-    export function init(_trackingEnabled: boolean, page: string) {
+    export function init(_trackingEnabled: boolean, page: string, logEventsOnce = true) {
         trackingEnabled = _trackingEnabled;
+        enableLogOncePerSession = logEventsOnce;
 
         if (!trackingEnabled) {
             return;
@@ -57,15 +59,17 @@ module UrlEditor.Tracking {
     }
 
     export function trackEvent(category: Category, action: string, label?: string, value?: string | number) {
-        if (!trackingEnabled) {
-            return;
-        }
 
         // check if we should log this event
         if (!isLoggingEnabled(Array.prototype.slice.call(arguments))) {
             return;
         }
-        
+
+        if (!trackingEnabled) {
+            console.log(`TrackedEvent: ${Category[category]}/${action}/${label}/${value}`);
+            return;
+        }
+
         ga("send", "event", Category[category], action, label, value);
     }
 

@@ -8,7 +8,6 @@ module UrlEditor {
      * TODO:
      * 1. Action icon indicator showing available redirections
      * 2. Redirect using first rule - shortcut
-     * 3. Tracking
      */
 
     let converters: { [name: string]: (val: string, arg: string) => string } = {};
@@ -150,8 +149,8 @@ module UrlEditor {
                 bindOnBeforeRequest(
                     data.urlFilter,
                     name,
-                    (requestDetails, force) => {
-                        if (data.isAutomatic || force) {
+                    (requestDetails) => {
+                        if (data.isAutomatic) {
                             let rule = new RedirectRule(data);
                             let newUrl = rule.getUpdatedUrl(requestDetails.url);
                             if (newUrl != requestDetails.url) {
