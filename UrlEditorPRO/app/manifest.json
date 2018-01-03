@@ -23,9 +23,6 @@
     "default_icon": "img/edit_32.png",
     "default_popup": "popup.html"
   },
-  "sandbox": {
-    "pages": ["sandbox.html"]
-  },
   "options_page": "options.html",
   "background": {
     "scripts": [ "app.js", "background.js" ]

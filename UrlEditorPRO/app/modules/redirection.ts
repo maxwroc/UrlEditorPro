@@ -4,7 +4,12 @@
 
 module UrlEditor {
 
-
+    /**
+     * TODO:
+     * 1. Action icon indicator showing available redirections
+     * 2. Redirect using first rule - shortcut
+     * 3. Tracking
+     */
 
     let converters: { [name: string]: (val: string, arg: string) => string } = {};
     converters.leaveAsIs = val => val;
