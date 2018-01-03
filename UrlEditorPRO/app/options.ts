@@ -45,7 +45,8 @@ module UrlEditor.Options {
 
         let commandToElemIDMap: IStringMap = {
             "_execute_browser_action": "action-shortcut",
-            "GoToHomepage": "goToHome-shortcut"
+            "GoToHomepage": "goToHome-shortcut",
+            "RedirectUseFirstRule": "redirect-shortcut"
         };
 
         // populate all global commands/shortcuts

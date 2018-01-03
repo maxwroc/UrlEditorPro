@@ -39,6 +39,13 @@
         "mac": "Command+Shift+H"
       },
       "description": "Go to homepage (root path)"
+    },
+    "RedirectUseFirstRule": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+Y",
+        "mac": "Command+Shift+Y"
+      },
+      "description": "Redirect using first rule"
     }
   },
   "content_security_policy": "script-src 'self' https://www.google-analytics.com; object-src 'self'"

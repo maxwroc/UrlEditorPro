@@ -6,8 +6,7 @@
 /// <reference path="../../typings/index.d.ts" />
 
 module UrlEditor {
-    const setts = new Settings(localStorage);
-    Tracking.init(setts.trackingEnabled, "/background.html", false/*logEventsOnce*/);
+    Tracking.init(getSettings().trackingEnabled, "/background.html", false/*logEventsOnce*/);
 
     chrome.commands.onCommand.addListener(command => {
         switch (command) {
@@ -18,6 +17,11 @@ module UrlEditor {
                     chrome.tabs.update(tab.id, { url: uri.protocol() + "//" + uri.host() });
                 });
                 break;
+            case Command.RedirectUseFirstRule:
+                Tracking.trackEvent(Tracking.Category.Redirect, "keyboard", "first_rule");
+                // TODO !!!!!!!!
+                break;
+
         }
     });
 
@@ -35,7 +39,7 @@ module UrlEditor {
 
     let beforeRequestListeners = [];
     function initializeRedirections() {
-        let redirect = new RedirectionManager(new Settings(window.localStorage));
+        let redirect = new RedirectionManager(getSettings());
 
         redirect.initOnBeforeRequest((urlFilter, name, handler, infoSpec) => {
             // create new wrapper and add it to the list (we need to do it to be able to remove listener later)
@@ -55,7 +59,7 @@ module UrlEditor {
         chrome.contextMenus.removeAll();
 
         chrome.tabs.get(tabId, tab => {
-            let redirect = new RedirectionManager(new Settings(localStorage));
+            let redirect = new RedirectionManager(getSettings());
             let data = redirect.getData();
 
             Object.keys(data).forEach(name => {
@@ -77,6 +81,10 @@ module UrlEditor {
                 }
             })
         });
+    }
+
+    function getSettings() {
+        return new Settings(localStorage);
     }
 
     chrome.tabs.onActivated.addListener(activeInfo => initializeContextMenu(activeInfo.tabId));

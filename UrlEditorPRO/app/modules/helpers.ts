@@ -24,6 +24,7 @@ module UrlEditor {
 
     export class Command {
         public static GoToHomepage = "GoToHomepage";
+        public static RedirectUseFirstRule = "RedirectUseFirstRule";
         public static ReloadRedirectionRules = "ReloadRedirectionRules";
     }
 }
