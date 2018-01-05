@@ -136,7 +136,7 @@ module UrlEditor {
 
         getData(): IMap<IRedirectionRuleData> {
             if (!this.redirData) {
-                this.redirData = JSON.parse(this.setts.redirectionRules);
+                this.redirData = this.setts.redirectionRules ? JSON.parse(this.setts.redirectionRules) : {};
             }
 
             return this.redirData;
