@@ -52,6 +52,10 @@ module UrlEditor.Tracking {
         m.parentNode.insertBefore(a, m);
 
         ga("send", "pageview", page);
+
+        window.addEventListener("error", err => {
+            ga("send", "exception", { "exDescription": `[${err.filename}:${err.lineno}] ${err.message}` });
+        });
     }
 
     export function setCustomDimension(name: string, value: string) {
