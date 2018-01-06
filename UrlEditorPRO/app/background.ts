@@ -10,6 +10,7 @@ module UrlEditor {
     class Background {
         private beforeRequestListeners = [];
         private redirMgr: RedirectionManager;
+        private contextMenuItems: chrome.contextMenus.CreateProperties[] = [];
 
         constructor(private settings = new Settings(localStorage)) {
             Tracking.init(this.settings.trackingEnabled, "/background.html", false/*logEventsOnce*/);
@@ -26,7 +27,7 @@ module UrlEditor {
                     break;
                 case Command.RedirectUseFirstRule:
                     Tracking.trackEvent(Tracking.Category.Redirect, "keyboard", "first_rule");
-
+                    this.contextMenuItems[0] && this.contextMenuItems[0].onclick(null, null);
                     break;
 
             }
@@ -63,6 +64,7 @@ module UrlEditor {
         }
 
         public initializeContextMenu(tabId: number) {
+            this.contextMenuItems = [];
             chrome.contextMenus.removeAll();
 
             chrome.tabs.get(tabId, tab => {
@@ -73,7 +75,8 @@ module UrlEditor {
 
                     // skip all autromatic rules and ones which are not for the current url
                     if (!rule.isAutomatic && rule.isUrlSupported(tab.url)) {
-                        chrome.contextMenus.create({
+
+                        this.contextMenuItems.push({
                             title: "Redirect: " + name,
                             contexts: ["browser_action"],
                             onclick: () => {
@@ -84,16 +87,11 @@ module UrlEditor {
                                 }
                             }
                         });
+
+                        chrome.contextMenus.create(this.contextMenuItems[this.contextMenuItems.length - 1]);
                     }
                 })
             });
-        }
-
-        public handleTabUpdate(tabId: number, changedInfo: chrome.tabs.TabChangeInfo) {
-            // check if url of the current tab has changed
-            if (changedInfo.url) {
-                this.initializeContextMenu(tabId);
-            }
         }
     }
 
@@ -102,7 +100,7 @@ module UrlEditor {
     chrome.commands.onCommand.addListener(cmd => bg.handleKeyboardCommand(cmd));
     chrome.runtime.onMessage.addListener(msg => bg.handleMessage(msg));
     chrome.tabs.onActivated.addListener(activeInfo => bg.initializeContextMenu(activeInfo.tabId));
-    chrome.tabs.onUpdated.addListener((tabId, changedInfo) => bg.handleTabUpdate(tabId, changedInfo));
+    chrome.tabs.onUpdated.addListener((tabId, changedInfo) => changedInfo.url && bg.initializeContextMenu(tabId));
 
     bg.initializeRedirections();
 }
