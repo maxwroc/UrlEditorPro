@@ -21,12 +21,18 @@ module UrlEditor {
         NewTab,
         NewWindow
     }
+
+    export class Command {
+        public static GoToHomepage = "GoToHomepage";
+        public static RedirectUseFirstRule = "RedirectUseFirstRule";
+        public static ReloadRedirectionRules = "ReloadRedirectionRules";
+    }
 }
 
 module UrlEditor.Helpers {
 
     var base64Pattern = /^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{4}|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)$/;
-    
+
     /**
      * It iterates over previous siblings and counts elements of given tag names (types)
      */
@@ -91,7 +97,7 @@ module UrlEditor.Helpers {
         return base64Pattern.test(val);
     }
 
-    
+
 
     export function isTextFieldActive(): boolean {
         return isTextField(document.activeElement);
@@ -102,7 +108,7 @@ module UrlEditor.Helpers {
         return (elem.tagName == "INPUT" && (<HTMLInputElement>elem).type == "text") ||
             (elem.tagName == "DIV" && elem.id == "full_url");
     }
-    
+
     /**
      * Encodes query parameters/components
      *
@@ -116,7 +122,7 @@ module UrlEditor.Helpers {
         // reference: http://stackoverflow.com/questions/1634271/url-encoding-the-space-character-or-20
         return encodeURIComponent(queryParam).replace(/[!'()*]/g, escape).replace(/%20/g, "+");
     }
-    
+
     export function ensureIsVisible(elem: HTMLElement, container: HTMLElement, containerHeight: number) {
         var containerScrollTop = container.scrollTop;
         var suggestionElemOffsetTop = elem.offsetTop;
@@ -127,5 +133,16 @@ module UrlEditor.Helpers {
         else if (suggestionElemOffsetTop < containerScrollTop) {
             container.scrollTop = suggestionElemOffsetTop;
         }
+    }
+
+    function lazyInit<T extends Function>(func: () => T): T {
+        let initializedFunc: T;
+        return (<any>((...args: any[]) => {
+            if (!initializedFunc) {
+                initializedFunc = func();
+            }
+
+            return initializedFunc.apply(this, args);
+        })) as T
     }
 }

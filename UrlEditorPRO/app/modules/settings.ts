@@ -54,6 +54,11 @@
         */
         public autoSuggestData = '{}';
 
+        /**
+         * Redirection rules. We keep it as a string to prevent from parsing it on the initialization.
+         */
+        public redirectionRules = '{}';
+
         constructor(storage) {
             storageCache = storage;
 

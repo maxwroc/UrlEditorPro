@@ -53,6 +53,10 @@
             list-style: none;
             padding: 0;
         }
+        ul.list {
+            list-style: disc;
+            padding-left: 20px;
+        }
 
         .setting {
             border-top: 1px solid #cacaca;
@@ -60,16 +64,19 @@
             margin-top: 20px;
         }
         .setting h3 {
-            width: 250px;
+            width: 200px;
+            margin-top: 20px;
+            line-height: normal;
+            padding-right: 10px
         }
         .setting-value {
             margin-top: 20px;
             flex: 1;
-            max-width: 356px; /* to prevent from expanding when wide suggestions are loaded */
+            max-width: 405px; /* to prevent from expanding when wide suggestions are loaded */
         }
 
         select {
-            max-width: 278px; /* to prevent from expanding when wide suggestions are loaded */
+            max-width: 325px; /* to prevent from expanding when wide suggestions are loaded */
         }
 
         .icon-list li {
@@ -108,25 +115,110 @@
         .grid > * > * {
             flex: 1;
         }
-        .highlihgt-first-column > div > span:first-child {
+        .grid.highlihgt-first-column > * > *:first-child {
             font-weight: bold;
-            flex: none;
-            width: 100px;
         }
-        .setting-value .section {
+        .grid.small-first-column > * > *:first-child {
+            flex: 0 1 auto;
+            min-width: 25%;
+        }
+        .grid.last-row-small > * > *:last-child {
+            flex: none;
+            width: 70px;
+        }
+        .grid.last-row-right > *:last-child > *:last-child {
+            text-align: right;
+        }
+        .grid.last-row-right > *:last-child {
             margin-top: 10px;
         }
         .grid-space > * > * {
             margin: 0 2px;
         }
-        .grid-last-small > * > *:last-child {
+        .split-half {
+            display: flex;
+        }
+        .split-half > * {
+            width: 50%;
+        }
+        .grid .small {
             flex: none;
-            width: 70px;
+        }
+
+        .setting-value .section {
+            margin-top: 10px;
+        }
+        .slider .section {
+            margin-top: 0;
+        }
+        .section .title {
+            font-weight: 600;
+        }
+        .not_valid {
+            background-color: rgb(255, 198, 198);
+        }
+        .errorList {
+            color: red;
+            white-space: pre-line;
+        }
+        #redirectionsModule .strings > input:nth-of-type(1) {
+            display: none;
+        }
+
+        .slider-wrapper {
+            overflow: hidden;
+            width: 100%;
+            position: relative;
+        }
+        .slider {
+            white-space: nowrap;
+            position: relative;
+            left: 0;
+            transition: left 0.5s;
+        }
+        .slider > * {
+            width: 100%;
+            display: inline-block;
+            vertical-align: top;
+            padding-right: 5px;
+            white-space: normal;
+        }
+
+        #rules_list {
+            overflow-y: auto;
+            max-height: 120px;
+        }
+        #rules_list > * > * {
+            padding: 1px 5px;
+        }
+        #rules_list > *:nth-child(2n+1) {
+            background-color: #e4e4e4;
+        }
+        #rules_list > *:nth-child(2n+2) {
+            background-color: #f7f7f7;
+        }
+        #rules_list > *:hover {
+            background-color: #a7a7a7;
+            cursor: pointer;
+            color: white;
+        }
+
+        .truncate,
+        #rules_list > * > * {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        #rules_editor:not(.adv) > *:first-child > .advanced {
+            display: none;
+        }
+        #rules_editor.adv > *:first-child > *:not(.advanced):not(.both) {
+            display: none;
         }
     </style>
     <script src="app.js"></script>
     <script src="options.js"></script>
-    <script src="options/suggestions.js"></script>
 </head>
 <body>
     <div class="wrapper">
@@ -151,10 +243,11 @@
             <div class="setting">
                 <h3>Keyboard shortcuts</h3>
                 <div class="setting-value">
-                    <div class="grid highlihgt-first-column">
+                    <div class="grid highlihgt-first-column small-first-column">
                         <div>Global</div>
                         <div><span id="action-shortcut"></span><span>Lunch extension (action) pane</span></div>
                         <div><span id="goToHome-shortcut"></span><span>Go to homepage (root path)</span></div>
+                        <div><span id="redirect-shortcut"></span><span>Use first redirection rule</span></div>
                         <div>&nbsp;</div>
                         <div>Action pane</div>
                         <div><span>Ctrl+&quot;+&quot;</span><span>Add new parameter</span></div>
@@ -174,15 +267,15 @@
             <div class="setting" id="recentlyUsedParamsModule">
                 <h3>Recently used params</h3>
                 <div class="setting-value">
-                    <div class="grid highlihgt-first-column">
+                    <div class="grid highlihgt-first-column small-first-column">
                         <div><span><input type="checkbox" name="autoSuggest" toggleElem="autoSuggestOptions" /></span><span>Suggest recently used parameters</span></div>
                     </div>
                     <div id="autoSuggestOptions">
-                        <div class="grid highlihgt-first-column">
+                        <div class="grid highlihgt-first-column small-first-column">
                             <div><span><input type="checkbox" name="autoSuggestSaveNew" /></span><span>Save new parameters</span></div>
                             <div><span><input type="checkbox" name="autoSuggestEnabledOnIncognito" /></span><span>Save new parameters on incognito mode</span></div>
                         </div>
-                        <div class="section grid grid-space grid-last-small">
+                        <div class="section grid grid-space last-row-small">
                             <div>Select domain to view parameters saved</div>
                             <div>
                                 <select name="page" id="autoSuggestPages">
@@ -191,7 +284,7 @@
                                 <input name="delete" type="button" value="Delete" />
                             </div>
                         </div>
-                        <div class="section grid grid-space grid-last-small">
+                        <div class="section grid grid-space last-row-small">
                             <div>Select a param to view values saved</div>
                             <div>
                                 <select name="param" id="autoSuggestParams">
@@ -202,10 +295,10 @@
                         </div>
                         <div class="section">
                             <div>Parameter list</div>
-                            <div id="autoSuggestParamValues" class="grid grid-space grid-last-small">
+                            <div id="autoSuggestParamValues" class="grid grid-space last-row-small">
                             </div>
                         </div>
-                        <div class="section grid grid-space grid-last-small">
+                        <div class="section grid grid-space last-row-small">
                             <div>Bind with other domain</div>
                             <div>
                                 <select name="bindToHost" id="autoSuggestPageToBind">
@@ -218,9 +311,68 @@
                         </div>
                         <div class="section">
                             <div>Import/export suggestions data</div>
-                            <div class="grid highlihgt-first-column">
+                            <div class="grid highlihgt-first-column small-first-column">
                                 <div><span>Export</span><span><input type="button" value="Export" name="export_data" /></span></div>
                                 <div><span>Import</span><span><input type="file" value="Import" name="import_data" /></span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="setting" id="redirectionsModule">
+                <h3>Redirections</h3>
+                <div class="setting-value">
+                    <div class="slider-wrapper">
+                        <div class="slider">
+                            <div class="section">
+                                <div>
+                                    Redirection rules are handy if we often modify same parts of the url. You can setup automatic or manual redirections. For the second ones you can use context menu (right click on the extension icon) or keyboard shortcut.
+                                </div>
+                                <div class="section">
+                                    Use cases examples:
+                                    <ul class="list">
+                                        <li>Redirect all localhost requests to some other host</li>
+                                        <li>Navigate to some other website passing parameters from the current url</li>
+                                        <li>Go to the next page (pagination) - increment numeric value in the url</li>
+                                        <li>Use simple words to go to complex urls e.g. typing "ama/alexa" will redirect to https://www.amazon.co.uk/s/ref=nb_sb_noss_2?url=search-alias%3Daps&amp;field-keywords=alexa</li>
+                                    </ul>
+                                </div>
+                                <div><input type="button" value="Add new rule" name="addRule" /></div>
+                                <div><input type="button" value="Add new RegEx based rule" name="addRuleRegEx" /></div>
+                                <ul class="grid highlihgt-first-column" id="rules_list">
+                                </ul>
+                            </div>
+                            <div class="section" id="rules_editor">
+                                <div class="grid small-first-column">
+                                    <div class="both"><label>Rule name</label><input type="text" name="name" /></div>
+                                    <div class="both"><label>Url filter</label><input type="text" name="urlFilter" placeholder="e.g. http*://localhost/?*&amp;paramName=*" /></div>
+                                    <div class="both"><label>Is automatic</label><span><input type="checkbox" name="isAutomatic" /></span></div>
+                                    <div style="display: none"><label>Hot-key</label><input type="text" name="hotKey" placeholder="Click here and press key combination" /></div>
+                                    <div><label>Protocol</label><input type="text" value="" name="protocol" /></div>
+                                    <div><label>Host name</label><input type="text" value="" name="hostname" /></div>
+                                    <div><label>Port</label><input type="text" name="port" /></div>
+                                    <div><label>Path</label><input type="text" name="path" /></div>
+                                    <div><label>Params</label><input type="button" value="Add new param to update" name="addParam" /></div>
+                                    <div><label>Replace</label><input type="button" value="Add new string to replace" name="addReplaceString" /></div>
+                                    <div class="advanced"><label>Is global</label><span><input type="checkbox" name="isRegExpGlobal" checked /></span></div>
+                                    <div class="advanced"><label>RegExp</label><input type="text" name="regExp" placeholder="e.g. .*oldName=([^&amp;]+).*paramTest=([0-9]+)" /></div>
+                                    <div class="advanced"><label>Replace string</label><input type="text" name="replaceString" placeholder="[optional] e.g. http://loc/param=$1&amp;test=$2" /></div>
+                                </div>
+
+                                <div class="grid last-row-right small-first-column">
+                                    <div><label>Test url</label><textarea name="testUrl"></textarea></div>
+                                    <div><label>Result url</label><textarea name="resultUrl"></textarea></div>
+                                    <div>
+                                        <div>
+                                            <input type="button" value="Delete rule" name="deleteRule" />
+                                        </div>
+                                        <div>
+                                            <input type="button" name="cancel" value="Cancel" />
+                                            <input type="button" name="submit" value="Save" disabled />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="errorMessages" class="errorList"></div>
                             </div>
                         </div>
                     </div>
@@ -229,7 +381,7 @@
             <div class="setting">
                 <h3>Miscellaneous</h3>
                 <div class="setting-value">
-                    <div class="grid highlihgt-first-column">
+                    <div class="grid highlihgt-first-column small-first-column">
                         <div><span><input type="checkbox" name="autoHide" /></span><span>Hide extension after redirection</span></div>
                         <div><span><input type="checkbox" name="autoSortParams" /></span><span>Sort parameters automatically</span></div>
                         <div><span><input type="checkbox" name="autoSelectValue" /></span><span>Auto-select values on focus change</span></div>
