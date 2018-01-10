@@ -12,7 +12,7 @@ module Tests {
                 ["test string to replace sth string", ".*(string).*(sth)", ["val", "val2"], "test val to replace val2 string"]
             ],
             (subject: string, pattern, values: string[], result: string) => {
-                expect((new UrlEditor.RegExpGroupReplacer(pattern)).replace(subject, values)).toEqual(result);
+                expect((new UrlEditor.RegExpGroupReplacer(pattern, true)).replace(subject, values)).toEqual(result);
             }
         );
 
@@ -21,7 +21,7 @@ module Tests {
                 ["test 11 to replace sth string", ".*([0-1]+).*(sth)", (val, i) => i == 0 ? parseInt(val) + 1 : "sthelse", "test 12 to replace sthelse string"]
             ],
             (subject: string, pattern, converter: Function, result: string) => {
-                expect((new UrlEditor.RegExpGroupReplacer(pattern)).replace(subject, converter as UrlEditor.IReplaceValueGetter)).toEqual(result);
+                expect((new UrlEditor.RegExpGroupReplacer(pattern, false)).replace(subject, converter as UrlEditor.IReplaceValueGetter)).toEqual(result);
             }
         );
     });
