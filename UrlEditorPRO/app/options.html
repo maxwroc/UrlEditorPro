@@ -53,6 +53,10 @@
             list-style: none;
             padding: 0;
         }
+        ul.list {
+            list-style: disc;
+            padding-left: 20px;
+        }
 
         .setting {
             border-top: 1px solid #cacaca;
@@ -322,14 +326,15 @@
                         <div class="slider">
                             <div class="section">
                                 <div>
-                                    You can create redirection rules which can be applied automatically (whenever browser tries to navigate to specific url).
+                                    Redirection rules are handy if we often modify same parts of the url. You can setup automatic or manual redirections. For the second ones you can use context menu (right click on the extension icon) or keyboard shortcut.
                                 </div>
                                 <div class="section">
                                     Use cases examples:
-                                    <ul>
-                                        <li>Your test framework generates URL which contains a lot of redundant params and you want to get rid of them</li>
-                                        <li>You want to redirect all localhost requests to some other host</li>
-                                        <li>You want to navigate to some other website passing parameters from he current url</li>
+                                    <ul class="list">
+                                        <li>Redirect all localhost requests to some other host</li>
+                                        <li>Navigate to some other website passing parameters from the current url</li>
+                                        <li>Go to the next page (pagination) - increment numeric value in the url</li>
+                                        <li>Use simple words to go to complex urls e.g. typing "ama/alexa" will redirect to https://www.amazon.co.uk/s/ref=nb_sb_noss_2?url=search-alias%3Daps&amp;field-keywords=alexa</li>
                                     </ul>
                                 </div>
                                 <div><input type="button" value="Add new rule" name="addRule" /></div>
@@ -341,7 +346,7 @@
                                 <div class="grid small-first-column">
                                     <div class="both"><label>Rule name</label><input type="text" name="name" /></div>
                                     <div class="both"><label>Url filter</label><input type="text" name="urlFilter" placeholder="e.g. http*://localhost/?*&amp;paramName=*" /></div>
-                                    <div class="both"><label>Is automatic</label><span><input type="checkbox" name="isAutomatic" checked /></span></div>
+                                    <div class="both"><label>Is automatic</label><span><input type="checkbox" name="isAutomatic" /></span></div>
                                     <div style="display: none"><label>Hot-key</label><input type="text" name="hotKey" placeholder="Click here and press key combination" /></div>
                                     <div><label>Protocol</label><input type="text" value="" name="protocol" /></div>
                                     <div><label>Host name</label><input type="text" value="" name="hostname" /></div>
