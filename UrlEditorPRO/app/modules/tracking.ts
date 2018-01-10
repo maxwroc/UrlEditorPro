@@ -54,7 +54,10 @@ module UrlEditor.Tracking {
         ga("send", "pageview", page);
 
         window.addEventListener("error", err => {
-            ga("send", "exception", { "exDescription": `[${err.filename}:${err.lineno}] ${err.message}` });
+            let file = err.filename || "";
+            // remove extension schema and id: chrome-extension://XXXXXXXXX/
+            file = file.substr(Math.max(0, file.indexOf("/", 20)));
+            ga("send", "exception", { "exDescription": `[${file}:${err.lineno}] ${err.message}` });
         });
     }
 
