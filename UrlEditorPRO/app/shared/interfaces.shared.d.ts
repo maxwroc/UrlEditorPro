@@ -26,3 +26,35 @@ interface IParamContainerElement extends HTMLDivElement {
     isFlippable?: boolean;
     hasJumpedToValueOnce?: boolean;
 }
+
+interface IBindOnBeforeRequestHandler {
+    (filter: string, name: string, callback: (redirData: chrome.webRequest.WebRequestBodyDetails) => chrome.webRequest.BlockingResponse, extraInfoSpec: string[]): void;
+}
+
+interface IRedirectionRuleData extends IRuleData{
+    protocol?: string,
+    hostname?: string,
+    port?: number,
+    path?: string,
+    paramsToUpdate?: IMap<string>,
+    strReplace?: string[][];
+}
+
+interface IRegExpRuleData extends IRuleData {
+    regExp: string,
+    isRegExpGlobal: boolean,
+    replaceString?: string,
+    replaceValues?: IGroupReplaceValue[]
+}
+
+interface IGroupReplaceValue {
+    func: string,
+    val: string
+}
+
+interface IRuleData {
+    name: string,
+    urlFilter: string,
+    isAutomatic?: boolean;
+    hotKey?: string
+}
