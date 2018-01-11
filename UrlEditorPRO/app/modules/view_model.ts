@@ -18,9 +18,9 @@ module UrlEditor {
      * 2 (NewWindow)  <- false, true
      * 2 (NewWindow)  <- true,  true
      */
-    function whereToOpenUrl(o1: boolean, o2: boolean): OpenIn {
+    function whereToOpenUrl(ctrl: boolean, shift: boolean): OpenIn {
         // :)
-        return (1 * <any>o1) + (2 * <any>o2) - (<any>o1 & <any>o2);
+        return (1 * <any>ctrl) + (2 * <any>shift) - (<any>ctrl & <any>shift);
     }
 
     export class ViewModel {

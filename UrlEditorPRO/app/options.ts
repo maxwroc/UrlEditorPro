@@ -2,6 +2,7 @@
 /// <reference path="modules/autosuggest.ts" />
 /// <reference path="modules/tracking.ts" />
 /// <reference path="options/suggestions.ts" />
+/// <reference path="options/redirection.ts" />
 
 module UrlEditor.Options {
 
@@ -44,7 +45,8 @@ module UrlEditor.Options {
 
         let commandToElemIDMap: IStringMap = {
             "_execute_browser_action": "action-shortcut",
-            "goToHomepage": "goToHome-shortcut"
+            "GoToHomepage": "goToHome-shortcut",
+            "RedirectUseFirstRule": "redirect-shortcut"
         };
 
         // populate all global commands/shortcuts
@@ -57,6 +59,7 @@ module UrlEditor.Options {
         });
 
         Suggestions.init(settings);
+        Redirection.init(settings);
     }
 
     function onChangeHandler(evt: Event): void {

@@ -23,23 +23,38 @@ module UrlEditor {
             this.anchor[propertyName] = value;
         }
 
+        /**
+         * Protocol value. Name followed by ":", for example: https:
+         */
         protocol(value?: string): string {
             return this.getSet(value, "protocol");
         }
 
+        /**
+         * Host name (without port number)
+         */
         hostname(value?: string): string {
             return this.getSet(value, "hostname");
         }
 
+        /**
+         * Port number (default: 80)
+         */
         port(value?: number): number {
             let result = this.getSet(value, "port");
             return result ? parseInt(result) : undefined;
         }
 
+        /**
+         * Part of the uri between host and query
+         */
         pathname(value?: string): string {
             return this.getSet(value, "pathname");
         }
 
+        /**
+         * Part of the uri starting from "?" character
+         */
         query(value?: string): string {
             return this.getSet(value, "search");
         }
@@ -48,6 +63,9 @@ module UrlEditor {
             return this.getSet(value, "hash");
         }
 
+        /**
+         * Host (with port number, for example: localhost:8888)
+         */
         host(value?: string): string {
             let current = this.getSet(undefined, "host");;
             if (value == undefined) {
@@ -61,6 +79,9 @@ module UrlEditor {
             return this.getSet(value, "host");
         }
 
+        /**
+         * Params collection. Key value pairs
+         */
         params(value?: IMap<string[]>): IMap<string[]> {
             // check whether we should set or return value
             if (value == undefined) {

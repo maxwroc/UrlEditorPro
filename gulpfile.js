@@ -9,7 +9,7 @@ var zip =           require('gulp-zip');
 var fs =            require('fs');
 
 gulp.task('build-root', function () {
-    return gulp.src('UrlEditorPRO/app/*.ts')
+    return gulp.src(['UrlEditorPRO/app/popup.ts'])
         .pipe(typescript({
             noImplicitAny: false,
             target: "es6",
@@ -20,17 +20,30 @@ gulp.task('build-root', function () {
 });
 
 gulp.task('build-options', function () {
-    return gulp.src('UrlEditorPRO/app/options/**/*.ts')
+    return gulp.src(['UrlEditorPRO/app/options.ts', 'UrlEditorPRO/app/options/**/*.ts'])
         .pipe(typescript({
             noImplicitAny: false,
             target: "es6",
             sourceMap: false,
-            declaration: false
+            declaration: false,
+            outFile: 'options.js'
         }))
-        .pipe(gulp.dest('UrlEditorPRO/app/options/'));
+        .pipe(gulp.dest('UrlEditorPRO/app/'));
 });
 
-gulp.task('build', ['build-root', 'build-options'], function () {
+gulp.task('build-background', function () {
+    return gulp.src(['UrlEditorPRO/app/modules/tracking.ts', 'UrlEditorPRO/app/modules/redirection.ts', 'UrlEditorPRO/app/background.ts'])
+        .pipe(typescript({
+            noImplicitAny: false,
+            target: "es6",
+            sourceMap: false,
+            declaration: false,
+            outFile: 'background.js'
+        }))
+        .pipe(gulp.dest('UrlEditorPRO/app/'));
+})
+
+gulp.task('build', ['build-root', 'build-options', 'build-background'], function () {
     return gulp.src(['UrlEditorPRO/app/modules/**/*.ts', 'UrlEditorPRO/app/shared/**/*.ts'])
         .pipe(typescript({
             noImplicitAny: false,
