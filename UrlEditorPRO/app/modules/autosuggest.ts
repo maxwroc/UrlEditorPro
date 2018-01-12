@@ -223,38 +223,16 @@ module UrlEditor {
         show(elem: HTMLInputElement) {
             // show only if there is anything to show
             if (this.container.innerHTML) {
-                let pos = elem.getBoundingClientRect();
-                // pos doesn't contain scroll value so we need to add it
-                let posTop = pos.bottom + this.doc.body.scrollTop - 3;
-                this.container.style.top = posTop + "px";
-                this.container.style.left = pos.left + "px";
-                this.container.style.display = "block";
-                this.container.style.minWidth = elem.offsetWidth + "px";
-                this.container.style.height = "auto";
-                this.container.style.width = "auto";
-
-                // reduce the height if it is reached page end
-                let tooBig = posTop + this.container.offsetHeight - (this.doc.body.offsetHeight + 8); // increase by 8 due to margin
-                if (tooBig > 0) {
-                    this.container.style.height = (this.container.offsetHeight - tooBig) + "px";
-                }
-
-                // reduce width if it is too wide
-                let tooWide = pos.left + this.container.offsetWidth - (this.doc.body.offsetWidth + 8);
-                if (tooWide > 0) {
-                    this.container.style.width = (this.container.offsetWidth - tooWide) + "px";
-                }
 
                 this.inputElem = elem;
+                this.inputElem.addEventListener("keydown", this.handler, true);
                 this.originalText = this.inputElem.value;
 
                 // we need to wrap it to be able to remove it later
                 this.handler = (evt: KeyboardEvent) => this.keyboardNavigation(evt);
 
-                this.inputElem.addEventListener("keydown", this.handler, true);
-
-                // increase by 2px due to border size
-                Helpers.ensureIsVisible(this.container, this.doc.body, window.innerHeight + 2);
+                // allow to flush all the DOM changes before adjusting position
+                setTimeout(() => this.adjustPositionAndHeight(), 0);
             }
         }
 
@@ -264,6 +242,33 @@ module UrlEditor {
                 this.inputElem.removeEventListener("keydown", this.handler, true);
             }
             this.active = undefined;
+        }
+
+        private adjustPositionAndHeight() {
+            let pos = this.inputElem.getBoundingClientRect();
+            // pos doesn't contain scroll value so we need to add it
+            let posTop = pos.bottom + window.scrollY - 3;
+            this.container.style.top = posTop + "px";
+            this.container.style.left = pos.left + "px";
+            this.container.style.display = "block";
+            this.container.style.minWidth = this.inputElem.offsetWidth + "px";
+            this.container.style.height = "auto";
+            this.container.style.width = "auto";
+
+            // reduce the height if it is reached page end
+            let tooBig = posTop + this.container.offsetHeight - (this.doc.body.offsetHeight + 8); // increase by 8 due to margin
+            if (tooBig > 0) {
+                this.container.style.height = (this.container.offsetHeight - tooBig) + "px";
+            }
+
+            // reduce width if it is too wide
+            let tooWide = pos.left + this.container.offsetWidth - (this.doc.body.offsetWidth + 8);
+            if (tooWide > 0) {
+                this.container.style.width = (this.container.offsetWidth - tooWide) + "px";
+            }
+
+            // increase by 2px due to border size
+            Helpers.ensureIsVisible(this.container, this.doc.body, window.innerHeight + 2);
         }
 
         private mouseEventHandler(evt: MouseEvent) {
