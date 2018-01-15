@@ -233,8 +233,7 @@ module UrlEditor {
                 this.originalText = this.inputElem.value;
 
                 // allow to flush all the DOM changes before adjusting position
-                //setTimeout(() => this.adjustPositionAndHeight(), 0);
-                this.adjustPositionAndHeight()
+                setTimeout(() => this.adjustPositionAndHeight(), 0);
             }
         }
 
