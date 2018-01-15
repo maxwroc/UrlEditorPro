@@ -29,7 +29,7 @@ module Tests.Autosuggest {
             waitUntil(() => Canvas.ready).then(() => done());
         });
 
-        it("suggestions list appears on param name element", () => {
+        it("suggestions list appears on param name element", (done) => {
             Canvas.init({ autoSuggestData: JSON.stringify(autoSuggestData), trackingEnabled: false });
 
             // pass current tab info
@@ -41,12 +41,17 @@ module Tests.Autosuggest {
 
             let suggestions = new SuggestionContainer();
 
-            expect(suggestions.isVisible()).toBeTruthy();
-            expect(suggestions.isBelow(paramContainer.getNameElem())).toBeTruthy();
-            expect(suggestions.getSuggestionTexts()).toEqual(["param1", "param2"]);
+            // wait for position adjustments
+            setTimeout(() => {
+                expect(suggestions.isVisible()).toBeTruthy();
+                expect(suggestions.isBelow(paramContainer.getNameElem())).toBeTruthy();
+                expect(suggestions.getSuggestionTexts()).toEqual(["param1", "param2"]);
+
+                done();
+            }, 0);
         });
 
-        it("suggestions list appears on param name element - domain alias", () => {
+        it("suggestions list appears on param name element - domain alias", (done ) => {
             // add alias domain
             autoSuggestData["www.google-test.com"] = {
                 "[suggestionAlias]": ["www.google.com"]
@@ -65,12 +70,17 @@ module Tests.Autosuggest {
 
             let suggestions = new SuggestionContainer();
 
-            expect(suggestions.isVisible()).toBeTruthy();
-            expect(suggestions.isBelow(paramContainer.getNameElem())).toBeTruthy();
-            expect(suggestions.getSuggestionTexts()).toEqual(["param1", "param2"]);
+            // wait for position adjustments
+            setTimeout(() => {
+                expect(suggestions.isVisible()).toBeTruthy();
+                expect(suggestions.isBelow(paramContainer.getNameElem())).toBeTruthy();
+                expect(suggestions.getSuggestionTexts()).toEqual(["param1", "param2"]);
+
+                done();
+            }, 0);
         });
 
-        it("suggestions list appears on param value element", () => {
+        it("suggestions list appears on param value element", (done) => {
             Canvas.init({ autoSuggestData: JSON.stringify(autoSuggestData), trackingEnabled: false });
 
             // pass current tab info
@@ -84,12 +94,18 @@ module Tests.Autosuggest {
             Canvas.type(valueInput, "{backspace}pa");
 
             let suggestions = new SuggestionContainer();
-            expect(suggestions.isVisible()).toBeTruthy();
-            expect(suggestions.isBelow(paramContainer.getValueElem())).toBeTruthy();
-            expect(suggestions.getSuggestionTexts()).toEqual(["param1_val1", "param1_val2"]);
+
+            // wait for position adjustments
+            setTimeout(() => {
+                expect(suggestions.isVisible()).toBeTruthy();
+                expect(suggestions.isBelow(paramContainer.getValueElem())).toBeTruthy();
+                expect(suggestions.getSuggestionTexts()).toEqual(["param1_val1", "param1_val2"]);
+
+                done();
+            }, 0);
         });
 
-        it("suggestions list appears on param value element - domain alias", () => {
+        it("suggestions list appears on param value element - domain alias", (done) => {
             // add alias domain
             autoSuggestData["www.google-test.com"] = {
                 "[suggestionAlias]": ["www.google.com"]
@@ -110,9 +126,15 @@ module Tests.Autosuggest {
             Canvas.type(valueInput, "{backspace}pa");
 
             let suggestions = new SuggestionContainer();
-            expect(suggestions.isVisible()).toBeTruthy();
-            expect(suggestions.isBelow(paramContainer.getValueElem())).toBeTruthy();
-            expect(suggestions.getSuggestionTexts()).toEqual(["param1_val1", "param1_val2"]);
+
+            // wait for position adjustments
+            setTimeout(() => {
+                expect(suggestions.isVisible()).toBeTruthy();
+                expect(suggestions.isBelow(paramContainer.getValueElem())).toBeTruthy();
+                expect(suggestions.getSuggestionTexts()).toEqual(["param1_val1", "param1_val2"]);
+
+                done();
+            }, 0);
         });
 
         it("submitting param name suggescion causes jump to value field and new suggestions are shown", (done) => {
@@ -130,18 +152,25 @@ module Tests.Autosuggest {
             valueInput.value = "p"; // set it to be a prefix for existing value suggestions
 
             let suggestions = new SuggestionContainer();
-            expect(suggestions.isVisible()).toBeTruthy();
 
-            // select first suggestion
-            Canvas.keyboardCombination(nameInput, "down-arrow");
-
-            waitUntil(() => nameInput.value == "param1").then(() => {
-                Canvas.keyboardCombination(nameInput, "enter");
-
+            // wait for position adjustments
+            setTimeout(() => {
                 expect(suggestions.isVisible()).toBeTruthy();
-                expect(suggestions.getSuggestionTexts()).toEqual(["param1_val1", "param1_val2"]);
-                done();
-            });
+
+                // select first suggestion
+                Canvas.keyboardCombination(nameInput, "down-arrow");
+
+                waitUntil(() => nameInput.value == "param1").then(() => {
+                    Canvas.keyboardCombination(nameInput, "enter");
+
+                    // wait for position adjustments
+                    setTimeout(() => {
+                        expect(suggestions.isVisible()).toBeTruthy();
+                        expect(suggestions.getSuggestionTexts()).toEqual(["param1_val1", "param1_val2"]);
+                        done();
+                    }, 0);
+                });
+            }, 0);
         });
 
         it("new param is added to suggestion data", (done) => {
