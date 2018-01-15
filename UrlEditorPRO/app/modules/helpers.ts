@@ -135,6 +135,22 @@ module UrlEditor.Helpers {
         }
     }
 
+    export const safeExecute = lazyInit(safeExecuteInitializer);
+
+    function safeExecuteInitializer() {
+        let logElem = ge("log");
+        return (delegate: Function, description?: string) => {
+            try {
+                return delegate();
+            }
+            catch (e) {
+                let msg = `[${description || "error"}] ${e.message}`;
+                logElem && (logElem.textContent += "\n" + msg);
+                console.warn(msg);
+            }
+        }
+    }
+
     function lazyInit<T extends Function>(func: () => T): T {
         let initializedFunc: T;
         return (<any>((...args: any[]) => {

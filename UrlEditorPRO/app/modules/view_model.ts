@@ -238,8 +238,12 @@ module UrlEditor {
                     // always encode/decode params by default
                     param.urlEncoded = true;
 
+                    if (param.urlEncoded) {
+                        value = Helpers.safeExecute(() => decodeURIComponent(value), "populateParams/decode") || value;
+                    }
+
                     // parameter value field
-                    param.valueElement.value = param.urlEncoded ? decodeURIComponent(value) : value;
+                    param.valueElement.value = value;
                     param.valueElement["param-value-position"] = valueIndex;
 
                     // measuring
