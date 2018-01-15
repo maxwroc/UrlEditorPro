@@ -225,14 +225,16 @@ module UrlEditor {
             if (this.container.innerHTML) {
 
                 this.inputElem = elem;
-                this.inputElem.addEventListener("keydown", this.handler, true);
-                this.originalText = this.inputElem.value;
 
                 // we need to wrap it to be able to remove it later
                 this.handler = (evt: KeyboardEvent) => this.keyboardNavigation(evt);
+                this.inputElem.addEventListener("keydown", this.handler, true);
+
+                this.originalText = this.inputElem.value;
 
                 // allow to flush all the DOM changes before adjusting position
-                setTimeout(() => this.adjustPositionAndHeight(), 0);
+                //setTimeout(() => this.adjustPositionAndHeight(), 0);
+                this.adjustPositionAndHeight()
             }
         }
 
