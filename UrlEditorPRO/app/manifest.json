@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "Url Editor PRO",
   "description": "Url parser which makes editing complex URLs as easy as possible. Features: params decoding, auto-suggest, keyboard navigation..",
-  "version": "0.9.3.1",
+  "version": "0.9.3.2",
   "permissions": [
     "http://*/*",
     "https://*/*",
