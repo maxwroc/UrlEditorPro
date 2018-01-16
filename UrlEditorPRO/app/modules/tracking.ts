@@ -36,7 +36,7 @@ module UrlEditor.Tracking {
     ga("create", "UA-81916828-1", "auto");
     ga("set", "checkProtocolTask", null); // Disables file protocol checking.
 
-    export function init(_trackingEnabled: boolean, page: string, logEventsOnce = true) {
+    export function init(_trackingEnabled: boolean, page: string, logEventsOnce = true, appVersion = "") {
         trackingEnabled = _trackingEnabled;
         enableLogOncePerSession = logEventsOnce;
 
@@ -57,7 +57,12 @@ module UrlEditor.Tracking {
             let file = err.filename || "";
             // remove extension schema and id: chrome-extension://XXXXXXXXX/
             file = file.substr(Math.max(0, file.indexOf("/", 20)));
-            ga("send", "exception", { "exDescription": `[${file}:${err.lineno}] ${err.message}` });
+
+            if (appVersion) {
+                appVersion = "[" + appVersion + "]";
+            }
+
+            ga("send", "exception", { "exDescription": `[${file}:${err.lineno}]${appVersion} ${err.message}` });
         });
     }
 

@@ -13,7 +13,12 @@ module UrlEditor {
         private contextMenuItems: chrome.contextMenus.CreateProperties[] = [];
 
         constructor(private settings = new Settings(localStorage)) {
-            Tracking.init(this.settings.trackingEnabled, "/background.html", false/*logEventsOnce*/);
+            let version = chrome.runtime.getManifest().version;
+
+            // it is better to set variable before page view event (init)
+            Tracking.setCustomDimension(Tracking.Dimension.Version, version);
+
+            Tracking.init(this.settings.trackingEnabled, "/background.html", false/*logEventsOnce*/, version);
         }
 
         public handleKeyboardCommand(command: string) {
