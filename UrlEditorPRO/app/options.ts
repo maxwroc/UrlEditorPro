@@ -121,6 +121,6 @@ module UrlEditor.Options {
     }
 
     document.addEventListener(
-        window.top == window.self ? "DOMContentLoaded" : "init",
+        window.top == window.self && !window["__karma__"] ? "DOMContentLoaded" : "init",
         (evt: any) => initialize(<Storage>evt.detail || localStorage));
 }

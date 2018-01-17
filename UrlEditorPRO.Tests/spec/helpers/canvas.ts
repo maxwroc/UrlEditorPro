@@ -28,7 +28,7 @@ module Tests.Canvas {
 
     export function loadPage(name: string, storage?: IMap<any>) {
         // prepend src attributes by a path to app dir and write template to the page
-        page.contentWindow.document.write(TEMPLATES[name + ".html"].replace(/ src="/g, ' src="../UrlEditorPro/app/'));
+        page.contentWindow.document.write(TEMPLATES[name + ".html"].replace(/ src="/g, ' src="/base/UrlEditorPRO/app/'));
 
         // delay event triggering to wait for the page elements to be rendered
         waitUntil(() => !!getElementBySelector("div"))
