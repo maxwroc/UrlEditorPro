@@ -32,7 +32,6 @@
     "jasmine-core": "~2.8.0",
     "karma": "^2.0.0",
     "karma-jasmine": "^1.1.1",
-    "karma-phantomjs-launcher": "^1.0.4",
     "typescript": "~2.6.2",
     "typings": "*2.1.0"
   },
