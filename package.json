@@ -29,8 +29,9 @@
     "gulp-typescript": "~3.2.3",
     "gulp-zip": "~4.1.0",
     "jasmine": "~2.8.0",
-    "jasmine-core": "~2.8.0",
+    "jasmine-core": "^2.8.0",
     "karma": "^2.0.0",
+    "karma-chrome-launcher": "^2.2.0",
     "karma-jasmine": "^1.1.1",
     "typescript": "~2.6.2",
     "typings": "*2.1.0"

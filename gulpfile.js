@@ -5,6 +5,7 @@ var open =          require('gulp-open');
 var rename =        require('gulp-rename');
 var typescript =    require('gulp-typescript');
 var zip =           require('gulp-zip');
+var KarmaServer =   require('karma').Server;
 
 var fs =            require('fs');
 
@@ -85,12 +86,14 @@ gulp.task('templates-html2js', function () {
         .pipe(gulp.dest('UrlEditorPRO.Tests/spec/')); //Output folder
 });
 
-gulp.task('run-tests', function () {
-    return gulp.src('UrlEditorPRO.Tests/SpecRunner.html')
-        .pipe(open());
-});
-
 gulp.task('build-test', ['templates-html2js', 'build-test-internal']);
+
+gulp.task('run-tests', function (done) {
+    new KarmaServer({
+      configFile: __dirname + '/karma.conf.js',
+      singleRun: true
+    }, done).start();
+});
 
 gulp.task('test', ['build-test'], function() {
     return gulp.src('UrlEditorPRO.Tests/SpecRunner.html')
