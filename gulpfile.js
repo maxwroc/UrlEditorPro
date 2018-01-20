@@ -100,6 +100,13 @@ gulp.task('test', ['build-test'], function() {
         .pipe(open());
 });
 
+gulp.task('test-ci', ['build', 'build-test'], function(done) {
+    new KarmaServer({
+        configFile: __dirname + '/karma.conf.js',
+        singleRun: true
+    }, done).start();
+});
+
 gulp.task('release', function() {
     var manifest = require('./UrlEditorPRO/app/manifest.json');
     var version = manifest.version;

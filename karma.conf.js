@@ -2,7 +2,7 @@
 // Generated on Tue Jan 16 2018 23:04:59 GMT+0000 (GMT Standard Time)
 
 module.exports = function(config) {
-  config.set({
+  var configuration = {
 
     // base path that will be used to resolve all patterns (eg. files, exclude)
     basePath: '',
@@ -15,8 +15,8 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
-      {pattern: 'UrlEditorPRO/app/**/*.png', watched: true, included: false, served: true},
-      {pattern: 'UrlEditorPRO/app/app.js', watched: true, included: false, served: true},
+      { pattern: 'UrlEditorPRO/app/**/*.png', watched: true, included: false, served: true },
+      { pattern: 'UrlEditorPRO/app/app.js', watched: true, included: false, served: true },
       'UrlEditorPRO/app/popup.js',
       'UrlEditorPRO/app/options.js',
       'UrlEditorPRO.Tests/libs/bililiteRange.js',
@@ -75,6 +75,19 @@ module.exports = function(config) {
 
     // Concurrency level
     // how many browser should be started simultaneous
-    concurrency: Infinity
-  })
+    concurrency: Infinity,
+
+    customLaunchers: {
+      Chrome_travis_ci: {
+        base: 'Chrome',
+        flags: ['--no-sandbox']
+      }
+    },
+  };
+
+  if (process.env.TRAVIS) {
+    configuration.browsers = ['Chrome_travis_ci'];
+  }
+
+  config.set(configuration);
 }
