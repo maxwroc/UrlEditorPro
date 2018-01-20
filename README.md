@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/maxwroc/UrlEditorPro.svg?branch=master)](https://travis-ci.org/maxwroc/UrlEditorPro)
+
 # UrlEditor PRO - Browser extension
 
 This extension can help you with changing parameters (or parts) of complex and long urls.
@@ -9,7 +11,6 @@ This extension can help you with changing parameters (or parts) of complex and l
 * Configurable
 
 ![Extension main popup window screenshot](https://github.com/maxwroc/UrlEditorPro/blob/master/UrlEditorPRO/screenshots/screenshot.png)
-[![Build Status](https://travis-ci.org/maxwroc/UrlEditorPro.svg?branch=master)](https://travis-ci.org/maxwroc/UrlEditorPro)
 
 ## Auto-complete / auto-suggest
 ![Auto-complete screenshot](https://github.com/maxwroc/UrlEditorPro/blob/master/UrlEditorPRO/screenshots/screenshot_autosuggest.png)
