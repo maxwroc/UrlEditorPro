@@ -86,7 +86,7 @@ module UrlEditor.Helpers {
      * Decodes string using Base64 algorythm
      */
     export function b64DecodeUnicode(str) {
-        return decodeURIComponent(Array.prototype.map.call(atob(str), c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+        return safeExecute(() => decodeURIComponent(Array.prototype.map.call(atob(str), c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')), "b64DecodeUnicode/decodeURI");
     }
 
     /**
