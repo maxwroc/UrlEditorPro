@@ -15,12 +15,18 @@ module UrlEditor {
         // it is better to set variable before page view event (init)
         Tracking.setCustomDimension(Tracking.Dimension.Version, version);
 
-        Tracking.init(settings.trackingEnabled, "/popup.html");
+        Tracking.init(settings.trackingEnabled, "/popup.html", true, version);
         new RichTextboxViewModel(document);
 
         var versionElem = Helpers.ge("version");
         versionElem.textContent = "UrlEditor PRO v" + version;
         !settings.trackingEnabled && (versionElem.style.color = "red");
+
+        if (settings.debugMode) {
+            let log = document.createElement("pre");
+            log.id = "log";
+            document.body.appendChild(log);
+        }
 
         // get currently selected tab
         chrome.tabs.getSelected(null, function (tab) {

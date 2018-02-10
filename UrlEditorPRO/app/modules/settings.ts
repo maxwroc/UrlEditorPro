@@ -1,5 +1,5 @@
 ﻿module UrlEditor {
-    
+
     var storageCache = {};
 
     export class Settings {
@@ -58,6 +58,11 @@
          * Redirection rules. We keep it as a string to prevent from parsing it on the initialization.
          */
         public redirectionRules = '{}';
+
+        /**
+         * Debug mode
+         */
+        public debugMode = false;
 
         constructor(storage) {
             storageCache = storage;

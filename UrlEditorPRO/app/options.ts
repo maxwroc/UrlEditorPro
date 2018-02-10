@@ -18,9 +18,13 @@ module UrlEditor.Options {
      * Automatically populates input fields if their name matches setting name.
      */
     function initialize(storage: Storage) {
+        let version = chrome.runtime.getManifest().version;
         settings = new Settings(storage);
 
-        Tracking.init(settings.trackingEnabled, "/options.html");
+        // it is better to set variable before page view event (init)
+        Tracking.setCustomDimension(Tracking.Dimension.Version, version);
+
+        Tracking.init(settings.trackingEnabled, "/options.html", true, version);
 
         document.body.addEventListener("change", evt => onChangeHandler(evt));
         document.body.addEventListener("click", evt => onClickHandler(evt));

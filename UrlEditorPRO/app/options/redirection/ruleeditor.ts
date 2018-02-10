@@ -364,7 +364,7 @@ module UrlEditor.Options.Redirection {
         }
 
         private validateEditFields() {
-            const pattern = /^(\*|https?|file|ftp):\/\/\/?(\*|\*\.[^.][^\/\/:*?"<>|]+|[^.][^\/\/:*?"<>|]+)(\*$|\/.+)$/;
+            const pattern = /^(\*|https?|file|ftp):\/\/\/?(\*|\*\.[^.][^\/\/:*?"<>|]+|[^.][^\/\/:*?"<>|]+)\/(\*$|.+)$/;
             this.validator = new Validator(elems.errorMessages);
 
             if (!this.validator.isNotEmpty(elems.name) || !this.validator.isNotEmpty(elems.urlFilter)) {

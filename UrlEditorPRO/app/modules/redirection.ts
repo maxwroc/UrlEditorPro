@@ -17,7 +17,7 @@ module UrlEditor {
     converters.increment = (val, arg) => (parseInt(val) + parseInt(arg)).toString();
     converters.decrease = (val, arg) => (parseInt(val) - parseInt(arg)).toString();
     converters.urlEncode = (val) => encodeURIComponent(val);
-    converters.urlDecode = (val) => decodeURIComponent(val);
+    converters.urlDecode = (val) => Helpers.safeExecute(() => decodeURIComponent(val), "Redirection/converter-urlDecode");
     converters.base64Encode = (val) => Helpers.b64EncodeUnicode(val);
     converters.base64Decode = (val) => Helpers.b64DecodeUnicode(val);
 
