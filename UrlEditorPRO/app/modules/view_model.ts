@@ -229,7 +229,7 @@ module UrlEditor {
             for (var name in urlParams) {
 
                 urlParams[name].forEach((value, valueIndex) => {
-                    name = decodeURIComponent(name);
+                    name = Helpers.safeExecute(() => decodeURIComponent(name), "populateParams/decode name");
                     param = this.createNewParamContainer(name);
 
                     // parameter name field
@@ -239,7 +239,7 @@ module UrlEditor {
                     param.urlEncoded = true;
 
                     if (param.urlEncoded) {
-                        value = Helpers.safeExecute(() => decodeURIComponent(value), "populateParams/decode") || value;
+                        value = Helpers.safeExecute(() => decodeURIComponent(value), "populateParams/decode value") || value;
                     }
 
                     // parameter value field

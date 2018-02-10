@@ -22,6 +22,12 @@ module UrlEditor {
         versionElem.textContent = "UrlEditor PRO v" + version;
         !settings.trackingEnabled && (versionElem.style.color = "red");
 
+        if (settings.debugMode) {
+            let log = document.createElement("pre");
+            log.id = "log";
+            document.body.appendChild(log);
+        }
+
         // get currently selected tab
         chrome.tabs.getSelected(null, function (tab) {
 
