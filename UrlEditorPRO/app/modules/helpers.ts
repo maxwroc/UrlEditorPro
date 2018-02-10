@@ -135,19 +135,23 @@ module UrlEditor.Helpers {
         }
     }
 
-    export const safeExecute = lazyInit(safeExecuteInitializer);
+    export function safeExecute<T>(delegate: () => T, description?: string): T {
+        try {
+            return delegate();
+        }
+        catch (e) {
+            log(`[${description || "error"}] ${e.message || e}`);
+        }
+    }
 
-    function safeExecuteInitializer() {
+    export const log = lazyInit(logInitializer);
+    function logInitializer() {
         let logElem = ge("log");
-        return (delegate: Function, description?: string) => {
-            try {
-                return delegate();
-            }
-            catch (e) {
-                let msg = `[${description || "error"}] ${e.message}`;
-                logElem && (logElem.textContent += "\n" + msg);
-                console.warn(msg);
-            }
+        let addNewLine = false;
+        return (msg: string) => {
+            logElem.textContent += (addNewLine ? "\n" : "") + msg;
+            console.warn(msg);
+            addNewLine = true;
         }
     }
 
