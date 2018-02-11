@@ -277,7 +277,7 @@ module UrlEditor.Options.Suggestions {
                 data = <IAutoSuggestData>JSON.parse((<any>evt).target.result);
             }
             catch (err) {
-                alert("Import failed. \n\n" + err.message);
+                alert("Import failed. Failed to parse file content. \n\n" + err.message);
                 return;
             }
 
