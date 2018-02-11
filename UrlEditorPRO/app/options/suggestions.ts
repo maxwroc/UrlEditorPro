@@ -267,8 +267,12 @@ module UrlEditor.Options.Suggestions {
     }
 
     function importSuggestionsData(input: HTMLInputElement) {
-        let file = input.files[0],
-            reader = new FileReader();
+        if (!input.files || !input.files.length) {
+            return;
+        }
+
+        let file = input.files[0];
+        let reader = new FileReader();
 
         // Closure to capture the file information.
         reader.onload = function (evt) {
