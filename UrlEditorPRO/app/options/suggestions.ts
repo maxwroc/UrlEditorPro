@@ -267,8 +267,12 @@ module UrlEditor.Options.Suggestions {
     }
 
     function importSuggestionsData(input: HTMLInputElement) {
-        let file = input.files[0],
-            reader = new FileReader();
+        if (!input.files || !input.files.length) {
+            return;
+        }
+
+        let file = input.files[0];
+        let reader = new FileReader();
 
         // Closure to capture the file information.
         reader.onload = function (evt) {
@@ -277,7 +281,7 @@ module UrlEditor.Options.Suggestions {
                 data = <IAutoSuggestData>JSON.parse((<any>evt).target.result);
             }
             catch (err) {
-                alert("Import failed. \n\n" + err.message);
+                alert("Import failed. Failed to parse file content. \n\n" + err.message);
                 return;
             }
 
