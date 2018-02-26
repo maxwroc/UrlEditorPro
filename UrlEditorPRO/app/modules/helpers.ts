@@ -149,7 +149,10 @@ module UrlEditor.Helpers {
         let logElem = ge("log");
         let addNewLine = false;
         return (msg: string) => {
-            logElem.textContent += (addNewLine ? "\n" : "") + msg;
+            if (logElem) {
+                logElem.textContent += (addNewLine ? "\n" : "") + msg;
+            }
+
             console.warn(msg);
             addNewLine = true;
         }
