@@ -13,6 +13,19 @@
         margin: 16px 8px 8px 8px;
       }
 
+      #options {
+          position: absolute;
+          top: 0;
+          font-size: 10px;
+          cursor: pointer;
+      }
+      #options::after {
+          margin-left: 2px;
+          color: #777;
+          font-size: 8px;
+          content: "\25bc";
+      }
+
       #version {
           position: absolute;
           font-size: 10px;
@@ -236,6 +249,7 @@
     <script src="popup.js"></script>
   </head>
   <body>
+      <div id="options">Options</div>
       <div id="version"></div>
       <div class="container">
           <div id="full_url" contenteditable="true" spellcheck="false"></div>
