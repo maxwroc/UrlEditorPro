@@ -237,6 +237,14 @@
           line-height: 19px;
       }
 
+      input[name=switch],
+      input[name=switch] + * {
+          display: none;
+      }
+      input[name=switch]:checked + * {
+          display: block !important;
+      }
+
     </style>
 
     <!--
@@ -249,8 +257,19 @@
     <script src="popup.js"></script>
   </head>
   <body>
-      <div id="options">Options</div>
+      <label for="options_menu_check"><div id="options">Options</div></label>
+      <input type="radio" name="switch" id="options_menu_check" />
+      <div id="options_menu">
+          <ul>
+              <li><label for="refresh_check">Refresh</label></li>
+          </ul>
+      </div>
       <div id="version"></div>
+      <input type="radio" id="refresh_check" name="switch">
+      <div>
+        <div>Set refresh time in miliseconds for the current tab</div>
+        <input /> <input type="button" value="Set" />
+      </div>
       <div class="container">
           <div id="full_url" contenteditable="true" spellcheck="false"></div>
       </div>
