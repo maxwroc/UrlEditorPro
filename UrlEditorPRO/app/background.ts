@@ -74,12 +74,15 @@ module UrlEditor {
 
             chrome.tabs.get(tabId, tab => {
                 let data = this.redirMgr.getData();
+                let redirectionsCount = 0;
 
                 Object.keys(data).forEach(name => {
                     let rule = new RedirectRule(data[name]);
 
                     // skip all autromatic rules and ones which are not for the current url
                     if (!rule.isAutomatic && rule.isUrlSupported(tab.url)) {
+
+                        redirectionsCount++;
 
                         this.contextMenuItems.push({
                             title: "Redirect: " + name,
@@ -95,7 +98,11 @@ module UrlEditor {
 
                         chrome.contextMenus.create(this.contextMenuItems[this.contextMenuItems.length - 1]);
                     }
-                })
+                });
+
+                if (redirectionsCount) {
+                    chrome.browserAction.setBadgeText({ text: redirectionsCount.toString(), tabId: tabId });
+                }
             });
         }
     }
