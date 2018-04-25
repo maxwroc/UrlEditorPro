@@ -246,13 +246,19 @@
       }
 
       #options_menu > ul {
-        position: absolute;
-        z-index: 1;
         background: #f6f6f6;
-        border: 1px solid #0078e7;
-        margin: 0;
-        padding: 0;
+        border: solid #cacaca;
+        border-width: 1px 0;
+        display: flex;
+        padding: 5px 0;
         list-style: none;
+        margin: 10px 0;
+      }
+      #options_menu > ul > li {
+        background-color: #0078e7;
+        border-radius: 2px;
+        color: #fff;
+        padding: 3px;
       }
       #options_menu label {
           padding: 3px 10px;
@@ -275,7 +281,7 @@
   </head>
   <body>
       <label for="options_menu_check"><div id="options">Options</div></label>
-      <input type="radio" name="switch" id="options_menu_check" />
+      <input type="checkbox" name="switch" id="options_menu_check" />
       <div id="options_menu">
           <ul>
               <li><label for="refresh_check">Refresh</label></li>
