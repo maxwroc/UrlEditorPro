@@ -13,6 +13,10 @@
         margin: 16px 8px 8px 8px;
       }
 
+      label {
+        user-select: none;
+      }
+
       #options {
           position: absolute;
           top: 0;
@@ -195,16 +199,20 @@
           font-weight: bold;
       }
 
+      .button,
       input[type=button] {
           background-color: #0078e7;
           border-radius: 3px;
           color: #fff;
           border: 1px solid;
           padding: 3px;
+          font: 400 13.3333px Arial;
       }
+      .button:hover,
       input[type=button]:hover {
           background-image: linear-gradient(transparent,rgba(0,0,0,.05) 40%,rgba(0,0,0,.1));
       }
+      .button:active,
       input[type=button]:active {
           box-shadow: 0 0 0 1px rgba(0,0,0,.15) inset,0 0 6px rgba(0,0,0,.2) inset;
       }
@@ -245,27 +253,23 @@
           display: block !important;
       }
 
-      #options_menu > ul {
-        background: #f6f6f6;
+      #options_menu {
         border: solid #cacaca;
         border-width: 1px 0;
-        display: flex;
         padding: 5px 0;
-        list-style: none;
         margin: 10px 0;
       }
+      #options_menu > ul {
+        background: #f6f6f6;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
       #options_menu > ul > li {
-        background-color: #0078e7;
-        border-radius: 2px;
-        color: #fff;
-        padding: 3px;
+          display: inline-block;
       }
-      #options_menu label {
+      #options_menu label.option {
           padding: 3px 10px;
-      }
-      #options_menu label:hover {
-          background-color: #0078e7;
-          cursor: pointer;
       }
 
     </style>
@@ -280,19 +284,26 @@
     <script src="popup.js"></script>
   </head>
   <body>
-      <label for="options_menu_check"><div id="options">Options</div></label>
+      <label for="options_menu_check"><div id="options">Page options</div></label>
       <input type="checkbox" name="switch" id="options_menu_check" />
       <div id="options_menu">
+          <input type="radio" id="options_list" name="switch" checked />
           <ul>
-              <li><label for="refresh_check">Refresh</label></li>
+              <li><label for="refresh_check" class="option button">Auto-Refresh</label></li>
           </ul>
+          <input type="radio" id="refresh_check" name="switch" />
+          <div>
+            <div>Set refresh time in miliseconds for the current tab</div>
+            <input value="30s" /> <input type="button" value="Set" /> <label for="options_list" class="button">Cancel</label>
+          </div>
+          <input type="radio" id="other_check" name="switch" />
+          <div>
+            <div>Bla bla blah</div>
+            <input /> <input type="button" value="Set" /> <label for="options_list" class="button">Cancel</label>
+          </div>
       </div>
       <div id="version"></div>
-      <input type="radio" id="refresh_check" name="switch">
-      <div>
-        <div>Set refresh time in miliseconds for the current tab</div>
-        <input /> <input type="button" value="Set" />
-      </div>
+
       <div class="container">
           <div id="full_url" contenteditable="true" spellcheck="false"></div>
       </div>
