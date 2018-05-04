@@ -58,3 +58,8 @@ interface IRuleData {
     isAutomatic?: boolean;
     hotKey?: string
 }
+
+interface IPageBackground {
+    registerCommandHandler(name: string, hander: Function);
+    addEventListener(name: string, hander: Function);
+}
