@@ -65,10 +65,10 @@ module UrlEditor {
         }
     }
 
-    export class RefreshViewModel implements Plugins.IViewModelPlugin {
+    export class RefreshViewModel implements Plugins.IPlugin {
         private static TimePattern = /([0-9]+)(s|m|h|d)?/i
 
-        constructor(zzz: string) {
+        constructor(settings: Settings, viewModel: ViewModel) {
             let button = Helpers.ge("set_refresh_interval");
             button.addEventListener("click", () => {
                 this.setRefreshInterval((<HTMLInputElement>button.previousElementSibling).value);
@@ -104,6 +104,6 @@ module UrlEditor {
         }
     }
 
-    Plugins.ViewModel.push()
-
+    Plugins.ViewModel.push(RefreshViewModel);
+    Plugins.Background.push(RefreshBackgroundProcessor);
 }

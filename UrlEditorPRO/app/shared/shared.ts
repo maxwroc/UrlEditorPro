@@ -1,25 +1,18 @@
 
 module UrlEditor.Plugins {
-    export const ViewModel: IViewModelPlugin[] = [];
+    export const ViewModel: IViewModelPluginConstructor[] = [];
     export const Background: IBackgroundPluginConstructor[] = [];
 
 
-    interface IViewModelPlugin2 {
-        new(settings: Settings, viewModel: ViewModel): void;
+    export interface IViewModelPluginConstructor {
+        new (settings: Settings, viewModel: ViewModel): IPlugin;
     }
 
-    interface IBackgroundPluginConstructor {
-        (settings: Settings, background: IPageBackground): void;
+    export interface IBackgroundPluginConstructor {
+        new (settings: Settings, background: IPageBackground): IPlugin;
     }
 
-    export interface IViewModelPlugin {
-        // ... rest ...
+    export interface IPlugin {
+        // placeholder
     }
-
-    declare var IViewModelPlugin: {
-        new (settings: Settings, viewModel: IViewModel): IViewModelPlugin;
-    }
-
-    let zzz: IViewModelPlugin;
-    let cc = new zzz("asdasd");
 }

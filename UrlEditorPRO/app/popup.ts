@@ -57,7 +57,7 @@ module UrlEditor {
                 }
             });
 
-            Plugins.ViewModel.forEach(plugin => plugin(settings, this));
+            Plugins.ViewModel.forEach(plugin => new plugin(settings, this));
         });
     };
 

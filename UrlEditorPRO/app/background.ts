@@ -200,7 +200,7 @@ module UrlEditor {
 
     bg.initializeRedirections();
 
-    Plugins.Background.forEach(plugin => plugin(settings, bg));
+    Plugins.Background.forEach(plugin => new plugin(settings, bg));
 
     interface ContextMenuProperties extends chrome.contextMenus.CreateProperties {
         isEnabled?: (tab: chrome.tabs.Tab) => boolean
