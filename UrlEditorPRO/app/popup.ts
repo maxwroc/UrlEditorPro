@@ -4,6 +4,7 @@
 /// <reference path="modules/url_parser.ts" />
 /// <reference path="modules/view_model.ts" />
 /// <reference path="../../typings/index.d.ts" />
+/// <reference path="shared/shared.ts" />
 
 module UrlEditor {
 

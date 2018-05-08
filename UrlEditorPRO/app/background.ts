@@ -5,6 +5,7 @@
 /// <reference path="modules/tracking.ts" />
 /// <reference path="../../typings/index.d.ts" />
 /// <reference path="shared/interfaces.shared.d.ts" />
+/// <reference path="shared/shared.ts" />
 
 module UrlEditor {
 
@@ -107,7 +108,7 @@ module UrlEditor {
 
             let allTabsContextMenus = this.contextMenus["-1"];
 
-            chrome.tabs.getCurrent(tab => {
+            chrome.tabs.getSelected(null, tab => {
                 let currentTabId = tab.id;
                 let processedGroups = {};
 
@@ -154,15 +155,15 @@ module UrlEditor {
         }
 
         addActionContextMenuItem(group: string, label: string, handler, tabId: number = -1, isEnabled?: Function) {
-            if (!this.contextMenuItems[tabId]) {
-                this.contextMenuItems[tabId] = {};
+            if (!this.contextMenus[tabId]) {
+                this.contextMenus[tabId] = {};
             }
 
-            if (!this.contextMenuItems[tabId][group]) {
-                this.contextMenuItems[tabId][group] = {};
+            if (!this.contextMenus[tabId][group]) {
+                this.contextMenus[tabId][group] = {};
             }
 
-            if (this.contextMenuItems[tabId][group][label]) {
+            if (this.contextMenus[tabId][group][label]) {
                 throw new Error(`Context menu item exists already [${tabId}|${group}|${label}]`);
             }
 
@@ -176,7 +177,7 @@ module UrlEditor {
         }
 
         removeActionContextMenuItem(group: string, label: string, tabId: number = -1) {
-            let tabContextMenu = this.contextMenuItems[tabId.toString()];
+            let tabContextMenu = this.contextMenus[tabId.toString()];
             if (!tabContextMenu ||
                 !tabContextMenu[group] ||
                 !tabContextMenu[group][label]) {

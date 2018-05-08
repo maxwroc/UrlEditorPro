@@ -24,7 +24,7 @@ module UrlEditor {
         return (1 * <any>ctrl) + (2 * <any>shift) - (<any>ctrl & <any>shift);
     }
 
-    export class ViewModel {
+    export class ViewModel implements IViewModel {
 
         private mapIdToFunction: IStringMap = {
             "full_url": "url",

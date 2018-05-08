@@ -46,7 +46,7 @@ module UrlEditor {
             else {
                 // clear previous if exists
                 this.tabRefreshMap[tabId] && clearInterval(this.tabRefreshMap[tabId]);
-                this.tabRefreshMap[tabId] = setInterval(() => this.refreshTab(tabId), interval);
+                this.tabRefreshMap[tabId] = setInterval(() => this.refreshTab(tabId), interval * 1000);
 
                 chrome.browserAction.setBadgeText({ tabId: tabId, text: "R" });
                 chrome.browserAction.setBadgeBackgroundColor({ tabId: tabId, color: "green" });
@@ -58,7 +58,7 @@ module UrlEditor {
         private refreshTab(tabId: number) {
             // get current tab - refresh only if matches? setting?
             chrome.tabs.getSelected(null, function (tab) {
-                if (tab.id == tabId) {
+                if (tab && tab.id == tabId) {
                     chrome.tabs.reload(tabId);
                 }
             });
@@ -68,7 +68,7 @@ module UrlEditor {
     export class RefreshViewModel implements Plugins.IPlugin {
         private static TimePattern = /([0-9]+)(s|m|h|d)?/i
 
-        constructor(settings: Settings, viewModel: ViewModel) {
+        constructor(settings: Settings, viewModel: IViewModel) {
             let button = Helpers.ge("set_refresh_interval");
             button.addEventListener("click", () => {
                 this.setRefreshInterval((<HTMLInputElement>button.previousElementSibling).value);
@@ -98,7 +98,7 @@ module UrlEditor {
                     break;
             }
 
-            chrome.tabs.getCurrent(tab => {
+            chrome.tabs.getSelected(null, tab => {
                 chrome.runtime.sendMessage({ type: MessageType, tabId: tab.id, interval: secs })
             });
         }

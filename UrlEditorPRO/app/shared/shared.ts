@@ -1,3 +1,4 @@
+/// <reference path="interfaces.shared.d.ts" />
 
 module UrlEditor.Plugins {
     export const ViewModel: IViewModelPluginConstructor[] = [];
@@ -5,7 +6,7 @@ module UrlEditor.Plugins {
 
 
     export interface IViewModelPluginConstructor {
-        new (settings: Settings, viewModel: ViewModel): IPlugin;
+        new (settings: Settings, viewModel: IViewModel): IPlugin;
     }
 
     export interface IBackgroundPluginConstructor {
