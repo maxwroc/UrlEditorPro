@@ -7,7 +7,6 @@
 
 module UrlEditor {
 
-
     function initialize(storage: Storage) {
         var version = chrome.runtime.getManifest().version;
         var settings = new Settings(storage);
@@ -58,10 +57,13 @@ module UrlEditor {
                 }
             });
 
+            Plugins.ViewModel.forEach(plugin => plugin(settings, this));
         });
     };
 
+    // to enable UI testing
     document.addEventListener(
         window.top == window.self && !window["__karma__"] ? "DOMContentLoaded" : "init",
         (evt: any) => initialize(<Storage>evt.detail || localStorage));
 }
+

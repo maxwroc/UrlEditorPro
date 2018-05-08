@@ -4,10 +4,11 @@
 /// <reference path="modules/helpers.ts" />
 /// <reference path="modules/tracking.ts" />
 /// <reference path="../../typings/index.d.ts" />
+/// <reference path="shared/interfaces.shared.d.ts" />
 
 module UrlEditor {
 
-    class Background {
+    class Background implements IPageBackground {
         private beforeRequestListeners = [];
         private redirMgr: RedirectionManager;
         private contextMenuItems: chrome.contextMenus.CreateProperties[] = [];
@@ -17,7 +18,6 @@ module UrlEditor {
 
             // it is better to set variable before page view event (init)
             Tracking.setCustomDimension(Tracking.Dimension.Version, version);
-
             Tracking.init(this.settings.trackingEnabled, "/background.html", false/*logEventsOnce*/, version);
         }
 
@@ -98,14 +98,111 @@ module UrlEditor {
                 })
             });
         }
+
+        private eventListeners: IMap<Function[]> = {};
+        private contextMenus: IMap<IMap<IMap<ContextMenuProperties>>> = {};
+
+        private initializeContextMenu2() {
+            chrome.contextMenus.removeAll();
+
+            let allTabsContextMenus = this.contextMenus["-1"];
+
+            chrome.tabs.getCurrent(tab => {
+                let currentTabId = tab.id;
+                let processedGroups = {};
+
+                let tabContextMenus = this.contextMenus[currentTabId];
+                // add menu items for current tab
+                if (tabContextMenus) {
+                    Object.keys(tabContextMenus).forEach(group => {
+                        Object.keys(this.contextMenus[currentTabId][group]).forEach(label => {
+                            this.addEnabledContextMenuItem(tab, tabContextMenus[group][label])
+                        });
+
+                        // to keep groups together we add items from "all tabs"
+                        if (allTabsContextMenus && allTabsContextMenus[group]) {
+                            Object.keys(allTabsContextMenus[group]).forEach(label => {
+                                this.addEnabledContextMenuItem(tab, allTabsContextMenus[group][label]);
+                            });
+                        }
+                    });
+                }
+
+                // adding "all tabs" manu items
+                if (allTabsContextMenus) {
+                    Object.keys(allTabsContextMenus).forEach(group => {
+                        Object.keys(allTabsContextMenus[group]).forEach(label => {
+                            this.addEnabledContextMenuItem(tab, allTabsContextMenus[group][label]);
+                        });
+                    });
+                }
+            });
+        }
+
+        private addEnabledContextMenuItem(tab: chrome.tabs.Tab, item: ContextMenuProperties) {
+            if (!item.isEnabled || item.isEnabled(tab)) {
+                chrome.contextMenus.create(item);
+            }
+        }
+
+        addEventListener<N extends "tabChange">(name: N, handler: IBackgroundPageEventMap[N]) {
+            if (!this.eventListeners[name]) {
+                this.eventListeners[name] = [];
+            }
+
+            this.eventListeners[name].push(handler);
+        }
+
+        addActionContextMenuItem(group: string, label: string, handler, tabId: number = -1, isEnabled?: Function) {
+            if (!this.contextMenuItems[tabId]) {
+                this.contextMenuItems[tabId] = {};
+            }
+
+            if (!this.contextMenuItems[tabId][group]) {
+                this.contextMenuItems[tabId][group] = {};
+            }
+
+            if (this.contextMenuItems[tabId][group][label]) {
+                throw new Error(`Context menu item exists already [${tabId}|${group}|${label}]`);
+            }
+
+            this.contextMenus[tabId][group][label] = {
+                title: label,
+                contexts: ["browser_action"],
+                onclick: handler
+            };
+
+            this.initializeContextMenu2();
+        }
+
+        removeActionContextMenuItem(group: string, label: string, tabId: number = -1) {
+            let tabContextMenu = this.contextMenuItems[tabId.toString()];
+            if (!tabContextMenu ||
+                !tabContextMenu[group] ||
+                !tabContextMenu[group][label]) {
+                // it looks like it is removed already
+                return;
+            }
+
+            delete tabContextMenu[group][label];
+
+            this.initializeContextMenu2();
+        }
     }
 
-    const bg = new Background();
+    const settings = new Settings(localStorage)
+    const bg = new Background(settings);
 
     chrome.commands.onCommand.addListener(cmd => bg.handleKeyboardCommand(cmd));
-    chrome.runtime.onMessage.addListener(msg => bg.handleMessage(msg));
+    chrome.runtime.onMessage.addListener((msgData, sender, sendResponse) => bg.handleMessage(msgData));
     chrome.tabs.onActivated.addListener(activeInfo => bg.initializeContextMenu(activeInfo.tabId));
     chrome.tabs.onUpdated.addListener((tabId, changedInfo) => changedInfo.url && bg.initializeContextMenu(tabId));
 
     bg.initializeRedirections();
+
+    Plugins.Background.forEach(plugin => plugin(settings, bg));
+
+    interface ContextMenuProperties extends chrome.contextMenus.CreateProperties {
+        isEnabled?: (tab: chrome.tabs.Tab) => boolean
+    }
 }

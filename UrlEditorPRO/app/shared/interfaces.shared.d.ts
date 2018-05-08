@@ -59,7 +59,16 @@ interface IRuleData {
     hotKey?: string
 }
 
+interface IBackgroundPageEventMap {
+    "tabChange" : (tabId: number) => void
+}
+
 interface IPageBackground {
-    registerCommandHandler(name: string, hander: Function);
-    addEventListener(name: string, hander: Function);
+    addEventListener<N extends keyof IBackgroundPageEventMap>(name: N, handler: IBackgroundPageEventMap[N]);
+    addActionContextMenuItem(group: string, label: string, handler: (info: chrome.contextMenus.OnClickData, tab: chrome.tabs.Tab) => void, tabId?: number, isEnabled?: Function)
+    removeActionContextMenuItem(group: string, label: string, tabId?: number);
+}
+
+interface IViewModel {
+
 }
