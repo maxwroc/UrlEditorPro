@@ -26,7 +26,7 @@ module UrlEditor {
             switch (command) {
                 case Command.GoToHomepage:
                     Tracking.trackEvent(Tracking.Category.Redirect, "keyboard", "homepage");
-                    chrome.tabs.getSelected(null, function (tab) {
+                    this.getSelectedTab(tab => {
                         let uri = new UrlEditor.Uri(tab.url);
                         chrome.tabs.update(tab.id, { url: uri.protocol() + "//" + uri.host() });
                     });
@@ -104,11 +104,21 @@ module UrlEditor {
         private contextMenus: IMap<IMap<IMap<ContextMenuProperties>>> = {};
 
         private initializeContextMenu2() {
-            chrome.contextMenus.removeAll();
+            console.log("initializeContextMenu2");
 
-            let allTabsContextMenus = this.contextMenus["-1"];
+            this.clearContextMenu();
 
-            chrome.tabs.getSelected(null, tab => {
+            let allTabsContextMenus = this.contextMenus["-2"];
+
+            this.getSelectedTab(tab => {
+                if (tab.id < 0) {
+                    // Developers toolbar is being returned as -1
+                    return;
+                }
+
+                this.clearContextMenu();
+
+                console.log("Tab: " + tab.id);
                 let currentTabId = tab.id;
                 let processedGroups = {};
 
@@ -117,12 +127,15 @@ module UrlEditor {
                 if (tabContextMenus) {
                     Object.keys(tabContextMenus).forEach(group => {
                         Object.keys(this.contextMenus[currentTabId][group]).forEach(label => {
+                            console.log("add1", tabContextMenus[group][label]);
                             this.addEnabledContextMenuItem(tab, tabContextMenus[group][label])
                         });
 
                         // to keep groups together we add items from "all tabs"
                         if (allTabsContextMenus && allTabsContextMenus[group]) {
+                            processedGroups[group] = 1;
                             Object.keys(allTabsContextMenus[group]).forEach(label => {
+                                console.log("add2", allTabsContextMenus[group][label]);
                                 this.addEnabledContextMenuItem(tab, allTabsContextMenus[group][label]);
                             });
                         }
@@ -132,11 +145,44 @@ module UrlEditor {
                 // adding "all tabs" manu items
                 if (allTabsContextMenus) {
                     Object.keys(allTabsContextMenus).forEach(group => {
-                        Object.keys(allTabsContextMenus[group]).forEach(label => {
-                            this.addEnabledContextMenuItem(tab, allTabsContextMenus[group][label]);
-                        });
+                        if (!processedGroups[group]) {
+                            Object.keys(allTabsContextMenus[group]).forEach(label => {
+                                console.log("add3", allTabsContextMenus[group][label]);
+                                this.addEnabledContextMenuItem(tab, allTabsContextMenus[group][label]);
+                            });
+                        }
                     });
                 }
+            });
+        }
+
+        private getSelectedTab(callback: (tab: chrome.tabs.Tab) => void) {
+            chrome.tabs.query({ currentWindow: true, active: true }, tabs => {
+                if (tabs.length != 1) {
+                    tabs.length > 1 && console.error("Invalid number of active tabs");
+                    return;
+                }
+
+                let tab = tabs[0];
+
+                if (tab.id < 0) {
+                    // Developers toolbar is being returned as -1
+                    return;
+                }
+
+                callback(tab);
+            });
+        }
+
+        private clearContextMenu() {
+            chrome.contextMenus.removeAll();
+            Object.keys(this.contextMenus).forEach(tab => {
+                let allTabsContextMenus = this.contextMenus[tab];
+                Object.keys(allTabsContextMenus).forEach(group => {
+                    Object.keys(allTabsContextMenus[group]).forEach(label => {
+                        delete allTabsContextMenus[group][label]["generatedId"];
+                    });
+                });
             });
         }
 
@@ -154,7 +200,7 @@ module UrlEditor {
             this.eventListeners[name].push(handler);
         }
 
-        addActionContextMenuItem(group: string, label: string, handler, tabId: number = -1, isEnabled?: Function) {
+        addActionContextMenuItem(group: string, label: string, handler, tabId: number = -2, isEnabled?: Function) {
             if (!this.contextMenus[tabId]) {
                 this.contextMenus[tabId] = {};
             }
@@ -176,7 +222,7 @@ module UrlEditor {
             this.initializeContextMenu2();
         }
 
-        removeActionContextMenuItem(group: string, label: string, tabId: number = -1) {
+        removeActionContextMenuItem(group: string, label: string, tabId: number = -2) {
             let tabContextMenu = this.contextMenus[tabId.toString()];
             if (!tabContextMenu ||
                 !tabContextMenu[group] ||

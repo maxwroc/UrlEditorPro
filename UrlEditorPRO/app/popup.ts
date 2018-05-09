@@ -29,8 +29,9 @@ module UrlEditor {
         }
 
         // get currently selected tab
-        chrome.tabs.getSelected(null, function (tab) {
+        chrome.tabs.query({ currentWindow: true, active: true }, tabs => {
 
+            var tab = tabs[0];
             var uri = new UrlEditor.Uri(tab.url);
 
             var autosuggest = new AutoSuggest(settings, document, uri, tab.incognito);
