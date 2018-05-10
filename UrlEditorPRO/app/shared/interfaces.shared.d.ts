@@ -65,8 +65,16 @@ interface IBackgroundPageEventMap {
 
 interface IPageBackground {
     addEventListener<N extends keyof IBackgroundPageEventMap>(name: N, handler: IBackgroundPageEventMap[N]);
-    addActionContextMenuItem(group: string, label: string, handler: (info: chrome.contextMenus.OnClickData, tab: chrome.tabs.Tab) => void, tabId?: number, isEnabled?: Function)
+    addActionContextMenuItem(properties: IContextMenuItemProperties);
     removeActionContextMenuItem(group: string, label: string, tabId?: number);
+}
+
+interface IContextMenuItemProperties {
+    group: string;
+    label: string;
+    clickHandler: (info: chrome.contextMenus.OnClickData, tab: chrome.tabs.Tab) => void;
+    tabId?: number;
+    isEnabled?: (tab: chrome.tabs.Tab) => boolean;
 }
 
 interface IViewModel {

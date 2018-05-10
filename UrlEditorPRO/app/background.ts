@@ -20,6 +20,8 @@ module UrlEditor {
             // it is better to set variable before page view event (init)
             Tracking.setCustomDimension(Tracking.Dimension.Version, version);
             Tracking.init(this.settings.trackingEnabled, "/background.html", false/*logEventsOnce*/, version);
+
+            this.addEventListener("tabChange", () => this.initializeContextMenu2());
         }
 
         public handleKeyboardCommand(command: string) {
@@ -103,12 +105,20 @@ module UrlEditor {
         private eventListeners: IMap<Function[]> = {};
         private contextMenus: IMap<IMap<IMap<ContextMenuProperties>>> = {};
 
+        private delayedUiUpdate: number;
+        private currentTabId: number;
+
+        /**
+         * To avoid upating context menu every time when menu item is being added/removed we delay execution by releasing thread
+         */
+        private throttledContextMenuInit() {
+            clearTimeout(this.delayedUiUpdate);
+            this.delayedUiUpdate = setTimeout(() => this.initializeContextMenu2(), 0);
+        }
+
         private initializeContextMenu2() {
-            console.log("initializeContextMenu2");
-
             this.clearContextMenu();
-
-            let allTabsContextMenus = this.contextMenus["-2"];
+            let allTabsContextMenus = this.contextMenus["-1"];
 
             this.getSelectedTab(tab => {
                 if (tab.id < 0) {
@@ -118,7 +128,6 @@ module UrlEditor {
 
                 this.clearContextMenu();
 
-                console.log("Tab: " + tab.id);
                 let currentTabId = tab.id;
                 let processedGroups = {};
 
@@ -127,7 +136,6 @@ module UrlEditor {
                 if (tabContextMenus) {
                     Object.keys(tabContextMenus).forEach(group => {
                         Object.keys(this.contextMenus[currentTabId][group]).forEach(label => {
-                            console.log("add1", tabContextMenus[group][label]);
                             this.addEnabledContextMenuItem(tab, tabContextMenus[group][label])
                         });
 
@@ -135,7 +143,6 @@ module UrlEditor {
                         if (allTabsContextMenus && allTabsContextMenus[group]) {
                             processedGroups[group] = 1;
                             Object.keys(allTabsContextMenus[group]).forEach(label => {
-                                console.log("add2", allTabsContextMenus[group][label]);
                                 this.addEnabledContextMenuItem(tab, allTabsContextMenus[group][label]);
                             });
                         }
@@ -147,7 +154,6 @@ module UrlEditor {
                     Object.keys(allTabsContextMenus).forEach(group => {
                         if (!processedGroups[group]) {
                             Object.keys(allTabsContextMenus[group]).forEach(label => {
-                                console.log("add3", allTabsContextMenus[group][label]);
                                 this.addEnabledContextMenuItem(tab, allTabsContextMenus[group][label]);
                             });
                         }
@@ -188,11 +194,13 @@ module UrlEditor {
 
         private addEnabledContextMenuItem(tab: chrome.tabs.Tab, item: ContextMenuProperties) {
             if (!item.isEnabled || item.isEnabled(tab)) {
-                chrome.contextMenus.create(item);
+                let cloned = Object.assign({}, item);
+                delete cloned["isEnabled"];
+                chrome.contextMenus.create(cloned);
             }
         }
 
-        addEventListener<N extends "tabChange">(name: N, handler: IBackgroundPageEventMap[N]) {
+        addEventListener<N extends keyof IBackgroundPageEventMap>(name: N, handler: IBackgroundPageEventMap[N]) {
             if (!this.eventListeners[name]) {
                 this.eventListeners[name] = [];
             }
@@ -200,29 +208,54 @@ module UrlEditor {
             this.eventListeners[name].push(handler);
         }
 
-        addActionContextMenuItem(group: string, label: string, handler, tabId: number = -2, isEnabled?: Function) {
+        triggerEvent<N extends keyof IBackgroundPageEventMap>(name: N, ...args: object[]) {
+            if (this.eventListeners[name]) {
+                let eventHandlerArgs = [];
+                switch (name) {
+                    case "tabChange":
+                        let tabId = <number><any>args[0];
+                        // trigger only if actually has changed
+                        if (this.currentTabId != tabId) {
+                            this.currentTabId = tabId;
+
+                            this.eventListeners[name].forEach(h => {
+                                Helpers.safeExecute(() => {
+                                    let handler = <IBackgroundPageEventMap["tabChange"]>h;
+                                    handler(tabId);
+                                }, "tabChange handler");
+                            });
+                        }
+                        break;
+                }
+            }
+        }
+
+        addActionContextMenuItem(props: IContextMenuItemProperties) {
+            let tabId = (props.tabId || -1).toString();
+
             if (!this.contextMenus[tabId]) {
                 this.contextMenus[tabId] = {};
             }
 
-            if (!this.contextMenus[tabId][group]) {
-                this.contextMenus[tabId][group] = {};
+            if (!this.contextMenus[tabId][props.group]) {
+                this.contextMenus[tabId][props.group] = {};
             }
 
-            if (this.contextMenus[tabId][group][label]) {
-                throw new Error(`Context menu item exists already [${tabId}|${group}|${label}]`);
+            if (this.contextMenus[tabId][props.group][props.label]) {
+                throw new Error(`Context menu item exists already [${tabId}|${props.group}|${props.label}]`);
             }
 
-            this.contextMenus[tabId][group][label] = {
-                title: label,
+            this.contextMenus[tabId][props.group][props.label] = {
+                title: props.label,
                 contexts: ["browser_action"],
-                onclick: handler
+                onclick: props.clickHandler,
+                isEnabled: (tab) => !props.isEnabled || props.isEnabled(tab)
             };
 
-            this.initializeContextMenu2();
+            this.throttledContextMenuInit();
         }
 
-        removeActionContextMenuItem(group: string, label: string, tabId: number = -2) {
+        removeActionContextMenuItem(group: string, label: string, tabId: number = -1) {
             let tabContextMenu = this.contextMenus[tabId.toString()];
             if (!tabContextMenu ||
                 !tabContextMenu[group] ||
@@ -233,7 +266,7 @@ module UrlEditor {
 
             delete tabContextMenu[group][label];
 
-            this.initializeContextMenu2();
+            this.throttledContextMenuInit();
         }
     }
 
@@ -242,8 +275,9 @@ module UrlEditor {
 
     chrome.commands.onCommand.addListener(cmd => bg.handleKeyboardCommand(cmd));
     chrome.runtime.onMessage.addListener((msgData, sender, sendResponse) => bg.handleMessage(msgData));
-    chrome.tabs.onActivated.addListener(activeInfo => bg.initializeContextMenu(activeInfo.tabId));
-    chrome.tabs.onUpdated.addListener((tabId, changedInfo) => changedInfo.url && bg.initializeContextMenu(tabId));
+    //chrome.tabs.onActivated.addListener(activeInfo => bg.initializeContextMenu(activeInfo.tabId));
+    //chrome.tabs.onUpdated.addListener((tabId, changedInfo) => changedInfo.url && bg.initializeContextMenu(tabId));
+    chrome.tabs.onActivated.addListener(activeInfo => bg.triggerEvent("tabChange", <any>activeInfo.tabId));
 
     bg.initializeRedirections();
 
@@ -251,5 +285,9 @@ module UrlEditor {
 
     interface ContextMenuProperties extends chrome.contextMenus.CreateProperties {
         isEnabled?: (tab: chrome.tabs.Tab) => boolean
+    }
+
+    function forEachKey(obj: object, callback: (key: string, item: any) => void) {
+
     }
 }

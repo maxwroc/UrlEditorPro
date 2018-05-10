@@ -1,19 +1,25 @@
-
 /// <reference path="../shared/interfaces.shared.d.ts" />
 /// <reference path="../shared/shared.ts" />
 
 module UrlEditor {
 
-    const MessageType = "AutoRefresh";
-    const DefaultMenuItem = "Refresh this page every 30s";
+    const AutoRefreshType = "AutoRefresh";
+    const RefreshPageEveryXLabel = "Refresh this page every 30s";
     const StopRefreshingLabel = "Stop refreshing";
 
+    /**
+     * Stores refresh info/details
+     */
     interface IRefreshData {
         lastRefresh: number;
         intervalHandle: number;
         interval: number;
     }
 
+    /**
+     * Gets currently active tab
+     * @param callback Result callback
+     */
     function getCurrentTab(callback: (tab: chrome.tabs.Tab) => void) {
         chrome.tabs.query({ currentWindow: true, active: true }, tabs => {
             if (tabs.length != 1) {
@@ -25,6 +31,9 @@ module UrlEditor {
         });
     }
 
+    /**
+     * Contains logic responsible for triggering reloads/refresh
+     */
     export class RefreshBackgroundProcessor {
         private tabRefreshMap: IMap<IRefreshData> = {};
         private counterInterval: number;
@@ -32,11 +41,12 @@ module UrlEditor {
         private counterEnabled: boolean = true;
 
         constructor(settings: Settings, private background: IPageBackground) {
-            //background.registerMessageHandler(Command, (tabId: number, interval: number) => this.onCommandReceived(tabId, interval));
+            // add default "Refresh every ..."
             this.addDefaultContextMenuItem();
 
+            // listening for messages from view model
             chrome.runtime.onMessage.addListener((msgData, sender, sendResponse) => {
-                if (msgData.type != MessageType) {
+                if (msgData.type != AutoRefreshType) {
                     return;
                 }
 
@@ -52,21 +62,36 @@ module UrlEditor {
             })
         }
 
+        /**
+         * Adds "Refresh every..." context menu item
+         */
         private addDefaultContextMenuItem() {
-            this.background.addActionContextMenuItem(MessageType, DefaultMenuItem, (info, tab) => { this.setRefreshIntervalForTab(tab.id, 30) });
+            this.background.addActionContextMenuItem({
+                group: AutoRefreshType,
+                label: RefreshPageEveryXLabel,
+                clickHandler: (info, tab) => { this.setRefreshIntervalForTab(tab.id, 30) },
+                isEnabled: tab => !this.tabRefreshMap[tab.id]
+            });
         }
 
+        /**
+         * Sets refresh interval for given tab
+         * @param tabId Tab id
+         * @param interval Interval value in seconds
+         */
         private setRefreshIntervalForTab(tabId: number, interval: number) {
+            // check if we should disable refresh
             if (interval == 0) {
+                // cleaning up
                 this.tabRefreshMap[tabId] && clearInterval(this.tabRefreshMap[tabId].intervalHandle);
                 delete this.tabRefreshMap[tabId];
-                this.background.removeActionContextMenuItem(MessageType, StopRefreshingLabel);
-                this.addDefaultContextMenuItem();
+                this.background.removeActionContextMenuItem(AutoRefreshType, StopRefreshingLabel, tabId);
+                chrome.browserAction.setBadgeText({ text: "", tabId: tabId });
 
-                if (Object.keys(this.tabRefreshMap).length == 1) {
+                // clear counter interval (for updating badge) only if no other refresh is setup
+                if (Object.keys(this.tabRefreshMap).length == 0) {
                     clearInterval(this.counterInterval);
                     this.counterInterval = null;
-                    chrome.browserAction.setBadgeText({ text: "", tabId: tabId });
                 }
             }
             else {
@@ -78,21 +103,32 @@ module UrlEditor {
                     lastRefresh: Date.now()
                 }
 
-                this.background.removeActionContextMenuItem(MessageType, DefaultMenuItem);
-                // TODO get tabId for setRefreshIntervalForTab from tab.query
-                this.background.addActionContextMenuItem(MessageType, StopRefreshingLabel, () => this.setRefreshIntervalForTab(tabId, 0), tabId);
+                // add menu item for stopping refreshing
+                this.background.addActionContextMenuItem({
+                    group: AutoRefreshType,
+                    label: StopRefreshingLabel,
+                    clickHandler: () => this.setRefreshIntervalForTab(tabId, 0),
+                    tabId: tabId
+                });
 
                 if (this.counterEnabled) {
+                    // we set one global counter for all the active tabs which are refreshing
                     if (!this.counterInterval) {
                         this.counterInterval = setInterval(() => this.updateCounter(), 1000);
                     }
                 }
                 else {
+                    // set static badge "R"
                     this.setBadgeText(tabId);
                 }
             }
         }
 
+        /**
+         * Sets badge text
+         * @param tabId Tab id
+         * @param text Badge text (default "R")
+         */
         private setBadgeText(tabId: number, text: string = "R") {
             // set badge if text is not static one or when counter is disabled
             if (text != "R" || !this.counterEnabled) {
@@ -101,42 +137,56 @@ module UrlEditor {
             }
         }
 
+        /**
+         * Updates badge counter
+         */
         private updateCounter() {
             getCurrentTab(tab => {
                 let refreshData = this.tabRefreshMap[tab.id];
+                // check if we are refreshing current tab
                 if (refreshData) {
                     let remainingSecs = refreshData.interval - Math.floor((Date.now() - refreshData.lastRefresh) / 1000);
-                    console.log("remainingSecs: " + remainingSecs);
                     this.setBadgeText(tab.id, this.getHumanReadableTime(remainingSecs));
                 }
             });
         }
 
+        /**
+         * Converts seconds to shorter format (with units)
+         * @param secs Seconds to convert
+         */
         private getHumanReadableTime(secs: number) {
             const timeUnits = ["s", "m", "h", "d"];
             const timeValues = [60, 60, 24];
 
-            let scale = 0;
-            while (scale < timeValues.length && secs > timeValues[scale]) {
-                secs = Math.floor(secs / timeValues[scale]);
-                scale++;
+            let unit = 0;
+            while (unit < timeValues.length && secs > timeValues[unit]) {
+                secs = Math.floor(secs / timeValues[unit]);
+                unit++;
             }
 
-            return secs + timeUnits[scale];
+            return secs + timeUnits[unit];
         }
 
+        /**
+         * Refreshes/reloads tab.
+         * @param tabId Tab id
+         */
         private refreshTab(tabId: number) {
+            this.tabRefreshMap[tabId].lastRefresh = Date.now();
             // get current tab - refresh only if matches? setting?
             getCurrentTab(tab => {
                 if (tab && tab.id == tabId) {
                     chrome.tabs.reload(tabId);
                     this.setBadgeText(tabId);
-                    this.tabRefreshMap[tabId].lastRefresh = Date.now();
                 }
             });
         }
     }
 
+    /**
+     * Contains logic related to plugin UI
+     */
     export class RefreshViewModel implements Plugins.IPlugin {
         private static TimePattern = /([0-9]+)(s|m|h|d)?/i
 
@@ -147,6 +197,10 @@ module UrlEditor {
             })
         }
 
+        /**
+         * Converts time value (e.g. 1m, 10h) to seconds and posts message to processor
+         * @param val Time value
+         */
         private setRefreshInterval(val: string) {
             // treat empty string as disable
             val = val || "0";
@@ -171,11 +225,12 @@ module UrlEditor {
             }
 
             getCurrentTab(tab => {
-                chrome.runtime.sendMessage({ type: MessageType, tabId: tab.id, interval: secs })
+                chrome.runtime.sendMessage({ type: AutoRefreshType, tabId: tab.id, interval: secs })
             });
         }
     }
 
+    // register plugins
     Plugins.ViewModel.push(RefreshViewModel);
     Plugins.Background.push(RefreshBackgroundProcessor);
 }
