@@ -50,15 +50,22 @@ module UrlEditor {
                     return;
                 }
 
-                if (msgData.interval === undefined) {
-                    throw new Error("AutoRefresh: interval missing in message data");
-                }
+                switch (msgData.command) {
+                    case "setInterval":
+                        if (msgData.interval === undefined) {
+                            throw new Error("AutoRefresh: interval missing in message data");
+                        }
 
-                if (msgData.tabId === undefined) {
-                    throw new Error("AutoRefresh: tabId missing in message data");
-                }
+                        if (msgData.tabId === undefined) {
+                            throw new Error("AutoRefresh: tabId missing in message data");
+                        }
 
-                this.setRefreshIntervalForTab(msgData.tabId, msgData.interval);
+                        this.setRefreshIntervalForTab(msgData.tabId, msgData.interval);
+                        break;
+                    case "getCurrentTabRefreshData":
+                        getCurrentTab(tab => sendResponse(this.tabRefreshMap[tab.id]));
+                        break;
+                }
             })
         }
 
@@ -191,9 +198,19 @@ module UrlEditor {
         private static TimePattern = /([0-9]+)(s|m|h|d)?/i
 
         constructor(settings: Settings, viewModel: IViewModel) {
-            let button = Helpers.ge("set_refresh_interval");
+            let button = Helpers.ge<HTMLInputElement>("set_refresh_interval");
+            let valueTextBox = (<HTMLInputElement>button.previousElementSibling);
             button.addEventListener("click", () => {
-                this.setRefreshInterval((<HTMLInputElement>button.previousElementSibling).value);
+                this.setRefreshInterval(valueTextBox.value);
+                this.hideOptionsModule();
+            });
+
+            // set button text
+            chrome.runtime.sendMessage({ type: AutoRefreshType, command: "getCurrentTabRefreshData" }, (data: IRefreshData) => {
+                if (data) {
+                    button.value = "Stop";
+                    valueTextBox.value = data.interval + "s";
+                }
             })
         }
 
@@ -225,8 +242,15 @@ module UrlEditor {
             }
 
             getCurrentTab(tab => {
-                chrome.runtime.sendMessage({ type: AutoRefreshType, tabId: tab.id, interval: secs })
+                chrome.runtime.sendMessage({ type: AutoRefreshType, command: "setInterval", tabId: tab.id, interval: secs })
             });
+        }
+
+        private hideOptionsModule() {
+            // hide page options module
+            Helpers.ge<HTMLInputElement>("options_menu_check").checked = false;
+            // show list of options
+            Helpers.ge<HTMLInputElement>("options_list").checked = true;
         }
     }
 
