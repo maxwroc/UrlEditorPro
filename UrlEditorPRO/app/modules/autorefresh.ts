@@ -34,7 +34,7 @@ module UrlEditor {
     /**
      * Contains logic responsible for triggering reloads/refresh
      */
-    export class RefreshBackgroundProcessor {
+    export class RefreshBackgroundProcessor implements IBackgroundPlugin {
         private tabRefreshMap: IMap<IRefreshData> = {};
         private counterInterval: number;
 
@@ -194,7 +194,7 @@ module UrlEditor {
     /**
      * Contains logic related to plugin UI
      */
-    export class RefreshViewModel implements Plugins.IPlugin {
+    export class RefreshViewModel implements IViewModelPlugin {
         private static TimePattern = /([0-9]+)(s|m|h|d)?/i
 
         constructor(settings: Settings, viewModel: IViewModel) {

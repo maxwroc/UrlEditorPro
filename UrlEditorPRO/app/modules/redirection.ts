@@ -1,3 +1,4 @@
+///<reference path="../shared/shared.ts" />
 ///<reference path="settings.ts" />
 ///<reference path="url_parser.ts" />
 ///<reference path="regexp.replacer.ts" />
@@ -164,4 +165,12 @@ module UrlEditor {
             });
         }
     }
+
+    class RedirectionBackground implements IBackgroundPlugin {
+        constructor(settings: Settings, private background: IPageBackground) {
+
+        }
+    }
+
+    UrlEditor.Plugins.Background.push(RedirectionBackground);
 }
