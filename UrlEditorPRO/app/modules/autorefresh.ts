@@ -63,7 +63,7 @@ module UrlEditor {
                         this.setRefreshIntervalForTab(msgData.tabId, msgData.interval);
                         break;
                     case "getCurrentTabRefreshData":
-                        getCurrentTab(tab => sendResponse(this.tabRefreshMap[tab.id]));
+                        sendResponse(this.tabRefreshMap[msgData.tabId]);
                         break;
                 }
             })
@@ -201,17 +201,29 @@ module UrlEditor {
             let button = Helpers.ge<HTMLInputElement>("set_refresh_interval");
             let valueTextBox = (<HTMLInputElement>button.previousElementSibling);
             button.addEventListener("click", () => {
-                this.setRefreshInterval(valueTextBox.value);
+                if (button.value == "Stop") {
+                    this.setRefreshInterval("0");
+                    button.value = "Start";
+                    valueTextBox.disabled = false;
+                }
+                else {
+                    this.setRefreshInterval(valueTextBox.value);
+                }
+
                 this.hideOptionsModule();
             });
 
             // set button text
-            chrome.runtime.sendMessage({ type: AutoRefreshType, command: "getCurrentTabRefreshData" }, (data: IRefreshData) => {
-                if (data) {
-                    button.value = "Stop";
-                    valueTextBox.value = data.interval + "s";
-                }
-            })
+            getCurrentTab(tab => {
+                chrome.runtime.sendMessage({ type: AutoRefreshType, command: "getCurrentTabRefreshData", tabId: tab.id }, (data: IRefreshData) => {
+                    if (data) {
+                        button.value = "Stop";
+                        valueTextBox.value = data.interval + "s";
+                    }
+
+                    valueTextBox.disabled = !!data;
+                });
+            });
         }
 
         /**
