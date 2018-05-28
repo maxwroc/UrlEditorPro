@@ -143,32 +143,121 @@ module UrlEditor {
         }
 
         initOnBeforeRequest(bindOnBeforeRequest: IBindOnBeforeRequestHandler) {
-            let rulesData = this.getData();
-            Object.keys(rulesData).forEach(name => {
-                let data = rulesData[name];
-                bindOnBeforeRequest(
-                    data.urlFilter,
-                    name,
-                    (requestDetails) => {
-                        if (data.isAutomatic) {
-                            let rule = new RedirectRule(data);
-                            let newUrl = rule.getUpdatedUrl(requestDetails.url);
-                            if (newUrl != requestDetails.url) {
-                                return <chrome.webRequest.BlockingResponse>{
-                                    redirectUrl: newUrl
-                                };
-                            }
-                        }
-                    },
-                    ["blocking"]
-                );
-            });
+
         }
     }
 
     class RedirectionBackground implements IBackgroundPlugin {
-        constructor(settings: Settings, private background: IPageBackground) {
+        private redirMgr: RedirectionManager;
 
+        constructor(private settings: Settings, private background: IPageBackground) {
+
+            chrome.runtime.onMessage.addListener((msgData, sender, sendResponse) => this.handleMessage(msgData));
+
+            chrome.commands.onCommand.addListener(command => {
+                // redirect to first non-automatic rule
+                if (command == Command.RedirectUseFirstRule) {
+                    Tracking.trackEvent(Tracking.Category.Redirect, "keyboard", "first_rule");
+
+                    this.contextMenuItems[0] && this.contextMenuItems[0].onclick(null, null);
+                }
+            });
+
+            this.initializeRedirections();
+        }
+
+        private activeRules: ((requestDetails: chrome.webRequest.WebRequestBodyDetails) => void)[] = [];
+
+        /**
+         * Initializes redirections.
+         *
+         * It uses fresh/new objects to be sure we use most recent settings.
+         */
+        private initializeRedirections() {
+            // remove old event handlers
+            this.activeRules.forEach(l => chrome.webRequest.onBeforeRequest.removeListener(l));
+            this.activeRules = [];
+
+            // remove old context menus
+            this.background.removeActionContextMenuItem("Redirection");
+
+            this.redirMgr = new RedirectionManager(new Settings(localStorage));
+
+            let rulesData = this.redirMgr.getData();
+            Object.keys(rulesData).forEach(name => {
+                let data = rulesData[name];
+
+                if (data.isAutomatic) {
+                    this.setupAutomaticRule(data);
+                }
+                else {
+                    this.setupContextMenuRuleItem(data);
+                }
+            });
+        }
+
+        private setupAutomaticRule(data: IRedirectionRuleData) {
+            // create new wrapper and add it to the list (we need to do it to be able to remove listener later)
+            this.activeRules.push(requestDetails => {
+                let rule = new RedirectRule(data);
+                let newUrl = rule.getUpdatedUrl(requestDetails.url);
+                if (newUrl != requestDetails.url) {
+
+                    Tracking.trackEvent(Tracking.Category.Redirect, "automatic");
+
+                    return <chrome.webRequest.BlockingResponse>{
+                        redirectUrl: newUrl
+                    };
+                }
+            });
+
+            chrome.webRequest.onBeforeRequest.addListener(
+                this.activeRules[this.activeRules.length - 1], // use newly added handler
+                { urls: [data.urlFilter] },
+                ["blocking"]);
+        }
+
+        private setupContextMenuRuleItem(data: IRedirectionRuleData) {
+
+        }
+
+        private handleMessage(msg: string) {
+            switch (msg) {
+                case Command.ReloadRedirectionRules:
+                    this.initializeRedirections();
+                    break;
+            }
+        }
+
+        public initializeContextMenu(tabId: number) {
+            this.contextMenuItems = [];
+            chrome.contextMenus.removeAll();
+
+            chrome.tabs.get(tabId, tab => {
+                let data = this.redirMgr.getData();
+
+                Object.keys(data).forEach(name => {
+                    let rule = new RedirectRule(data[name]);
+
+                    // skip all autromatic rules and ones which are not for the current url
+                    if (!rule.isAutomatic && rule.isUrlSupported(tab.url)) {
+
+                        this.contextMenuItems.push({
+                            title: "Redirect: " + name,
+                            contexts: ["browser_action"],
+                            onclick: () => {
+                                let newUrl = rule.getUpdatedUrl(tab.url);
+                                if (tab.url != newUrl) {
+                                    Tracking.trackEvent(Tracking.Category.Redirect, "click", "context_menu");
+                                    chrome.tabs.update(tab.id, { url: newUrl });
+                                }
+                            }
+                        });
+
+                        chrome.contextMenus.create(this.contextMenuItems[this.contextMenuItems.length - 1]);
+                    }
+                })
+            });
         }
     }
 

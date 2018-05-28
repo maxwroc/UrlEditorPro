@@ -9,10 +9,17 @@
 
 module UrlEditor {
 
+    interface ContextMenuProperties extends chrome.contextMenus.CreateProperties {
+        isEnabled?: (tab: chrome.tabs.Tab) => boolean
+    }
+
     class Background implements IPageBackground {
-        private beforeRequestListeners = [];
-        private redirMgr: RedirectionManager;
-        private contextMenuItems: chrome.contextMenus.CreateProperties[] = [];
+
+        private eventListeners: IMap<Function[]> = {};
+        private contextMenus: IMap<IMap<IMap<ContextMenuProperties>>> = {};
+
+        private delayedUiUpdate: number;
+        private currentTabId: number;
 
         constructor(private settings = new Settings(localStorage)) {
             let version = chrome.runtime.getManifest().version;
@@ -21,10 +28,87 @@ module UrlEditor {
             Tracking.setCustomDimension(Tracking.Dimension.Version, version);
             Tracking.init(this.settings.trackingEnabled, "/background.html", false/*logEventsOnce*/, version);
 
-            this.addEventListener("tabChange", () => this.initializeContextMenu2());
+            this.addEventListener("tabChange", () => this.initializeContextMenu());
+
+            chrome.commands.onCommand.addListener(cmd => this.handleKeyboardCommand(cmd));
+            chrome.tabs.onActivated.addListener(activeInfo => this.triggerEvent("tabChange", <any>activeInfo.tabId));
+            chrome.tabs.onUpdated.addListener((tabId, changedInfo) => changedInfo.url && this.triggerEvent("tabNavigate", tabId, changedInfo.url));
+
+            Plugins.Background.forEach(plugin => new plugin(settings, this));
         }
 
-        public handleKeyboardCommand(command: string) {
+        /**
+         * Adds event listener.
+         * @param name Event name.
+         * @param handler Evend callback function.
+         */
+        addEventListener<N extends keyof IBackgroundPageEventMap>(name: N, handler: IBackgroundPageEventMap[N]) {
+            if (!this.eventListeners[name]) {
+                this.eventListeners[name] = [];
+            }
+
+            this.eventListeners[name].push(handler);
+        }
+
+        /**
+         * Registers new context menu item.
+         * @param props Context menu item properties.
+         */
+        addActionContextMenuItem(props: IContextMenuItemProperties) {
+            let tabId = (props.tabId || -1).toString();
+
+            if (!this.contextMenus[tabId]) {
+                this.contextMenus[tabId] = {};
+            }
+
+            if (!this.contextMenus[tabId][props.group]) {
+                this.contextMenus[tabId][props.group] = {};
+            }
+
+            if (this.contextMenus[tabId][props.group][props.label]) {
+                throw new Error(`Context menu item exists already [${tabId}|${props.group}|${props.label}]`);
+            }
+
+            this.contextMenus[tabId][props.group][props.label] = {
+                title: props.label,
+                contexts: ["browser_action"],
+                onclick: props.clickHandler,
+                isEnabled: (tab) => !props.isEnabled || props.isEnabled(tab)
+            };
+
+            this.throttledContextMenuInit();
+        }
+
+        /**
+         * Unregisters context menu item or group.
+         * @param group Context menu item group.
+         * @param label Context menu item label.
+         * @param tabId Context menu item tab id.
+         */
+        removeActionContextMenuItem(group: string, label: string = null, tabId: number = -1) {
+            let tabContextMenu = this.contextMenus[tabId.toString()];
+            if (!tabContextMenu ||
+                !tabContextMenu[group]) {
+                // it looks like it is removed already
+                return;
+            }
+
+            if (label == null) {
+                // remove entire group
+                delete tabContextMenu[group];
+            }
+            else if (tabContextMenu[group][label]) {
+                delete tabContextMenu[group][label];
+            }
+
+            this.throttledContextMenuInit();
+        }
+
+        /**
+         * Handle keyboard commands / shortcuts.
+         * @param command Command type.
+         */
+        private handleKeyboardCommand(command: string) {
             switch (command) {
                 case Command.GoToHomepage:
                     Tracking.trackEvent(Tracking.Category.Redirect, "keyboard", "homepage");
@@ -33,90 +117,22 @@ module UrlEditor {
                         chrome.tabs.update(tab.id, { url: uri.protocol() + "//" + uri.host() });
                     });
                     break;
-                case Command.RedirectUseFirstRule:
-                    Tracking.trackEvent(Tracking.Category.Redirect, "keyboard", "first_rule");
-                    this.contextMenuItems[0] && this.contextMenuItems[0].onclick(null, null);
-                    break;
-
             }
         }
-
-        public handleMessage(msg: string) {
-            switch (msg) {
-                case Command.ReloadRedirectionRules:
-                    // remove old listeners
-                    this.beforeRequestListeners.forEach(l => chrome.webRequest.onBeforeRequest.removeListener(l));
-                    this.beforeRequestListeners = [];
-                    // re-initialize
-                    this.initializeRedirections();
-                    break;
-            }
-        }
-
-        public initializeRedirections() {
-            this.settings = new Settings(localStorage);
-            this.redirMgr = new RedirectionManager(this.settings);
-
-            this.redirMgr.initOnBeforeRequest((urlFilter, name, handler, infoSpec) => {
-                // create new wrapper and add it to the list (we need to do it to be able to remove listener later)
-                this.beforeRequestListeners.push(r => {
-                    let result = handler(r);
-                    if (result && result.redirectUrl) {
-                        Tracking.trackEvent(Tracking.Category.Redirect, "automatic");
-                    }
-
-                    return result;
-                });
-                chrome.webRequest.onBeforeRequest.addListener(this.beforeRequestListeners[this.beforeRequestListeners.length -1], { urls: [urlFilter] }, infoSpec);
-            });
-        }
-
-        public initializeContextMenu(tabId: number) {
-            this.contextMenuItems = [];
-            chrome.contextMenus.removeAll();
-
-            chrome.tabs.get(tabId, tab => {
-                let data = this.redirMgr.getData();
-
-                Object.keys(data).forEach(name => {
-                    let rule = new RedirectRule(data[name]);
-
-                    // skip all autromatic rules and ones which are not for the current url
-                    if (!rule.isAutomatic && rule.isUrlSupported(tab.url)) {
-
-                        this.contextMenuItems.push({
-                            title: "Redirect: " + name,
-                            contexts: ["browser_action"],
-                            onclick: () => {
-                                let newUrl = rule.getUpdatedUrl(tab.url);
-                                if (tab.url != newUrl) {
-                                    Tracking.trackEvent(Tracking.Category.Redirect, "click", "context_menu");
-                                    chrome.tabs.update(tab.id, { url: newUrl });
-                                }
-                            }
-                        });
-
-                        chrome.contextMenus.create(this.contextMenuItems[this.contextMenuItems.length - 1]);
-                    }
-                })
-            });
-        }
-
-        private eventListeners: IMap<Function[]> = {};
-        private contextMenus: IMap<IMap<IMap<ContextMenuProperties>>> = {};
-
-        private delayedUiUpdate: number;
-        private currentTabId: number;
 
         /**
-         * To avoid upating context menu every time when menu item is being added/removed we delay execution by releasing thread
+         * To avoid upating context menu every time when menu item is being added/removed
+         * we delay execution by releasing thread.
          */
         private throttledContextMenuInit() {
             clearTimeout(this.delayedUiUpdate);
-            this.delayedUiUpdate = setTimeout(() => this.initializeContextMenu2(), 0);
+            this.delayedUiUpdate = setTimeout(() => this.initializeContextMenu(), 0);
         }
 
-        private initializeContextMenu2() {
+        /**
+         * Initializes/updates registered context menu items.
+         */
+        private initializeContextMenu() {
             this.clearContextMenu();
             let allTabsContextMenus = this.contextMenus["-1"];
 
@@ -126,6 +142,7 @@ module UrlEditor {
                     return;
                 }
 
+                // remove old items again to be sure nothing was added meanwhile
                 this.clearContextMenu();
 
                 let currentTabId = tab.id;
@@ -162,6 +179,10 @@ module UrlEditor {
             });
         }
 
+        /**
+         * Gets currently opened tab. Wrapper for default api.
+         * @param callback Called when result is returned.
+         */
         private getSelectedTab(callback: (tab: chrome.tabs.Tab) => void) {
             chrome.tabs.query({ currentWindow: true, active: true }, tabs => {
                 if (tabs.length != 1) {
@@ -180,6 +201,12 @@ module UrlEditor {
             });
         }
 
+        /**
+         * Removes all current context menu items.
+         *
+         * In addition make sure that all registered context menu items are clean and ready
+         * to render (removes properties added when the item is rendered).
+         */
         private clearContextMenu() {
             chrome.contextMenus.removeAll();
             Object.keys(this.contextMenus).forEach(tab => {
@@ -192,6 +219,13 @@ module UrlEditor {
             });
         }
 
+        /**
+         * Conditionally adds context menu item.
+         *
+         * Iteam is added only if isEnabled method is not defined or when it returns true.
+         * @param tab Current tab.
+         * @param item Context menu item properties.
+         */
         private addEnabledContextMenuItem(tab: chrome.tabs.Tab, item: ContextMenuProperties) {
             if (!item.isEnabled || item.isEnabled(tab)) {
                 let cloned = Object.assign({}, item);
@@ -200,94 +234,47 @@ module UrlEditor {
             }
         }
 
-        addEventListener<N extends keyof IBackgroundPageEventMap>(name: N, handler: IBackgroundPageEventMap[N]) {
-            if (!this.eventListeners[name]) {
-                this.eventListeners[name] = [];
-            }
-
-            this.eventListeners[name].push(handler);
-        }
-
-        triggerEvent<N extends keyof IBackgroundPageEventMap>(name: N, ...args: object[]) {
+        /**
+         * Triggers event causing all the particular event handlers to be called.
+         * @param name Event name.
+         * @param args Event arguments.
+         */
+        private triggerEvent<N extends keyof IBackgroundPageEventMap>(name: N, ...args: any[]) {
             if (this.eventListeners[name]) {
                 let eventHandlerArgs = [];
                 switch (name) {
                     case "tabChange":
-                        let tabId = <number><any>args[0];
-                        // trigger only if actually has changed
-                        if (this.currentTabId != tabId) {
-                            this.currentTabId = tabId;
+                        {
+                            let tabId = <number><any>args[0];
+                            // trigger only if actually has changed
+                            if (this.currentTabId != tabId) {
+                                this.currentTabId = tabId;
 
+                                this.eventListeners[name].forEach(h => {
+                                    Helpers.safeExecute(() => {
+                                        let handler = <IBackgroundPageEventMap["tabChange"]>h;
+                                        handler(tabId);
+                                    }, "tabChange handler");
+                                });
+                            }
+                        }
+                        break;
+                    case "tabNavigate":
+                        {
+                            let tabId = <number><any>args[0];
+                            let url = <string><any>args[1];
                             this.eventListeners[name].forEach(h => {
                                 Helpers.safeExecute(() => {
-                                    let handler = <IBackgroundPageEventMap["tabChange"]>h;
-                                    handler(tabId);
-                                }, "tabChange handler");
+                                    let handler = <IBackgroundPageEventMap["tabNavigate"]>h;
+                                    handler(tabId, url);
+                                }, "tabNavigate handler");
                             });
                         }
                         break;
                 }
             }
         }
-
-        addActionContextMenuItem(props: IContextMenuItemProperties) {
-            let tabId = (props.tabId || -1).toString();
-
-            if (!this.contextMenus[tabId]) {
-                this.contextMenus[tabId] = {};
-            }
-
-            if (!this.contextMenus[tabId][props.group]) {
-                this.contextMenus[tabId][props.group] = {};
-            }
-
-            if (this.contextMenus[tabId][props.group][props.label]) {
-                throw new Error(`Context menu item exists already [${tabId}|${props.group}|${props.label}]`);
-            }
-
-            this.contextMenus[tabId][props.group][props.label] = {
-                title: props.label,
-                contexts: ["browser_action"],
-                onclick: props.clickHandler,
-                isEnabled: (tab) => !props.isEnabled || props.isEnabled(tab)
-            };
-
-            this.throttledContextMenuInit();
-        }
-
-        removeActionContextMenuItem(group: string, label: string, tabId: number = -1) {
-            let tabContextMenu = this.contextMenus[tabId.toString()];
-            if (!tabContextMenu ||
-                !tabContextMenu[group] ||
-                !tabContextMenu[group][label]) {
-                // it looks like it is removed already
-                return;
-            }
-
-            delete tabContextMenu[group][label];
-
-            this.throttledContextMenuInit();
-        }
     }
 
-    const settings = new Settings(localStorage)
-    const bg = new Background(settings);
-
-    chrome.commands.onCommand.addListener(cmd => bg.handleKeyboardCommand(cmd));
-    chrome.runtime.onMessage.addListener((msgData, sender, sendResponse) => bg.handleMessage(msgData));
-    //chrome.tabs.onActivated.addListener(activeInfo => bg.initializeContextMenu(activeInfo.tabId));
-    //chrome.tabs.onUpdated.addListener((tabId, changedInfo) => changedInfo.url && bg.initializeContextMenu(tabId));
-    chrome.tabs.onActivated.addListener(activeInfo => bg.triggerEvent("tabChange", <any>activeInfo.tabId));
-
-    bg.initializeRedirections();
-
-    Plugins.Background.forEach(plugin => new plugin(settings, bg));
-
-    interface ContextMenuProperties extends chrome.contextMenus.CreateProperties {
-        isEnabled?: (tab: chrome.tabs.Tab) => boolean
-    }
-
-    function forEachKey(obj: object, callback: (key: string, item: any) => void) {
-
-    }
+    const bg = new Background(new Settings(localStorage));
 }

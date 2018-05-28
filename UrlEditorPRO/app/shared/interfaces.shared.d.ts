@@ -60,13 +60,14 @@ interface IRuleData {
 }
 
 interface IBackgroundPageEventMap {
-    "tabChange" : (tabId: number) => void
+    "tabChange": (tabId: number) => void,
+    "tabNavigate": (tabId: number, url: string) => void,
 }
 
 interface IPageBackground {
     addEventListener<N extends keyof IBackgroundPageEventMap>(name: N, handler: IBackgroundPageEventMap[N]);
     addActionContextMenuItem(properties: IContextMenuItemProperties);
-    removeActionContextMenuItem(group: string, label: string, tabId?: number);
+    removeActionContextMenuItem(group: string, label?: string, tabId?: number);
 }
 
 interface IContextMenuItemProperties {
