@@ -154,19 +154,24 @@ module UrlEditor {
 
             chrome.runtime.onMessage.addListener((msgData, sender, sendResponse) => this.handleMessage(msgData));
 
-            chrome.commands.onCommand.addListener(command => {
-                // redirect to first non-automatic rule
-                if (command == Command.RedirectUseFirstRule) {
-                    Tracking.trackEvent(Tracking.Category.Redirect, "keyboard", "first_rule");
-
-                    this.contextMenuItems[0] && this.contextMenuItems[0].onclick(null, null);
-                }
-            });
+            chrome.commands.onCommand.addListener(command => this.onContextMenuClick(command));
 
             this.initializeRedirections();
         }
 
         private activeRules: ((requestDetails: chrome.webRequest.WebRequestBodyDetails) => void)[] = [];
+
+        /**
+         * Context menu click handler.
+         * @param command Context menu command type.
+         */
+        private onContextMenuClick(command: string) {
+            if (command == Command.RedirectUseFirstRule) {
+                Tracking.trackEvent(Tracking.Category.Redirect, "keyboard", "first_rule");
+
+                this.contextMenuItems[0] && this.contextMenuItems[0].onclick(null, null);
+            }
+        }
 
         /**
          * Initializes redirections.
