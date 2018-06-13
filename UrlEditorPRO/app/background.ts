@@ -9,10 +9,6 @@
 
 module UrlEditor {
 
-    interface ContextMenuProperties extends chrome.contextMenus.CreateProperties {
-        isEnabled?: (tab: chrome.tabs.Tab) => boolean
-    }
-
     class Background implements IPageBackground {
 
         private eventListeners: IMap<Function[]> = {};
@@ -77,6 +73,23 @@ module UrlEditor {
             };
 
             this.throttledContextMenuInit();
+        }
+
+        /**
+         * Returns active/enabled action-contextmenu items.
+         * @param tab Tab for which context menu items should be returned.
+         * @param group Context menu items group.
+         */
+        getActiveActionContextMenuItems(tab: chrome.tabs.Tab, group: string): ContextMenuProperties[] {
+            if (!this.contextMenus[tab.id] || !this.contextMenus[group]) {
+                return [];
+            }
+
+            let groupItems = this.contextMenus[tab.id][group];
+
+            return Object.keys(groupItems)
+                .map(label => groupItems[label].isEnabled(tab) ? groupItems[label] : null)
+                .filter(val => val !== null);
         }
 
         /**

@@ -154,7 +154,7 @@ module UrlEditor {
 
             chrome.runtime.onMessage.addListener((msgData, sender, sendResponse) => this.handleMessage(msgData));
 
-            chrome.commands.onCommand.addListener(command => this.onContextMenuClick(command));
+            chrome.commands.onCommand.addListener(command => this.onKeyboardShortcut(command));
 
             this.initializeRedirections();
         }
@@ -162,14 +162,21 @@ module UrlEditor {
         private activeRules: ((requestDetails: chrome.webRequest.WebRequestBodyDetails) => void)[] = [];
 
         /**
-         * Context menu click handler.
-         * @param command Context menu command type.
+         * Keyboard shortcut handler.
+         * @param command Command type/name.
          */
-        private onContextMenuClick(command: string) {
+        private onKeyboardShortcut(command: string) {
             if (command == Command.RedirectUseFirstRule) {
-                Tracking.trackEvent(Tracking.Category.Redirect, "keyboard", "first_rule");
-
-                this.contextMenuItems[0] && this.contextMenuItems[0].onclick(null, null);
+                Helpers.getActiveTab(tab => {
+                    let contextMenuItems = this.background.getActiveActionContextMenuItems(tab, "Redirections");
+                    if (contextMenuItems[0]) {
+                        Tracking.trackEvent(Tracking.Category.Redirect, "keyboard", "first_rule");
+                        contextMenuItems[0].onclick(null, tab);
+                    }
+                    else {
+                        Tracking.trackEvent(Tracking.Category.Redirect, "keyboard", "no_rule_available");
+                    }
+                });
             }
         }
 
@@ -223,7 +230,19 @@ module UrlEditor {
         }
 
         private setupContextMenuRuleItem(data: IRedirectionRuleData) {
-
+            let rule = new RedirectRule(data);
+            this.background.addActionContextMenuItem({
+                clickHandler: (info, tab) => {
+                    let newUrl = rule.getUpdatedUrl(tab.url);
+                    if (tab.url != newUrl) {
+                        Tracking.trackEvent(Tracking.Category.Redirect, "click", "context_menu");
+                        chrome.tabs.update(tab.id, { url: newUrl });
+                    }
+                },
+                group: "Redirections",
+                label: "Redirect: " + data.name,
+                isEnabled: tab => rule.isUrlSupported(tab.url)
+            });
         }
 
         private handleMessage(msg: string) {
@@ -232,37 +251,6 @@ module UrlEditor {
                     this.initializeRedirections();
                     break;
             }
-        }
-
-        public initializeContextMenu(tabId: number) {
-            this.contextMenuItems = [];
-            chrome.contextMenus.removeAll();
-
-            chrome.tabs.get(tabId, tab => {
-                let data = this.redirMgr.getData();
-
-                Object.keys(data).forEach(name => {
-                    let rule = new RedirectRule(data[name]);
-
-                    // skip all autromatic rules and ones which are not for the current url
-                    if (!rule.isAutomatic && rule.isUrlSupported(tab.url)) {
-
-                        this.contextMenuItems.push({
-                            title: "Redirect: " + name,
-                            contexts: ["browser_action"],
-                            onclick: () => {
-                                let newUrl = rule.getUpdatedUrl(tab.url);
-                                if (tab.url != newUrl) {
-                                    Tracking.trackEvent(Tracking.Category.Redirect, "click", "context_menu");
-                                    chrome.tabs.update(tab.id, { url: newUrl });
-                                }
-                            }
-                        });
-
-                        chrome.contextMenus.create(this.contextMenuItems[this.contextMenuItems.length - 1]);
-                    }
-                })
-            });
         }
     }
 
