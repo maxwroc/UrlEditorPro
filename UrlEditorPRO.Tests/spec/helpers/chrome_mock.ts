@@ -13,7 +13,7 @@ module Tests {
         obj.runtime = <IRuntime>{};
         addExtendedSpy(obj.runtime, "getManifest", -1, { version: "1.0.2" });
         obj.tabs = <ITabs>{};
-        addExtendedSpy(obj.tabs, "getSelected", 1);
+        addExtendedSpy(obj.tabs, "query", 1);
         addExtendedSpy(obj.tabs, "update");
         addExtendedSpy(obj.tabs, "create");
         obj.windows = <IWindows>{};
@@ -75,7 +75,7 @@ module Tests {
     }
 
     interface ITabs {
-        getSelected: IFunctionMock<any>;
+        query: IFunctionMock<any>;
         create: ({ url: string }) => void;
         update: (id: number, { url: string }) => void;
     }
