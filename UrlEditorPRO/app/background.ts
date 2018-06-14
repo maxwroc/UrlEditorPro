@@ -24,7 +24,10 @@ module UrlEditor {
             Tracking.setCustomDimension(Tracking.Dimension.Version, version);
             Tracking.init(this.settings.trackingEnabled, "/background.html", false/*logEventsOnce*/, version);
 
+            // Refresh context menu when user switches tabs
             this.addEventListener("tabChange", () => this.initializeContextMenu());
+            // Refresh context menu on navigate action
+            this.addEventListener("tabNavigate", () => this.initializeContextMenu());
 
             chrome.commands.onCommand.addListener(cmd => this.handleKeyboardCommand(cmd));
             chrome.tabs.onActivated.addListener(activeInfo => this.triggerEvent("tabChange", <any>activeInfo.tabId));
