@@ -128,7 +128,7 @@ module UrlEditor {
             switch (command) {
                 case Command.GoToHomepage:
                     Tracking.trackEvent(Tracking.Category.Redirect, "keyboard", "homepage");
-                    this.getSelectedTab(tab => {
+                    Helpers.getActiveTab(tab => {
                         let uri = new UrlEditor.Uri(tab.url);
                         chrome.tabs.update(tab.id, { url: uri.protocol() + "//" + uri.host() });
                     });
@@ -152,7 +152,7 @@ module UrlEditor {
             this.clearContextMenu();
             let allTabsContextMenus = this.contextMenus["-1"];
 
-            this.getSelectedTab(tab => {
+            Helpers.getActiveTab(tab => {
                 if (tab.id < 0) {
                     // Developers toolbar is being returned as -1
                     return;
@@ -192,28 +192,6 @@ module UrlEditor {
                         }
                     });
                 }
-            });
-        }
-
-        /**
-         * Gets currently opened tab. Wrapper for default api.
-         * @param callback Called when result is returned.
-         */
-        private getSelectedTab(callback: (tab: chrome.tabs.Tab) => void) {
-            chrome.tabs.query({ currentWindow: true, active: true }, tabs => {
-                if (tabs.length != 1) {
-                    tabs.length > 1 && console.error("Invalid number of active tabs");
-                    return;
-                }
-
-                let tab = tabs[0];
-
-                if (tab.id < 0) {
-                    // Developers toolbar is being returned as -1
-                    return;
-                }
-
-                callback(tab);
             });
         }
 

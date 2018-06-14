@@ -17,21 +17,6 @@ module UrlEditor {
     }
 
     /**
-     * Gets currently active tab
-     * @param callback Result callback
-     */
-    function getCurrentTab(callback: (tab: chrome.tabs.Tab) => void) {
-        chrome.tabs.query({ currentWindow: true, active: true }, tabs => {
-            if (tabs.length != 1) {
-                tabs.length > 1 && console.error("AutoRefresh: Invalid number of active tabs");
-                return;
-            }
-
-            callback(tabs[0]);
-        });
-    }
-
-    /**
      * Contains logic responsible for triggering reloads/refresh
      */
     export class RefreshBackgroundProcessor implements IBackgroundPlugin {
@@ -148,7 +133,7 @@ module UrlEditor {
          * Updates badge counter
          */
         private updateCounter() {
-            getCurrentTab(tab => {
+            Helpers.getActiveTab(tab => {
                 let refreshData = this.tabRefreshMap[tab.id];
                 // check if we are refreshing current tab
                 if (refreshData) {
@@ -182,7 +167,7 @@ module UrlEditor {
         private refreshTab(tabId: number) {
             this.tabRefreshMap[tabId].lastRefresh = Date.now();
             // get current tab - refresh only if matches? setting?
-            getCurrentTab(tab => {
+            Helpers.getActiveTab(tab => {
                 if (tab && tab.id == tabId) {
                     chrome.tabs.reload(tabId);
                     this.setBadgeText(tabId);
@@ -214,7 +199,7 @@ module UrlEditor {
             });
 
             // set button text
-            getCurrentTab(tab => {
+            Helpers.getActiveTab(tab => {
                 chrome.runtime.sendMessage({ type: AutoRefreshType, command: "getCurrentTabRefreshData", tabId: tab.id }, (data: IRefreshData) => {
                     if (data) {
                         button.value = "Stop";
@@ -253,7 +238,7 @@ module UrlEditor {
                     break;
             }
 
-            getCurrentTab(tab => {
+            Helpers.getActiveTab(tab => {
                 chrome.runtime.sendMessage({ type: AutoRefreshType, command: "setInterval", tabId: tab.id, interval: secs })
             });
         }
