@@ -22,6 +22,9 @@ module UrlEditor {
     converters.base64Encode = (val) => Helpers.b64EncodeUnicode(val);
     converters.base64Decode = (val) => Helpers.b64DecodeUnicode(val);
 
+    /**
+     * Redirection rule definition
+     */
     export class RedirectRule {
         public urlFilter: string;
         public isAutomatic: boolean;
@@ -33,17 +36,30 @@ module UrlEditor {
             this.isAutomatic = replaceData.isAutomatic;
         }
 
+        /**
+         * Checks if given url is supported by this rule
+         * @param url Url to validate
+         */
         isUrlSupported(url: string): boolean {
             let reg = new RegExp("^" + this.urlFilter.replace(/[*]/g, ".*") + "$");
             return reg.test(url);
         }
 
+        /**
+         * Gets new url where user will be redirected
+         * @param url Url to transform
+         */
         getUpdatedUrl(url: string): string {
             return (<IRegExpRuleData>this.replaceData).regExp ?
                 this.getUpdatedUrlAdvanced(url, this.replaceData as IRegExpRuleData) :
                 this.getUpdatedUrlSimple(url, this.replaceData as IRedirectionRuleData);
         }
 
+        /**
+         * Regexp based url transformation
+         * @param url Url to transform
+         * @param data Rule details
+         */
         private getUpdatedUrlAdvanced(url: string, data: IRegExpRuleData): string {
             //url = url.replace(new RegExp(data.regExp, "g"), data.replaceString);
             let r = new RegExpGroupReplacer(data.regExp, data.isRegExpGlobal);
@@ -65,6 +81,11 @@ module UrlEditor {
             return url;
         }
 
+        /**
+         * Field based url transformation
+         * @param url Url to transform
+         * @param data Rule details
+         */
         private getUpdatedUrlSimple(url: string, data: IRedirectionRuleData): string {
             let uri = new UrlEditor.Uri(url);
 
@@ -141,10 +162,6 @@ module UrlEditor {
 
             return this.redirData;
         }
-
-        initOnBeforeRequest(bindOnBeforeRequest: IBindOnBeforeRequestHandler) {
-
-        }
     }
 
     class RedirectionBackground implements IBackgroundPlugin {
@@ -199,6 +216,7 @@ module UrlEditor {
             Object.keys(rulesData).forEach(name => {
                 let data = rulesData[name];
 
+                // check if rule is url-triggering
                 if (data.isAutomatic) {
                     this.setupAutomaticRule(data);
                 }
@@ -208,6 +226,10 @@ module UrlEditor {
             });
         }
 
+        /**
+         * Setup for url-trggered rule.
+         * @param data Rule details
+         */
         private setupAutomaticRule(data: IRedirectionRuleData) {
             // create new wrapper and add it to the list (we need to do it to be able to remove listener later)
             this.activeRules.push(requestDetails => {
@@ -229,6 +251,10 @@ module UrlEditor {
                 ["blocking"]);
         }
 
+        /**
+         * Setup for context menu rule.
+         * @param data Rule details
+         */
         private setupContextMenuRuleItem(data: IRedirectionRuleData) {
             let rule = new RedirectRule(data);
             this.background.addActionContextMenuItem({
@@ -245,6 +271,10 @@ module UrlEditor {
             });
         }
 
+        /**
+         * Handles messages/commands send by UI.
+         * @param msg Incommong message/command
+         */
         private handleMessage(msg: string) {
             switch (msg) {
                 case Command.ReloadRedirectionRules:
