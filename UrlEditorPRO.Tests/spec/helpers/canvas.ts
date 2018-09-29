@@ -128,7 +128,6 @@ module Tests.Canvas {
         static getFullUrl() {
             return <HTMLTextAreaElement>getElementById("full_url", true);
         }
-
         static getGoButton() {
             return extendButtonElement(<HTMLInputElement>getElementById("go", true));
         }
@@ -137,6 +136,9 @@ module Tests.Canvas {
         }
         static getAddParamButton() {
             return extendButtonElement(<HTMLInputElement>getElementById("add_param"));
+        }
+        static getPageOptions() {
+            return extendButtonElement(<HTMLInputElement>getElementById("options"));
         }
     }
 
@@ -194,6 +196,10 @@ module Tests.Canvas {
         simulateClick: () => void;
     }
 
+    /**
+     * Adds "simulate" actions
+     * @param inputElem Element to extend
+     */
     function extendButtonElement(inputElem: HTMLInputElement) {
         let ext = <HTMLInputElementExt>inputElem;
         ext.simulateClick = () => {
