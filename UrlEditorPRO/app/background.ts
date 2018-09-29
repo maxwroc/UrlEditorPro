@@ -9,6 +9,14 @@
 
 module UrlEditor {
 
+    /**
+     * Background (plugin manager)
+     *
+     * Problem which is being addressed here is lack of native mechanism of adding action context menu for single page/tab/url.
+     * In addition it allows to subscribe to events like tabNavigate which does not exist natively.
+     *
+     * To avoid cluttering and mixing logic class supports plugins which should be used to implement specific functionalities.
+     */
     class Background implements IPageBackground {
 
         private eventListeners: IMap<Function[]> = {};
@@ -235,7 +243,6 @@ module UrlEditor {
          */
         private triggerEvent<N extends keyof IBackgroundPageEventMap>(name: N, ...args: any[]) {
             if (this.eventListeners[name]) {
-                let eventHandlerArgs = [];
                 switch (name) {
                     case "tabChange":
                         {
