@@ -96,8 +96,10 @@ gulp.task('run-tests', function (done) {
 });
 
 gulp.task('test', ['build-test'], function() {
-    return gulp.src('UrlEditorPRO.Tests/SpecRunner.html')
-        .pipe(open());
+    new KarmaServer({
+        configFile: __dirname + '/karma.conf.js',
+        singleRun: true
+      }, done).start();
 });
 
 gulp.task('test-ci', ['build', 'build-test'], function(done) {
