@@ -6,7 +6,7 @@
   "scripts": {
     "postinstall": "node_modules/.bin/typings install",
     "pretest": "node_modules/.bin/tsc -p ./UrlEditorPRO.Tests/",
-    "test": "start UrlEditorPRO.Tests/SpecRunner.html",
+    "test": "node_modules/.bin/gulp test",
     "build": "node_modules/.bin/tsc -p ./UrlEditorPRO/",
     "work": "node_modules/.bin/tsc -p ./UrlEditorPRO/ -w"
   },

@@ -95,7 +95,7 @@ gulp.task('run-tests', function (done) {
     }, done).start();
 });
 
-gulp.task('test', ['build-test'], function() {
+gulp.task('test', ['build-test'], function(done) {
     new KarmaServer({
         configFile: __dirname + '/karma.conf.js',
         singleRun: true
