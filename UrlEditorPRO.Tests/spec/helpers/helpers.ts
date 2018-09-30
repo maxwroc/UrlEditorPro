@@ -8,26 +8,17 @@
     }
 
     /**
-     * Polls an escape function. Once the escape function returns true, executes a run function.
+     * Polls an escape function until escape function returns true
      */
     export function waitUntil(escapeFunction: () => boolean, checkDelay = 1) {
-        var _runFunction;
-
-        var interval = setInterval(function () {
-            if (escapeFunction()) {
-                clearInterval(interval);
-
-                if (_runFunction) {
-                    _runFunction();
+        return new Promise((resolve, reject) => {
+            var interval = setInterval(function () {
+                if (escapeFunction()) {
+                    clearInterval(interval);
+                    resolve();
                 }
-            }
-        }, checkDelay);
-
-        return {
-            then: function (runFunction) {
-                _runFunction = runFunction;
-            }
-        };
+            }, checkDelay);
+        });
     };
 
     export function createElement<T extends HTMLElement>(tagName: string, id?: string, className?: string): T {

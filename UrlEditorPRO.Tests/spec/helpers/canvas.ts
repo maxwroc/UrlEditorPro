@@ -68,10 +68,14 @@ module Tests.Canvas {
         $(elem).simulate("key-combo", { combo: combination });
     }
 
-    export function click(elem: HTMLElement) {
-        $(elem).simulate("mousedown");
-        $(elem).simulate("click");
-        $(elem).simulate("mouseup");
+    export function click(elemOrSelector: HTMLElement | string) {
+        if (typeof (elemOrSelector) == "string") {
+            elemOrSelector = getElementBySelector(elemOrSelector) as HTMLElement;
+        }
+
+        $(elemOrSelector).simulate("mousedown");
+        $(elemOrSelector).simulate("click");
+        $(elemOrSelector).simulate("mouseup");
     }
 
     export function raiseEvent(elem: HTMLElement | Document, eventType: string, eventData: IMap<any> = {}) {
@@ -122,6 +126,14 @@ module Tests.Canvas {
 
     export function getWindow() {
         return page.contentWindow;
+    }
+
+    export function isVisible(elem: HTMLElement | string) {
+        if (typeof (elem) == "string") {
+            elem = Canvas.getElementBySelector(elem) as HTMLElement;
+        }
+
+        return !!(elem.offsetWidth || elem.offsetHeight || elem.getClientRects().length);
     }
 
     export class PopupElements {
