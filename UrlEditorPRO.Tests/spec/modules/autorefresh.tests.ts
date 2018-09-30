@@ -30,22 +30,38 @@ module Tests.Autosuggest {
         });
 
         it("clicking on AutoRefresh option shows module", (done) => {
+            openAutoRefreshModule().then(() => done());
+        });
+
+        it("clicking on Start button initializes refresh interval", (done) => {
+            openAutoRefreshModule()
+                .then(mod => {
+                    mod.inputField.value = "14s";
+                    Canvas.click(mod.startButton);
+                    done();
+                });
+        });
+
+        function openAutoRefreshModule() {
             // click on PageOptions button to show page options menu
             Canvas.PopupElements.getPageOptions().simulateClick();
 
             // wait for it to show up
-            waitUntil(() => Canvas.isVisible(AutoRefreshButtonSelector))
+            return waitUntil(() => Canvas.isVisible(AutoRefreshButtonSelector))
                 .then(() => {
                     // click on AutoRefresh button
                     Canvas.click(AutoRefreshButtonSelector);
                     // wait for the module to show up
                     return waitUntil(() => Canvas.isVisible(AutoRefreshModuleSelector))
                 })
-                .then(() => done());
-        });
-
-        it("clicking on Start button initializes refresh interval", (done) => {
-            done();
-        });
+                .then(() => {
+                    let startButton = Canvas.getElementById("set_refresh_interval");
+                    return {
+                        startButton: startButton as HTMLInputElement,
+                        cancelButton: startButton.nextElementSibling as HTMLLabelElement,
+                        inputField: startButton.previousElementSibling as HTMLInputElement
+                    }
+                });
+        }
     });
 }

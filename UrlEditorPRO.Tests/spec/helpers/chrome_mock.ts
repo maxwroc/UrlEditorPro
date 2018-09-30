@@ -21,6 +21,17 @@ module Tests {
         return obj;
     }
 
+    /**
+     * Sets Jasmine Spy on given function.
+     *
+     * @description If function doesn't exist it creates it. Spy object is available in "spy" function property. In addition
+     * it creates "fireCallbacks" property which can be used to easily fire callback params from given param index.
+     *
+     * @param obj Container object in which function is defined
+     * @param funcName Name of the function
+     * @param callbackIndex Index number of callback parameter (if any)
+     * @param returnValue Value to be returned.
+     */
     function addExtendedSpy(obj: any, funcName: string, callbackIndex = -1, returnValue?: any) {
         if (obj[funcName] === undefined) {
             obj[funcName] = () => returnValue;
