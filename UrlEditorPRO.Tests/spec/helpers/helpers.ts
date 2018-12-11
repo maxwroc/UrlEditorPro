@@ -10,12 +10,12 @@
     /**
      * Polls an escape function until escape function returns true
      */
-    export function waitUntil(escapeFunction: () => boolean, checkDelay = 1) {
+    export function waitUntil<T>(escapeFunction: () => boolean, returnValue: T = null, checkDelay: number = 1): Promise<T> {
         return new Promise((resolve, reject) => {
             var interval = setInterval(function () {
                 if (escapeFunction()) {
                     clearInterval(interval);
-                    resolve();
+                    resolve(returnValue);
                 }
             }, checkDelay);
         });

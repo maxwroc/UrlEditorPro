@@ -31,7 +31,7 @@ module Tests.Canvas {
         page.contentWindow.document.write(TEMPLATES[name + ".html"].replace(/ src="(?!https?:\/\/)/g, ' src="/base/UrlEditorPRO/app/'));
 
         // delay event triggering to wait for the page elements to be rendered
-        waitUntil(() => !!getElementBySelector("div"))
+        return waitUntil(() => !!getElementBySelector("div"))
             .then(() => {
                 if (storage) {
                     init(storage);

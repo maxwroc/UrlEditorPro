@@ -2,6 +2,20 @@
 /// <reference path="../helpers/helpers.ts" />
 
 module Tests.Autosuggest {
+
+    function loadPopupAndWaitUntilInitialized(chrome: ChromeMock) {
+        return Canvas.loadPage("popup", null)
+            // wait for html to load
+            .then(() => {
+                Canvas.init({});
+                return waitUntil(() => chrome.tabs.query.spy.calls.count() > 0)
+            })
+            // wait for initialization
+            .then(() => {
+                chrome.tabs.query.fireCallbacksFromAllCalls([chrome.mocks.getTab()]);
+            });
+    }
+
     describe("Autorefresh test validating if", () => {
 
         const AutoRefreshButtonSelector = "*[for='refresh_check']";
@@ -10,11 +24,10 @@ module Tests.Autosuggest {
 
         beforeEach(done => {
             Canvas.create();
-            Canvas.loadPage("popup", null /* prevent from initialization */);
             chrome = createChromeMock(Canvas.getWindow(), "chrome");
 
-            // make sure that DOM is ready
-            waitUntil(() => Canvas.ready).then(() => done());
+            loadPopupAndWaitUntilInitialized(chrome)
+                .then(() => done());
         });
 
         it("button is shown after clicking on Page Options", (done) => {
@@ -30,6 +43,7 @@ module Tests.Autosuggest {
         });
 
         it("clicking on AutoRefresh option shows module", (done) => {
+            // callback will be executed only if module became visible
             openAutoRefreshModule().then(() => done());
         });
 
@@ -37,9 +51,18 @@ module Tests.Autosuggest {
             openAutoRefreshModule()
                 .then(mod => {
                     mod.inputField.value = "14s";
+                    let before = chrome.tabs.query.spy.calls.count();
                     Canvas.click(mod.startButton);
+                    return waitUntil(() => chrome.tabs.query.spy.calls.count() != before, mod);
+                })
+                .then(mod => {
+                    // trigger callback return
+                    chrome.tabs.query.fireCallbackFromLastCall([chrome.mocks.getTab()]);
+
+                    let message = chrome.runtime.sendMessage.spy.calls.argsFor(0)[0];
+                    expect(message).toEqual({ type: "AutoRefresh", command: "setInterval", tabId: 1, interval: 14 });
                     done();
-                });
+                })
         });
 
         function openAutoRefreshModule() {

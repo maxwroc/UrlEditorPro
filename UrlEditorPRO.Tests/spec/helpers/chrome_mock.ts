@@ -12,6 +12,7 @@ module Tests {
         addExtendedSpy(obj.commands, "getAll", 0);
         obj.runtime = <IRuntime>{};
         addExtendedSpy(obj.runtime, "getManifest", -1, { version: "1.0.2" });
+        addExtendedSpy(obj.runtime, "sendMessage");
         obj.tabs = <ITabs>{};
         addExtendedSpy(obj.tabs, "query", 1);
         addExtendedSpy(obj.tabs, "update");
@@ -39,25 +40,29 @@ module Tests {
 
         let spy = spyOn(obj, funcName).and.callThrough();
         obj[funcName]["spy"] = spy;
+        obj[funcName]["fireCallbacksFromAllCalls"] = (...args) =>
+            fireCallbacks(obj[funcName], callbackIndex, spy.calls.allArgs(), args);
+        obj[funcName]["fireCallbackFromLastCall"] = (...args) =>
+            fireCallbacks(obj[funcName], callbackIndex, [spy.calls.mostRecent().args], args);
+    }
 
-        obj[funcName]["fireCallbacks"] = (...args) => {
-            if (callbackIndex == -1) {
-                throw new Error(`Firing callbacks on function argument failed. No defined callbacks on "${funcName}" function.`);
-            }
-
-            if (spy.calls.allArgs().length == 0) {
-                throw new Error(`Firing callbacks on function argument failed. Function "${funcName}" was never called.`);
-            }
-
-            spy.calls.allArgs().forEach((argsArray, index) => {
-                if (argsArray[callbackIndex] === undefined) {
-                    throw new Error(`Firing callbacks on function argument failed. Argument [${callbackIndex}] not found on ${index} call to ${funcName}`);
-                }
-
-                let handler = <Function>argsArray[callbackIndex]
-                handler.apply(null, args);
-            });
+    function fireCallbacks(func: IFunctionMock<Function>, callbackIndex: number, callsArgs: any[][], callbackArgs: any[]) {
+        if (callbackIndex == -1) {
+            throw new Error(`Firing callbacks on function argument failed. No defined callbacks on "${func.name}" function.`);
         }
+
+        if (func.spy.calls.allArgs().length == 0) {
+            throw new Error(`Firing callbacks on function argument failed. Function "${func.name}" was never called.`);
+        }
+
+        callsArgs.forEach((argsArray, index) => {
+            if (argsArray[callbackIndex] === undefined) {
+                throw new Error(`Firing callbacks on function argument failed. Argument [${callbackIndex}] not found on ${index} call to ${func.name}`);
+            }
+
+            let handler = <Function>argsArray[callbackIndex]
+            handler.apply(null, callbackArgs);
+        });
     }
 
     export class ChromeMock {
@@ -83,6 +88,7 @@ module Tests {
 
     interface IRuntime {
         getManifest: IFunctionMock<{ version: string }>;
+        sendMessage: IFunctionMock<void>;
     }
 
     interface ITabs {
@@ -97,8 +103,21 @@ module Tests {
 
     interface IFunctionMock<T> {
         (): T;
-        fireCallbacks: (...args) => void;
+
+        /**
+         * Jasmine Spy object
+         */
         spy: jasmine.Spy;
+
+        /**
+         * Fires collbacks from all function calls
+         */
+        fireCallbacksFromAllCalls: (...callbackArgs) => void;
+
+        /**
+         * Fires callback from last function call
+         */
+        fireCallbackFromLastCall: (...callbackArgs) => void;
     }
 
     interface IChromeObjectMocks {
