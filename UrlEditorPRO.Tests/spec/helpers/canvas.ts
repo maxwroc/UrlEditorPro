@@ -205,7 +205,7 @@ module Tests.Canvas {
     }
 
     export interface HTMLInputElementExt extends HTMLInputElement {
-        simulateClick: () => void;
+        simulateClick: () => Promise<void>;
     }
 
     /**
@@ -216,6 +216,10 @@ module Tests.Canvas {
         let ext = <HTMLInputElementExt>inputElem;
         ext.simulateClick = () => {
             Canvas.click(inputElem);
+            return new Promise(resolve => {
+                // release the thread and allow event to dispatch
+                setTimeout(() => resolve(), 1);
+            })
         }
 
         return ext;

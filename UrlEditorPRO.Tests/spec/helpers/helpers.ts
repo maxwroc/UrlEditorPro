@@ -7,11 +7,21 @@
         });
     }
 
+    export function allAsync(description, callArguments: any[][], testFunction: (done: () => void, ...args: any[]) => void) {
+        callArguments.forEach(args => {
+            it(`${description}; Case: ${JSON.stringify(args)}`, (done) => {
+                args.unshift(done);
+                testFunction.apply(null, args);
+            });
+        });
+    }
+
     /**
      * Polls an escape function until escape function returns true
      */
     export function waitUntil<T>(escapeFunction: () => boolean, returnValue: T = null, checkDelay: number = 1): Promise<T> {
         return new Promise((resolve, reject) => {
+            var timeout = setTimeout(() => reject("Waiting for an event to trigger timed out"), 10000);
             var interval = setInterval(function () {
                 if (escapeFunction()) {
                     clearInterval(interval);

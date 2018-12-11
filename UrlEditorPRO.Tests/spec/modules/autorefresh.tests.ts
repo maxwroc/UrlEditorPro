@@ -27,30 +27,37 @@ module Tests.Autosuggest {
             chrome = createChromeMock(Canvas.getWindow(), "chrome");
 
             loadPopupAndWaitUntilInitialized(chrome)
-                .then(() => done());
+                .then(() => done())
         });
 
         it("button is shown after clicking on Page Options", (done) => {
             expect(Canvas.isVisible(AutoRefreshButtonSelector)).toBeFalsy();
 
             // showing page options menu
-            Canvas.PopupElements.getPageOptions().simulateClick();
-
-            setTimeout(() => {
-                expect(Canvas.isVisible(AutoRefreshButtonSelector)).toBeTruthy();
-                done();
-            }, 1)
+            Canvas.PopupElements.getPageOptions().simulateClick()
+                .then(() => {
+                    expect(Canvas.isVisible(AutoRefreshButtonSelector)).toBeTruthy();
+                    done();
+                });
         });
 
         it("clicking on AutoRefresh option shows module", (done) => {
             // callback will be executed only if module became visible
-            openAutoRefreshModule().then(() => done());
+            openAutoRefreshModule()
+                .then(() => done());
         });
 
-        it("clicking on Start button initializes refresh interval", (done) => {
+        allAsync("clicking on Start button initializes refresh interval",
+            [
+                ["14s", 14],
+                ["2m", 120],
+                ["3h", 60 * 60 * 3]
+            ],
+            (done, inputValue, expectedInterval) => {
+
             openAutoRefreshModule()
                 .then(mod => {
-                    mod.inputField.value = "14s";
+                    mod.inputField.value = inputValue;
                     let before = chrome.tabs.query.spy.calls.count();
                     Canvas.click(mod.startButton);
                     return waitUntil(() => chrome.tabs.query.spy.calls.count() != before, mod);
@@ -60,9 +67,9 @@ module Tests.Autosuggest {
                     chrome.tabs.query.fireCallbackFromLastCall([chrome.mocks.getTab()]);
 
                     let message = chrome.runtime.sendMessage.spy.calls.argsFor(0)[0];
-                    expect(message).toEqual({ type: "AutoRefresh", command: "setInterval", tabId: 1, interval: 14 });
+                    expect(message).toEqual({ type: "AutoRefresh", command: "setInterval", tabId: 1, interval: expectedInterval });
                     done();
-                })
+                });
         });
 
         function openAutoRefreshModule() {
