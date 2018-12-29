@@ -68,7 +68,7 @@ module Tests.Canvas {
         $(elem).simulate("key-combo", { combo: combination });
     }
 
-    export function click(elemOrSelector: HTMLElement | string) {
+    export function click(elemOrSelector: HTMLElement | string): Promise<void> {
         if (typeof (elemOrSelector) == "string") {
             elemOrSelector = getElementBySelector(elemOrSelector) as HTMLElement;
         }
@@ -76,6 +76,9 @@ module Tests.Canvas {
         $(elemOrSelector).simulate("mousedown");
         $(elemOrSelector).simulate("click");
         $(elemOrSelector).simulate("mouseup");
+
+        // release thread and allow events to dispatch
+        return new Promise(resolve => setTimeout(resolve, 1));
     }
 
     export function raiseEvent(elem: HTMLElement | Document, eventType: string, eventData: IMap<any> = {}) {

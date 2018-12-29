@@ -41,6 +41,16 @@ module Tests.Autosuggest {
                 });
         });
 
+        it("module is hidden after clicking cancel button", (done) => {
+            openAutoRefreshModule()
+                .then(mod => {
+                    return Canvas.click(mod.cancelButton);
+                }).then(() => {
+                    expect(Canvas.isVisible(AutoRefreshModuleSelector)).toBeFalsy();
+                    done();
+                });
+        });
+
         it("clicking on AutoRefresh option shows module", (done) => {
             // callback will be executed only if module became visible
             openAutoRefreshModule()
