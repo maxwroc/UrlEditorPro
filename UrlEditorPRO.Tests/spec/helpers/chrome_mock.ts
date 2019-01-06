@@ -25,6 +25,7 @@ module Tests {
         addExtendedSpy(obj.tabs, "query", 1);
         addExtendedSpy(obj.tabs, "update");
         addExtendedSpy(obj.tabs, "create");
+        addExtendedSpy(obj.tabs, "reload");
         addEventWithExtendedSpy(obj.tabs, "onActivated");
         addEventWithExtendedSpy(obj.tabs, "onUpdated");
 
@@ -61,6 +62,11 @@ module Tests {
         obj[funcName]["fireCallbackFromLastCall"] = (...args) =>
             fireCallbacks(obj[funcName], callbackIndex, [spy.calls.mostRecent().args], args);
         obj[funcName]["autoFireCallback"] = (...args: any[][]) => {
+
+            // make sure other functions wont be used anymore
+            obj[funcName]["fireCallbacksFromAllCalls"] = () => { throw new Error("Callbacks cannot be called manually when autoFireCallback was used already") };
+            obj[funcName]["fireCallbackFromLastCall"] = () => { throw new Error("Callbacks cannot be called manually when autoFireCallback was used already") };
+
             let counter = 0;
             spy.and.callFake((...callArgsWithCB) => {
                 // take the set of args for given index or the last one if element doesn't exist
@@ -152,8 +158,9 @@ module Tests {
 
     interface ITabs {
         query: IFunctionMock<any>;
-        create: ({ url: string }) => void;
-        update: (id: number, { url: string }) => void;
+        create: IFunctionMock<void>;
+        update: IFunctionMock<void>;
+        reload: IFunctionMock<void>;
     }
 
     interface IWindows {

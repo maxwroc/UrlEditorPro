@@ -17,7 +17,7 @@ module Tests.Canvas {
 
         page = createPageContainer();
         if (createBackgroundPage) {
-            backgroundPage = createPageContainer();
+            backgroundPage = createPageContainer("BackgroundPageContainer");
         }
     }
 
@@ -203,10 +203,13 @@ module Tests.Canvas {
         getValueText(): string;
     }
 
-    export function createPageContainer() {
+    export function createPageContainer(name: string = "PageContainer") {
         let container = document.createElement("iframe");
         container.setAttribute("style", "resize: both; overflow: auto; width: 416px; height: 400px");
+        container.setAttribute("name", name);
+        container.setAttribute("id", name);
         document.body.appendChild(container);
+
         return container;
     }
 
