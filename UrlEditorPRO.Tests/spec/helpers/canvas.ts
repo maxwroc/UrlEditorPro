@@ -1,6 +1,5 @@
 /// <reference path="../../../typings/index.d.ts" />
 /// <reference path="../../../UrlEditorPRO/app/shared/interfaces.shared.d.ts" />
-/// <reference path="chrome_mock.ts" />
 
 declare let TEMPLATES: IMap<string>;
 declare let $;
@@ -8,25 +7,36 @@ declare let $;
 module Tests.Canvas {
 
     let page: HTMLIFrameElement;
+    let backgroundPage: HTMLIFrameElement;
 
     export var ready: boolean;
 
-    export function create() {
+    export function create(createBackgroundPage = false) {
         // just in case it wasn't dismissed before
         dismiss();
 
-        page = document.createElement("iframe");
-        page.setAttribute("style", "resize: both; overflow: auto; width: 416px; height: 400px");
-        document.body.appendChild(page);
+        page = createPageContainer();
+        if (createBackgroundPage) {
+            backgroundPage = createPageContainer();
+        }
     }
 
     export function dismiss() {
         page && document.body.removeChild(page);
-        page = undefined;
+        backgroundPage && document.body.removeChild(backgroundPage);
+
+        page = null;
+        backgroundPage = null;
         ready = false;
     }
 
     export function loadPage(name: string, storage?: IMap<any>) {
+
+        if (backgroundPage) {
+            // loading background script
+            backgroundPage.contentWindow.document.write('<script src="/base/UrlEditorPRO/app/background.js"></script>');
+        }
+
         // prepend src attributes by a path to app dir and write template to the page (skip absolute urls)
         page.contentWindow.document.write(TEMPLATES[name + ".html"].replace(/ src="(?!https?:\/\/)/g, ' src="/base/UrlEditorPRO/app/'));
 
@@ -42,6 +52,12 @@ module Tests.Canvas {
     }
 
     export function init(storage: IMap<any> = { trackingEnabled: false }) {
+        // first we initialize background page if exists
+        if (backgroundPage) {
+            raiseEvent(backgroundPage.contentWindow.document, "init", { "storage": storage });
+        }
+
+        // main page initialization
         raiseEvent(page.contentWindow.document, "init", { "storage": storage });
     }
 
@@ -131,6 +147,10 @@ module Tests.Canvas {
         return page.contentWindow;
     }
 
+    export function getBackgroundWindow() {
+        return backgroundPage.contentWindow;
+    }
+
     export function isVisible(elem: HTMLElement | string) {
         if (typeof (elem) == "string") {
             elem = Canvas.getElementBySelector(elem) as HTMLElement;
@@ -181,6 +201,13 @@ module Tests.Canvas {
         simulateSelectItem(name: string): void;
         getButtonSimbling(): HTMLInputElementExt;
         getValueText(): string;
+    }
+
+    export function createPageContainer() {
+        let container = document.createElement("iframe");
+        container.setAttribute("style", "resize: both; overflow: auto; width: 416px; height: 400px");
+        document.body.appendChild(container);
+        return container;
     }
 
     function extendSelectElem(selectElem: HTMLSelectElement) {

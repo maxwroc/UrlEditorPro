@@ -12,6 +12,7 @@ module Tests.Autosuggest {
             })
             // wait for initialization
             .then(() => {
+                // this will execute last step of initialization which includes initialization on VM plugins
                 chrome.tabs.query.fireCallbacksFromAllCalls([chrome.mocks.getTab()]);
             });
     }

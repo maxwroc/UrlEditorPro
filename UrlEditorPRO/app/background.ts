@@ -277,5 +277,14 @@ module UrlEditor {
         }
     }
 
-    const bg = new Background(new Settings(localStorage));
+    const init = (storage: Storage) => {
+        return new Background(new Settings(localStorage))
+    }
+
+    if (window.top == window.self && !window["__karma__"]) {
+        init(localStorage);
+    }
+    else {
+        document.addEventListener("init", (evt: any) => init(<Storage>evt.detail || localStorage));
+    }
 }
