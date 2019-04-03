@@ -18,7 +18,7 @@ module Tests.Autosuggest {
             });
     }
 
-    describe("Autorefresh background page integration test", () => {
+    describe("Autorefresh background page integration test validating if", () => {
 
         beforeEach(done => {
             Canvas.create(true);
@@ -35,7 +35,7 @@ module Tests.Autosuggest {
                 .then(() => done())
         });
 
-        it("hfgfuytf", done => {
+        it("badge text is updated every sec", done => {
             startAutoRefresh("3s")
                 .then(() => {
                     return waitUntil(() => backgroundChromeMock.tabs.reload.spy.calls.count() > 0, null, 500, 5000);
