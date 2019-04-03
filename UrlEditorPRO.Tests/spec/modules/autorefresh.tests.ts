@@ -97,6 +97,18 @@ module Tests.Autosuggest {
                 .then(mod => {
                     expect(mod.startStopButton.value).toEqual("Stop");
                     expect(mod.inputField.disabled).toBeTruthy();
+
+                    let before = chrome.tabs.query.spy.calls.count();
+                    // stopping
+                    Canvas.click(mod.startStopButton);
+                    return waitUntil(() => chrome.tabs.query.spy.calls.count() != before, mod);
+                })
+                .then(mod => {
+                    // trigger callback return
+                    chrome.tabs.query.fireCallbackFromLastCall([chrome.mocks.getTab()]);
+
+                    let message = chrome.runtime.sendMessage.spy.calls.argsFor(0)[0];
+                    expect(message).toEqual({ type: "AutoRefresh", command: "setInterval", tabId: 1, interval: 0 });
                     done();
                 });
         });
