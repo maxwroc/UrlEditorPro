@@ -38,7 +38,7 @@ module Tests.Autosuggest {
         it("badge text is updated every sec", done => {
             startAutoRefresh("3s")
                 .then(() => {
-                    return waitUntil(() => backgroundChromeMock.tabs.reload.spy.calls.count() > 0, null, 500, 5000);
+                    return waitUntil(() => backgroundChromeMock.tabs.reload.spy.calls.count() > 0, null, { checkDelay: 500, timeoutAfter: 5000, failMsg: "Failed on waiting for tabs.reload call" });
                 })
                 .then(() => {
                     let tabId = chromeMock.mocks.getTab().id;
@@ -65,11 +65,11 @@ module Tests.Autosuggest {
                 .then(mod => {
                     mod.inputField.value = time;
                     let before = chromeMock.tabs.query.spy.calls.count();
-                    Canvas.click(mod.startButton);
-                    return waitUntil(() => chromeMock.tabs.query.spy.calls.count() != before, mod);
+                    Canvas.click(mod.startStopButton);
+                    return waitUntil(() => chromeMock.tabs.query.spy.calls.count() != before, mod, { failMsg: "Failed on waiting for tabs.query call" });
                 })
                 .then(mod => {
-                    return waitUntil(() => chromeMock.runtime.sendMessage.spy.calls.count() > 0, mod);
+                    return waitUntil(() => chromeMock.runtime.sendMessage.spy.calls.count() > 0, mod, { failMsg: "Failed on waiting for msg to be sent" });
                 });
         }
 
@@ -88,7 +88,7 @@ module Tests.Autosuggest {
                 .then(() => {
                     let startButton = Canvas.getElementById("set_refresh_interval");
                     return {
-                        startButton: startButton as HTMLInputElement,
+                        startStopButton: startButton as HTMLInputElement,
                         cancelButton: startButton.nextElementSibling as HTMLLabelElement,
                         inputField: startButton.previousElementSibling as HTMLInputElement
                     }

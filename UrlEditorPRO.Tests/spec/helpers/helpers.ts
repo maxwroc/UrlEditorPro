@@ -19,13 +19,16 @@
     /**
      * Polls an escape function until escape function returns true
      */
-    export function waitUntil<T>(escapeFunction: () => boolean, returnValue: T = null, checkDelay: number = 1, timeoutAfter = 10000): Promise<T> {
+    export function waitUntil<T>(escapeFunction: () => boolean, returnValue: T = null, options: { checkDelay?: number, timeoutAfter?: number, failMsg?: string } = {}): Promise<T> {
+
+        options = Object.assign({ checkDelay: 1, timeoutAfter: 10000, failMsg: "" }, )
+
         return new Promise((resolve, reject) => {
 
             var timeout = setTimeout(() => {
                 clearInterval(interval);
-                reject("Waiting for an event to trigger timed out");
-            }, timeoutAfter);
+                reject("Waiting for an event to trigger timed out. " + options.failMsg);
+            }, options.timeoutAfter);
 
             var interval = setInterval(function () {
                 try {
@@ -36,9 +39,9 @@
                 }
                 catch (e) {
                     clearInterval(interval);
-                    reject(e);
+                    reject(options.failMsg + " " + e);
                 }
-            }, checkDelay);
+            }, options.checkDelay);
         });
     };
 
