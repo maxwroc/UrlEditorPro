@@ -70,7 +70,7 @@ module Tests.Autosuggest {
                 .then(mod => {
                     mod.inputField.value = inputValue;
                     let before = chrome.tabs.query.spy.calls.count();
-                    Canvas.click(mod.startButton);
+                    Canvas.click(mod.startStopButton);
                     return waitUntil(() => chrome.tabs.query.spy.calls.count() != before, mod);
                 })
                 .then(mod => {
@@ -79,6 +79,24 @@ module Tests.Autosuggest {
 
                     let message = chrome.runtime.sendMessage.spy.calls.argsFor(0)[0];
                     expect(message).toEqual({ type: "AutoRefresh", command: "setInterval", tabId: 1, interval: expectedInterval });
+                    done();
+                });
+            });
+
+        it("user is able to stop after starting interval", (done) => {
+            openAutoRefreshModule()
+                .then(mod => {
+                    mod.inputField.value = "20s";
+                    Canvas.click(mod.startStopButton);
+                    return waitUntil(() => !Canvas.isVisible("#options_menu"), mod);
+                })
+                .then(mod => {
+                    // open again
+                    return openAutoRefreshModule();
+                })
+                .then(mod => {
+                    expect(mod.startStopButton.value).toEqual("Stop");
+                    expect(mod.inputField.disabled).toBeTruthy();
                     done();
                 });
         });
@@ -98,7 +116,7 @@ module Tests.Autosuggest {
                 .then(() => {
                     let startButton = Canvas.getElementById("set_refresh_interval");
                     return {
-                        startButton: startButton as HTMLInputElement,
+                        startStopButton: startButton as HTMLInputElement,
                         cancelButton: startButton.nextElementSibling as HTMLLabelElement,
                         inputField: startButton.previousElementSibling as HTMLInputElement
                     }

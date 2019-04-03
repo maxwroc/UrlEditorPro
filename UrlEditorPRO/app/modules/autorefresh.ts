@@ -193,6 +193,8 @@ module UrlEditor {
                 }
                 else {
                     this.setRefreshInterval(valueTextBox.value);
+                    button.value = "Stop";
+                    valueTextBox.disabled = true;
                 }
 
                 this.hideOptionsModule();
