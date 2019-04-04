@@ -7,27 +7,42 @@
         });
     }
 
+    export function allAsync(description, callArguments: any[][], testFunction: (done: () => void, ...args: any[]) => void) {
+        callArguments.forEach(args => {
+            it(`${description}; Case: ${JSON.stringify(args)}`, (done) => {
+                args.unshift(done);
+                testFunction.apply(null, args);
+            });
+        });
+    }
+
     /**
-     * Polls an escape function. Once the escape function returns true, executes a run function.
+     * Polls an escape function until escape function returns true
      */
-    export function waitUntil(escapeFunction: () => boolean, checkDelay = 1) {
-        var _runFunction;
+    export function waitUntil<T>(escapeFunction: () => boolean, returnValue: T = null, options: { checkDelay?: number, timeoutAfter?: number, failMsg?: string } = {}): Promise<T> {
 
-        var interval = setInterval(function () {
-            if (escapeFunction()) {
+        options = Object.assign({ checkDelay: 1, timeoutAfter: 10000, failMsg: "" }, )
+
+        return new Promise((resolve, reject) => {
+
+            var timeout = setTimeout(() => {
                 clearInterval(interval);
+                reject("Waiting for an event to trigger timed out. " + options.failMsg);
+            }, options.timeoutAfter);
 
-                if (_runFunction) {
-                    _runFunction();
+            var interval = setInterval(function () {
+                try {
+                    if (escapeFunction()) {
+                        clearInterval(interval);
+                        resolve(returnValue);
+                    }
                 }
-            }
-        }, checkDelay);
-
-        return {
-            then: function (runFunction) {
-                _runFunction = runFunction;
-            }
-        };
+                catch (e) {
+                    clearInterval(interval);
+                    reject(options.failMsg + " " + e);
+                }
+            }, options.checkDelay);
+        });
     };
 
     export function createElement<T extends HTMLElement>(tagName: string, id?: string, className?: string): T {

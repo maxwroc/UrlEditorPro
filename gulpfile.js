@@ -1,8 +1,6 @@
 var gulp =          require('gulp');
 var concat =        require('gulp-concat');
 var html2string =   require('gulp-html2string');
-var open =          require('gulp-open');
-var rename =        require('gulp-rename');
 var typescript =    require('gulp-typescript');
 var zip =           require('gulp-zip');
 var KarmaServer =   require('karma').Server;
@@ -33,7 +31,7 @@ gulp.task('build-options', function () {
 });
 
 gulp.task('build-background', function () {
-    return gulp.src(['UrlEditorPRO/app/modules/tracking.ts', 'UrlEditorPRO/app/modules/redirection.ts', 'UrlEditorPRO/app/background.ts'])
+    return gulp.src(['UrlEditorPRO/app/modules/tracking.ts', 'UrlEditorPRO/app/modules/redirection.ts', 'UrlEditorPRO/app/modules/autorefresh.ts', 'UrlEditorPRO/app/background.ts'])
         .pipe(typescript({
             noImplicitAny: false,
             target: "es6",
@@ -95,15 +93,24 @@ gulp.task('run-tests', function (done) {
     }, done).start();
 });
 
-gulp.task('test', ['build-test'], function() {
-    return gulp.src('UrlEditorPRO.Tests/SpecRunner.html')
-        .pipe(open());
+gulp.task('test', ['build-test'], function(done) {
+    new KarmaServer({
+        configFile: __dirname + '/karma.conf.js',
+        singleRun: true
+      }, done).start();
 });
 
 gulp.task('test-ci', ['build', 'build-test'], function(done) {
     new KarmaServer({
         configFile: __dirname + '/karma.conf.js',
         singleRun: true
+    }, done).start();
+});
+
+gulp.task('test-ci-debug', ['build', 'build-test'], function(done) {
+    new KarmaServer({
+        configFile: __dirname + '/karma.conf.js',
+        singleRun: false
     }, done).start();
 });
 

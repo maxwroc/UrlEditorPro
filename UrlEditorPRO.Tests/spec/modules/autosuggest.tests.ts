@@ -33,7 +33,7 @@ module Tests.Autosuggest {
             Canvas.init({ autoSuggestData: JSON.stringify(autoSuggestData), trackingEnabled: false });
 
             // pass current tab info
-            chrome.tabs.getSelected.fireCallbacks(chrome.mocks.getTab());
+            chrome.tabs.query.fireCallbacksFromAllCalls([chrome.mocks.getTab()]);
 
             let paramContainer = new ParamContainer(0);
             let nameInput = paramContainer.getNameElem();
@@ -62,7 +62,7 @@ module Tests.Autosuggest {
             // pass current tab info
             let tab = chrome.mocks.getTab();
             tab.url = "http://www.google-test.com/path?q=r&z=x"
-            chrome.tabs.getSelected.fireCallbacks(tab);
+            chrome.tabs.query.fireCallbacksFromAllCalls([tab]);
 
             let paramContainer = new ParamContainer(0);
             let nameInput = paramContainer.getNameElem();
@@ -84,7 +84,7 @@ module Tests.Autosuggest {
             Canvas.init({ autoSuggestData: JSON.stringify(autoSuggestData), trackingEnabled: false });
 
             // pass current tab info
-            chrome.tabs.getSelected.fireCallbacks(chrome.mocks.getTab());
+            chrome.tabs.query.fireCallbacksFromAllCalls([chrome.mocks.getTab()]);
 
             let paramContainer = new ParamContainer(0);
             // it has to match param name
@@ -116,7 +116,7 @@ module Tests.Autosuggest {
             // pass current tab info
             let tab = chrome.mocks.getTab();
             tab.url = "http://www.google-test.com/path?q=r&z=x"
-            chrome.tabs.getSelected.fireCallbacks(tab);
+            chrome.tabs.query.fireCallbacksFromAllCalls([tab]);
 
             let paramContainer = new ParamContainer(0);
             // it has to match param name
@@ -141,7 +141,7 @@ module Tests.Autosuggest {
             Canvas.init({ autoSuggestData: JSON.stringify(autoSuggestData), trackingEnabled: false });
 
             // pass current tab info
-            chrome.tabs.getSelected.fireCallbacks(chrome.mocks.getTab());
+            chrome.tabs.query.fireCallbacksFromAllCalls([chrome.mocks.getTab()]);
 
             let paramContainer = new ParamContainer(0);
             // it has to match param name
@@ -178,7 +178,7 @@ module Tests.Autosuggest {
             Canvas.init(storage);
 
             // pass current tab info
-            chrome.tabs.getSelected.fireCallbacks(chrome.mocks.getTab());
+            chrome.tabs.query.fireCallbacksFromAllCalls([chrome.mocks.getTab()]);
 
             let paramNameElem = new ParamContainer(0).getNameElem();
             // add new param keyboard combination (ctrl+"+")
@@ -212,7 +212,7 @@ module Tests.Autosuggest {
             // pass current tab info
             let tab = chrome.mocks.getTab();
             tab.url = "http://www.google-test.com/path?q=r&z=x"
-            chrome.tabs.getSelected.fireCallbacks(tab);
+            chrome.tabs.query.fireCallbacksFromAllCalls([tab]);
 
             let paramNameElem = new ParamContainer(0).getNameElem();
             // add new param keyboard combination (ctrl+"+")
@@ -239,7 +239,7 @@ module Tests.Autosuggest {
             Canvas.init(storage);
 
             // pass current tab info
-            chrome.tabs.getSelected.fireCallbacks(chrome.mocks.getTab());
+            chrome.tabs.query.fireCallbacksFromAllCalls([chrome.mocks.getTab()]);
 
             let paramContainer = new ParamContainer(0);
             paramContainer.getNameElem().value = "param1";
@@ -262,7 +262,7 @@ module Tests.Autosuggest {
             // pass current tab info
             let tab = chrome.mocks.getTab();
             tab.url = "http://www.something-new.com/path?q=r&z=x"
-            chrome.tabs.getSelected.fireCallbacks(tab);
+            chrome.tabs.query.fireCallbacksFromAllCalls([tab]);
 
             let paramNameElem = new ParamContainer(0).getNameElem();
             // add new param keyboard combination (ctrl+"+")
@@ -291,7 +291,7 @@ module Tests.Autosuggest {
             let storage = <any>{ trackingEnabled: false };
             Canvas.init(storage);
 
-            chrome.tabs.getSelected.fireCallbacks(chrome.mocks.getTab());
+            chrome.tabs.query.fireCallbacksFromAllCalls([chrome.mocks.getTab()]);
 
             Elements.getAddParamButton().simulateClick();
 
@@ -331,7 +331,7 @@ module Tests.Autosuggest {
             }
 
             // pass current tab info
-            chrome.tabs.getSelected.fireCallbacks(tab);
+            chrome.tabs.query.fireCallbacksFromAllCalls([tab]);
 
             let paramContainer = new ParamContainer(0);
             let nameInput = paramContainer.getNameElem();
@@ -364,7 +364,7 @@ module Tests.Autosuggest {
             }
 
             // pass current tab info
-            chrome.tabs.getSelected.fireCallbacks(tab);
+            chrome.tabs.query.fireCallbacksFromAllCalls([tab]);
 
             let paramContainer = new ParamContainer(0);
             paramContainer.getNameElem().value = "param1";
@@ -386,7 +386,7 @@ module Tests.Autosuggest {
             Canvas.init(storage);
 
             // pass current tab info
-            chrome.tabs.getSelected.fireCallbacks(chrome.mocks.getTab());
+            chrome.tabs.query.fireCallbacksFromAllCalls([chrome.mocks.getTab()]);
 
             let paramContainer = new ParamContainer(0);
             let nameInput = paramContainer.getNameElem();
@@ -428,7 +428,7 @@ module Tests.Autosuggest {
             Canvas.init(storage);
 
             // pass current tab info
-            chrome.tabs.getSelected.fireCallbacks(chrome.mocks.getTab());
+            chrome.tabs.query.fireCallbacksFromAllCalls([chrome.mocks.getTab()]);
 
             let paramContainer = new ParamContainer(0);
             paramContainer.getNameElem().value = "param1";
@@ -464,7 +464,7 @@ module Tests.Autosuggest {
             Canvas.init(storage);
 
             // pass current tab info
-            chrome.tabs.getSelected.fireCallbacks(chrome.mocks.getTab());
+            chrome.tabs.query.fireCallbacksFromAllCalls([chrome.mocks.getTab()]);
 
             let paramContainer = new ParamContainer(0);
             Canvas.type(paramContainer.getNameElem(), "{backspace}pa");

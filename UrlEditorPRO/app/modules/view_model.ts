@@ -3,6 +3,7 @@
 /// <reference path="param_options.ts" />
 /// <reference path="settings.ts" />
 /// <reference path="tracking.ts" />
+/// <reference path="autorefresh.ts" />
 
 module UrlEditor {
 
@@ -23,7 +24,7 @@ module UrlEditor {
         return (1 * <any>ctrl) + (2 * <any>shift) - (<any>ctrl & <any>shift);
     }
 
-    export class ViewModel {
+    export class ViewModel implements IViewModel {
 
         private mapIdToFunction: IStringMap = {
             "full_url": "url",
@@ -83,6 +84,8 @@ module UrlEditor {
                 isActive: container => undefined,
                 order: 1
             });
+
+
         }
 
         private clickEventDispatcher(evt: MouseEvent) {

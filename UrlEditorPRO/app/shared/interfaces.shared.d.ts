@@ -58,3 +58,54 @@ interface IRuleData {
     isAutomatic?: boolean;
     hotKey?: string
 }
+
+interface IBackgroundPageEventMap {
+    "tabChange": (tabId: number) => void,
+    "tabNavigate": (tabId: number, url: string) => void,
+}
+
+interface ContextMenuProperties extends chrome.contextMenus.CreateProperties {
+    isEnabled?: (tab: chrome.tabs.Tab) => boolean
+}
+
+interface IPageBackground {
+    /**
+     * Adds event listener.
+     * @param name Event name.
+     * @param handler Evend callback function.
+     */
+    addEventListener<N extends keyof IBackgroundPageEventMap>(name: N, handler: IBackgroundPageEventMap[N]);
+
+    /**
+     * Registers new context menu item.
+     * @param props Context menu item properties.
+     */
+    addActionContextMenuItem(properties: IContextMenuItemProperties);
+
+    /**
+    * Returns active/enabled action-contextmenu items.
+    * @param tab Tab for which context menu items should be returned.
+    * @param group Context menu items group.
+    */
+    getActiveActionContextMenuItems(tab: chrome.tabs.Tab, group: string): ContextMenuProperties[];
+
+    /**
+     * Unregisters context menu item or group.
+     * @param group Context menu item group.
+     * @param label Context menu item label.
+     * @param tabId Context menu item tab id.
+     */
+    removeActionContextMenuItem(group: string, label?: string, tabId?: number);
+}
+
+interface IContextMenuItemProperties {
+    group: string;
+    label: string;
+    clickHandler: (info: chrome.contextMenus.OnClickData, tab: chrome.tabs.Tab) => void;
+    tabId?: number;
+    isEnabled?: (tab: chrome.tabs.Tab) => boolean;
+}
+
+interface IViewModel {
+
+}

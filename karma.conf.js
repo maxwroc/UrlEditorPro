@@ -19,6 +19,7 @@ module.exports = function(config) {
       { pattern: 'UrlEditorPRO/app/app.js', watched: true, included: false, served: true },
       'UrlEditorPRO/app/popup.js',
       'UrlEditorPRO/app/options.js',
+      'UrlEditorPRO/app/background.js',
       'UrlEditorPRO.Tests/libs/bililiteRange.js',
       'UrlEditorPRO.Tests/libs/jquery.js',
       'UrlEditorPRO.Tests/libs/jquery.simulate.js',

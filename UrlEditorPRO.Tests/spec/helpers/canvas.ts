@@ -1,6 +1,5 @@
 /// <reference path="../../../typings/index.d.ts" />
 /// <reference path="../../../UrlEditorPRO/app/shared/interfaces.shared.d.ts" />
-/// <reference path="chrome_mock.ts" />
 
 declare let TEMPLATES: IMap<string>;
 declare let $;
@@ -8,30 +7,41 @@ declare let $;
 module Tests.Canvas {
 
     let page: HTMLIFrameElement;
+    let backgroundPage: HTMLIFrameElement;
 
     export var ready: boolean;
 
-    export function create() {
+    export function create(createBackgroundPage = false) {
         // just in case it wasn't dismissed before
         dismiss();
 
-        page = document.createElement("iframe");
-        page.setAttribute("style", "resize: both; overflow: auto; width: 416px; height: 400px");
-        document.body.appendChild(page);
+        page = createPageContainer();
+        if (createBackgroundPage) {
+            backgroundPage = createPageContainer("BackgroundPageContainer");
+        }
     }
 
     export function dismiss() {
         page && document.body.removeChild(page);
-        page = undefined;
+        backgroundPage && document.body.removeChild(backgroundPage);
+
+        page = null;
+        backgroundPage = null;
         ready = false;
     }
 
     export function loadPage(name: string, storage?: IMap<any>) {
+
+        if (backgroundPage) {
+            // loading background script
+            backgroundPage.contentWindow.document.write('<script src="/base/UrlEditorPRO/app/background.js"></script>');
+        }
+
         // prepend src attributes by a path to app dir and write template to the page (skip absolute urls)
         page.contentWindow.document.write(TEMPLATES[name + ".html"].replace(/ src="(?!https?:\/\/)/g, ' src="/base/UrlEditorPRO/app/'));
 
         // delay event triggering to wait for the page elements to be rendered
-        waitUntil(() => !!getElementBySelector("div"))
+        return waitUntil(() => !!getElementBySelector("div"))
             .then(() => {
                 if (storage) {
                     init(storage);
@@ -42,6 +52,12 @@ module Tests.Canvas {
     }
 
     export function init(storage: IMap<any> = { trackingEnabled: false }) {
+        // first we initialize background page if exists
+        if (backgroundPage) {
+            raiseEvent(backgroundPage.contentWindow.document, "init", { "storage": storage });
+        }
+
+        // main page initialization
         raiseEvent(page.contentWindow.document, "init", { "storage": storage });
     }
 
@@ -68,10 +84,17 @@ module Tests.Canvas {
         $(elem).simulate("key-combo", { combo: combination });
     }
 
-    export function click(elem: HTMLElement) {
-        $(elem).simulate("mousedown");
-        $(elem).simulate("click");
-        $(elem).simulate("mouseup");
+    export function click(elemOrSelector: HTMLElement | string): Promise<void> {
+        if (typeof (elemOrSelector) == "string") {
+            elemOrSelector = getElementBySelector(elemOrSelector) as HTMLElement;
+        }
+
+        $(elemOrSelector).simulate("mousedown");
+        $(elemOrSelector).simulate("click");
+        $(elemOrSelector).simulate("mouseup");
+
+        // release thread and allow events to dispatch
+        return new Promise(resolve => setTimeout(resolve, 1));
     }
 
     export function raiseEvent(elem: HTMLElement | Document, eventType: string, eventData: IMap<any> = {}) {
@@ -124,11 +147,22 @@ module Tests.Canvas {
         return page.contentWindow;
     }
 
+    export function getBackgroundWindow() {
+        return backgroundPage.contentWindow;
+    }
+
+    export function isVisible(elem: HTMLElement | string) {
+        if (typeof (elem) == "string") {
+            elem = Canvas.getElementBySelector(elem) as HTMLElement;
+        }
+
+        return !!(elem.offsetWidth || elem.offsetHeight || elem.getClientRects().length);
+    }
+
     export class PopupElements {
         static getFullUrl() {
             return <HTMLTextAreaElement>getElementById("full_url", true);
         }
-
         static getGoButton() {
             return extendButtonElement(<HTMLInputElement>getElementById("go", true));
         }
@@ -137,6 +171,9 @@ module Tests.Canvas {
         }
         static getAddParamButton() {
             return extendButtonElement(<HTMLInputElement>getElementById("add_param"));
+        }
+        static getPageOptions() {
+            return extendButtonElement(<HTMLInputElement>getElementById("options"));
         }
     }
 
@@ -166,6 +203,16 @@ module Tests.Canvas {
         getValueText(): string;
     }
 
+    export function createPageContainer(name: string = "PageContainer") {
+        let container = document.createElement("iframe");
+        container.setAttribute("style", "resize: both; overflow: auto; width: 416px; height: 400px");
+        container.setAttribute("name", name);
+        container.setAttribute("id", name);
+        document.body.appendChild(container);
+
+        return container;
+    }
+
     function extendSelectElem(selectElem: HTMLSelectElement) {
         let ext = <HTMLSelectElementExt>selectElem;
         ext.simulateSelectItem = (name: string) => {
@@ -191,13 +238,21 @@ module Tests.Canvas {
     }
 
     export interface HTMLInputElementExt extends HTMLInputElement {
-        simulateClick: () => void;
+        simulateClick: () => Promise<void>;
     }
 
+    /**
+     * Adds "simulate" actions
+     * @param inputElem Element to extend
+     */
     function extendButtonElement(inputElem: HTMLInputElement) {
         let ext = <HTMLInputElementExt>inputElem;
         ext.simulateClick = () => {
             Canvas.click(inputElem);
+            return new Promise(resolve => {
+                // release the thread and allow event to dispatch
+                setTimeout(() => resolve(), 1);
+            })
         }
 
         return ext;

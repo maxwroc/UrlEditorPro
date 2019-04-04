@@ -144,6 +144,10 @@ module UrlEditor.Helpers {
         }
     }
 
+    export function getActiveTab(callback: (tab: chrome.tabs.Tab) => void) {
+        chrome.tabs.query({ currentWindow: true, active: true }, tabs => tabs[0] && callback(tabs[0]));
+    }
+
     export const log = lazyInit(logInitializer);
     function logInitializer() {
         let logElem = ge("log");

@@ -6,7 +6,7 @@
   "scripts": {
     "postinstall": "node_modules/.bin/typings install",
     "pretest": "node_modules/.bin/tsc -p ./UrlEditorPRO.Tests/",
-    "test": "start UrlEditorPRO.Tests/SpecRunner.html",
+    "test": "node_modules/.bin/gulp test",
     "build": "node_modules/.bin/tsc -p ./UrlEditorPRO/",
     "work": "node_modules/.bin/tsc -p ./UrlEditorPRO/ -w"
   },
@@ -24,8 +24,6 @@
     "gulp": "~3.9.1",
     "gulp-concat": "~2.6.1",
     "gulp-html2string": "~0.1.1",
-    "gulp-open": "~2.1.0",
-    "gulp-rename": "~1.2.2",
     "gulp-typescript": "~3.2.3",
     "gulp-zip": "~4.1.0",
     "jasmine": "~2.8.0",

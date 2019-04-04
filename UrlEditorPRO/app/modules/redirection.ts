@@ -1,3 +1,4 @@
+///<reference path="../shared/shared.ts" />
 ///<reference path="settings.ts" />
 ///<reference path="url_parser.ts" />
 ///<reference path="regexp.replacer.ts" />
@@ -21,6 +22,9 @@ module UrlEditor {
     converters.base64Encode = (val) => Helpers.b64EncodeUnicode(val);
     converters.base64Decode = (val) => Helpers.b64DecodeUnicode(val);
 
+    /**
+     * Redirection rule definition
+     */
     export class RedirectRule {
         public urlFilter: string;
         public isAutomatic: boolean;
@@ -32,17 +36,30 @@ module UrlEditor {
             this.isAutomatic = replaceData.isAutomatic;
         }
 
+        /**
+         * Checks if given url is supported by this rule
+         * @param url Url to validate
+         */
         isUrlSupported(url: string): boolean {
             let reg = new RegExp("^" + this.urlFilter.replace(/[*]/g, ".*") + "$");
             return reg.test(url);
         }
 
+        /**
+         * Gets new url where user will be redirected
+         * @param url Url to transform
+         */
         getUpdatedUrl(url: string): string {
             return (<IRegExpRuleData>this.replaceData).regExp ?
                 this.getUpdatedUrlAdvanced(url, this.replaceData as IRegExpRuleData) :
                 this.getUpdatedUrlSimple(url, this.replaceData as IRedirectionRuleData);
         }
 
+        /**
+         * Regexp based url transformation
+         * @param url Url to transform
+         * @param data Rule details
+         */
         private getUpdatedUrlAdvanced(url: string, data: IRegExpRuleData): string {
             //url = url.replace(new RegExp(data.regExp, "g"), data.replaceString);
             let r = new RegExpGroupReplacer(data.regExp, data.isRegExpGlobal);
@@ -64,6 +81,11 @@ module UrlEditor {
             return url;
         }
 
+        /**
+         * Field based url transformation
+         * @param url Url to transform
+         * @param data Rule details
+         */
         private getUpdatedUrlSimple(url: string, data: IRedirectionRuleData): string {
             let uri = new UrlEditor.Uri(url);
 
@@ -140,28 +162,127 @@ module UrlEditor {
 
             return this.redirData;
         }
+    }
 
-        initOnBeforeRequest(bindOnBeforeRequest: IBindOnBeforeRequestHandler) {
-            let rulesData = this.getData();
+    class RedirectionBackground implements IBackgroundPlugin {
+        private redirMgr: RedirectionManager;
+
+        constructor(private settings: Settings, private background: IPageBackground) {
+
+            chrome.runtime.onMessage.addListener((msgData, sender, sendResponse) => this.handleMessage(msgData));
+
+            chrome.commands.onCommand.addListener(command => this.onKeyboardShortcut(command));
+
+            this.initializeRedirections();
+        }
+
+        private activeRules: ((requestDetails: chrome.webRequest.WebRequestBodyDetails) => void)[] = [];
+
+        /**
+         * Keyboard shortcut handler.
+         * @param command Command type/name.
+         */
+        private onKeyboardShortcut(command: string) {
+            if (command == Command.RedirectUseFirstRule) {
+                Helpers.getActiveTab(tab => {
+                    let contextMenuItems = this.background.getActiveActionContextMenuItems(tab, "Redirections");
+                    if (contextMenuItems[0]) {
+                        Tracking.trackEvent(Tracking.Category.Redirect, "keyboard", "first_rule");
+                        contextMenuItems[0].onclick(null, tab);
+                    }
+                    else {
+                        Tracking.trackEvent(Tracking.Category.Redirect, "keyboard", "no_rule_available");
+                    }
+                });
+            }
+        }
+
+        /**
+         * Initializes redirections.
+         *
+         * It uses fresh/new objects to be sure we use most recent settings.
+         */
+        private initializeRedirections() {
+            // remove old event handlers
+            this.activeRules.forEach(l => chrome.webRequest.onBeforeRequest.removeListener(l));
+            this.activeRules = [];
+
+            // remove old context menus
+            this.background.removeActionContextMenuItem("Redirection");
+
+            this.redirMgr = new RedirectionManager(new Settings(localStorage));
+
+            let rulesData = this.redirMgr.getData();
             Object.keys(rulesData).forEach(name => {
                 let data = rulesData[name];
-                bindOnBeforeRequest(
-                    data.urlFilter,
-                    name,
-                    (requestDetails) => {
-                        if (data.isAutomatic) {
-                            let rule = new RedirectRule(data);
-                            let newUrl = rule.getUpdatedUrl(requestDetails.url);
-                            if (newUrl != requestDetails.url) {
-                                return <chrome.webRequest.BlockingResponse>{
-                                    redirectUrl: newUrl
-                                };
-                            }
-                        }
-                    },
-                    ["blocking"]
-                );
+
+                // check if rule is url-triggering
+                if (data.isAutomatic) {
+                    this.setupAutomaticRule(data);
+                }
+                else {
+                    this.setupContextMenuRuleItem(data);
+                }
             });
         }
+
+        /**
+         * Setup for url-trggered rule.
+         * @param data Rule details
+         */
+        private setupAutomaticRule(data: IRedirectionRuleData) {
+            // create new wrapper and add it to the list (we need to do it to be able to remove listener later)
+            this.activeRules.push(requestDetails => {
+                let rule = new RedirectRule(data);
+                let newUrl = rule.getUpdatedUrl(requestDetails.url);
+                if (newUrl != requestDetails.url) {
+
+                    Tracking.trackEvent(Tracking.Category.Redirect, "automatic");
+
+                    return <chrome.webRequest.BlockingResponse>{
+                        redirectUrl: newUrl
+                    };
+                }
+            });
+
+            chrome.webRequest.onBeforeRequest.addListener(
+                this.activeRules[this.activeRules.length - 1], // use newly added handler
+                { urls: [data.urlFilter] },
+                ["blocking"]);
+        }
+
+        /**
+         * Setup for context menu rule.
+         * @param data Rule details
+         */
+        private setupContextMenuRuleItem(data: IRedirectionRuleData) {
+            let rule = new RedirectRule(data);
+            this.background.addActionContextMenuItem({
+                clickHandler: (info, tab) => {
+                    let newUrl = rule.getUpdatedUrl(tab.url);
+                    if (tab.url != newUrl) {
+                        Tracking.trackEvent(Tracking.Category.Redirect, "click", "context_menu");
+                        chrome.tabs.update(tab.id, { url: newUrl });
+                    }
+                },
+                group: "Redirections",
+                label: "Redirect: " + data.name,
+                isEnabled: tab => rule.isUrlSupported(tab.url)
+            });
+        }
+
+        /**
+         * Handles messages/commands send by UI.
+         * @param msg Incommong message/command
+         */
+        private handleMessage(msg: string) {
+            switch (msg) {
+                case Command.ReloadRedirectionRules:
+                    this.initializeRedirections();
+                    break;
+            }
+        }
     }
+
+    UrlEditor.Plugins.Background.push(RedirectionBackground);
 }

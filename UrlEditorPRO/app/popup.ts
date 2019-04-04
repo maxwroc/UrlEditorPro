@@ -4,9 +4,9 @@
 /// <reference path="modules/url_parser.ts" />
 /// <reference path="modules/view_model.ts" />
 /// <reference path="../../typings/index.d.ts" />
+/// <reference path="shared/shared.ts" />
 
 module UrlEditor {
-
 
     function initialize(storage: Storage) {
         var version = chrome.runtime.getManifest().version;
@@ -29,8 +29,7 @@ module UrlEditor {
         }
 
         // get currently selected tab
-        chrome.tabs.getSelected(null, function (tab) {
-
+        Helpers.getActiveTab(tab => {
             var uri = new UrlEditor.Uri(tab.url);
 
             var autosuggest = new AutoSuggest(settings, document, uri, tab.incognito);
@@ -58,10 +57,13 @@ module UrlEditor {
                 }
             });
 
+            Plugins.ViewModel.forEach(plugin => new plugin(settings, this));
         });
     };
 
+    // to enable UI testing
     document.addEventListener(
         window.top == window.self && !window["__karma__"] ? "DOMContentLoaded" : "init",
         (evt: any) => initialize(<Storage>evt.detail || localStorage));
 }
+
