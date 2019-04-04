@@ -34,7 +34,7 @@ module Tests.Autosuggest {
             loadPopupAndWaitUntilInitialized(chromeMock)
                 .then(() => done())
         });
-
+/* Not stable on travis
         it("badge text is updated every sec", done => {
             startAutoRefresh("3s")
                 .then(() => {
@@ -60,6 +60,7 @@ module Tests.Autosuggest {
                 });
         });
 
+/** end */
         function startAutoRefresh(time: string) {
             return openAutoRefreshModule()
                 .then(mod => {
