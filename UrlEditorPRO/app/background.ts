@@ -150,7 +150,7 @@ module UrlEditor {
          */
         private throttledContextMenuInit() {
             clearTimeout(this.delayedUiUpdate);
-            this.delayedUiUpdate = setTimeout(() => this.initializeContextMenu(), 0);
+            this.delayedUiUpdate = <any>setTimeout(() => this.initializeContextMenu(), 0);
         }
 
         /**
