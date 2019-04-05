@@ -9,7 +9,7 @@ module Tests.Canvas {
     let page: HTMLIFrameElement;
     let backgroundPage: HTMLIFrameElement;
 
-    let scrollBarWidth = 0;
+    let scrollBarWidth = 17;
 
     export var ready: boolean;
 
