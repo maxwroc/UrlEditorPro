@@ -90,7 +90,7 @@ module UrlEditor {
                 // clear previous if exists
                 this.tabRefreshMap[tabId] && clearInterval(this.tabRefreshMap[tabId].intervalHandle);
                 this.tabRefreshMap[tabId] = {
-                    intervalHandle: <any>setInterval(() => this.refreshTab(tabId), interval * 1000),
+                    intervalHandle: setInterval(<TimerHandler>(() => this.refreshTab(tabId)), interval * 1000),
                     interval: interval,
                     lastRefresh: Date.now()
                 }
@@ -106,7 +106,7 @@ module UrlEditor {
                 if (this.counterEnabled) {
                     // we set one global counter for all the active tabs which are refreshing
                     if (!this.counterInterval) {
-                        this.counterInterval = <any>setInterval(() => this.updateCounter(), 1000);
+                        this.counterInterval = setInterval(<TimerHandler>(() => this.updateCounter()), 1000);
                     }
                 }
                 else {

@@ -1,8 +1,8 @@
 {
     "compilerOptions": {
+        "noImplicitAny": false,
         "target": "es6",
-        "watch": false,
         "sourceMap": false,
-        "outFile": "spec/aggregate.tests.js"
+        "declaration": false
     }
 }

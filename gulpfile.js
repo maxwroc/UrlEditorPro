@@ -8,49 +8,30 @@ var KarmaServer =   require('karma').Server;
 var fs =            require('fs');
 
 gulp.task('build-root', function () {
+    let tsProject = typescript.createProject('tsconfig.json', { outFile: 'popup.js' });
     return gulp.src(['UrlEditorPRO/app/popup.ts'])
-        .pipe(typescript({
-            noImplicitAny: false,
-            target: "es6",
-            sourceMap: false,
-            declaration: false
-        }))
+        .pipe(tsProject())
         .pipe(gulp.dest('UrlEditorPRO/app/'));
 });
 
 gulp.task('build-options', function () {
+    let tsProject = typescript.createProject('tsconfig.json', { outFile: 'options.js' });
     return gulp.src(['UrlEditorPRO/app/options.ts', 'UrlEditorPRO/app/options/**/*.ts'])
-        .pipe(typescript({
-            noImplicitAny: false,
-            target: "es6",
-            sourceMap: false,
-            declaration: false,
-            outFile: 'options.js'
-        }))
+        .pipe(tsProject())
         .pipe(gulp.dest('UrlEditorPRO/app/'));
 });
 
 gulp.task('build-background', function () {
+    let tsProject = typescript.createProject('tsconfig.json', { outFile: 'background.js' });
     return gulp.src(['UrlEditorPRO/app/modules/tracking.ts', 'UrlEditorPRO/app/modules/redirection.ts', 'UrlEditorPRO/app/modules/autorefresh.ts', 'UrlEditorPRO/app/background.ts'])
-        .pipe(typescript({
-            noImplicitAny: false,
-            target: "es6",
-            sourceMap: false,
-            declaration: false,
-            outFile: 'background.js'
-        }))
+        .pipe(tsProject())
         .pipe(gulp.dest('UrlEditorPRO/app/'));
 })
 
 gulp.task('build', ['build-root', 'build-options', 'build-background'], function () {
+    let tsProject = typescript.createProject('tsconfig.json', { outFile: 'app.js' });
     return gulp.src(['UrlEditorPRO/app/modules/**/*.ts', 'UrlEditorPRO/app/shared/**/*.ts'])
-        .pipe(typescript({
-            noImplicitAny: false,
-            target: "es6",
-            sourceMap: false,
-            declaration: false,
-            outFile: 'app.js'
-        }))
+        .pipe(tsProject())
         .pipe(gulp.dest('UrlEditorPRO/app/'));
 });
 
@@ -60,14 +41,9 @@ gulp.task('watch', ['build'], function () {
 
 
 gulp.task('build-test-internal', function () {
+    let tsProject = typescript.createProject('tsconfig.json', { outFile: 'aggregate.tests.js' });
     return gulp.src('UrlEditorPRO.Tests/spec/**/*.ts')
-        .pipe(typescript({
-            noImplicitAny: false,
-            target: "es6",
-            sourceMap: false,
-            declaration: false,
-            outFile: 'aggregate.tests.js'
-        }))
+        .pipe(tsProject())
         .pipe(gulp.dest('UrlEditorPRO.Tests/spec/'));
 });
 
