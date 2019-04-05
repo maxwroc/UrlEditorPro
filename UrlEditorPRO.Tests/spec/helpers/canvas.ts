@@ -84,7 +84,7 @@ module Tests.Canvas {
         $(elem).simulate("key-combo", { combo: combination });
     }
 
-    export function click(elemOrSelector: HTMLElement | string): Promise<void> {
+    export function click(elemOrSelector: HTMLElement | string): Promise<HTMLElement> {
         if (typeof (elemOrSelector) == "string") {
             elemOrSelector = getElementBySelector(elemOrSelector) as HTMLElement;
         }
@@ -94,7 +94,7 @@ module Tests.Canvas {
         $(elemOrSelector).simulate("mouseup");
 
         // release thread and allow events to dispatch
-        return new Promise(resolve => setTimeout(resolve, 1));
+        return new Promise(resolve => setTimeout(() => resolve(elemOrSelector as HTMLElement), 1));
     }
 
     export function raiseEvent(elem: HTMLElement | Document, eventType: string, eventData: IMap<any> = {}) {
@@ -211,6 +211,15 @@ module Tests.Canvas {
         document.body.appendChild(container);
 
         return container;
+    }
+
+    /**
+     * Resizes page window to fit entire content when scrollbar appears.
+     */
+    export function adjustPageWidth() {
+        if (getWindow().document.body.scrollHeight > page.offsetHeight) {
+            page.style.width = (getWindow().document.body.scrollWidth + 33) + "px";
+        }
     }
 
     function extendSelectElem(selectElem: HTMLSelectElement) {

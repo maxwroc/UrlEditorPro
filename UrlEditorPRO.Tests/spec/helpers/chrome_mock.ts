@@ -206,6 +206,6 @@ module Tests {
     }
 
     interface IChromeObjectMocks {
-        getTab: () => chrome.tabs.Tab
+        getTab: (id?: number, url?: string, incognito?: boolean) => chrome.tabs.Tab
     }
 }
