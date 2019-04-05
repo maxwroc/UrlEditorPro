@@ -9,6 +9,8 @@ module Tests.Canvas {
     let page: HTMLIFrameElement;
     let backgroundPage: HTMLIFrameElement;
 
+    let scrollBarWidth = 17;
+
     export var ready: boolean;
 
     export function create(createBackgroundPage = false) {
@@ -84,7 +86,7 @@ module Tests.Canvas {
         $(elem).simulate("key-combo", { combo: combination });
     }
 
-    export function click(elemOrSelector: HTMLElement | string): Promise<void> {
+    export function click(elemOrSelector: HTMLElement | string): Promise<HTMLElement> {
         if (typeof (elemOrSelector) == "string") {
             elemOrSelector = getElementBySelector(elemOrSelector) as HTMLElement;
         }
@@ -94,7 +96,7 @@ module Tests.Canvas {
         $(elemOrSelector).simulate("mouseup");
 
         // release thread and allow events to dispatch
-        return new Promise(resolve => setTimeout(resolve, 1));
+        return new Promise(resolve => setTimeout(() => resolve(elemOrSelector as HTMLElement), 1));
     }
 
     export function raiseEvent(elem: HTMLElement | Document, eventType: string, eventData: IMap<any> = {}) {
@@ -213,6 +215,16 @@ module Tests.Canvas {
         return container;
     }
 
+    /**
+     * Resizes page window to fit entire content when scrollbar appears.
+     */
+    export function adjustPageWidth() {
+        const body = getWindow().document.body;
+        if (body.scrollHeight > page.offsetHeight) {
+            page.style.width = (body.scrollWidth + 16 + scrollBarWidth + 1) + "px";
+        }
+    }
+
     function extendSelectElem(selectElem: HTMLSelectElement) {
         let ext = <HTMLSelectElementExt>selectElem;
         ext.simulateSelectItem = (name: string) => {
@@ -257,4 +269,17 @@ module Tests.Canvas {
 
         return ext;
     }
+
+    // measure scrollbar width
+    $(() => {
+        var scrollDiv = document.createElement("div");
+        scrollDiv.setAttribute("style", "width: 100px; overflow: scroll; position: absolute; top: -200px");
+        document.body.appendChild(scrollDiv);
+
+        // give some time to render
+        setTimeout(() => {
+            scrollBarWidth = scrollDiv.offsetWidth - scrollDiv.clientWidth;
+            document.body.removeChild(scrollDiv);
+        });
+    });
 }

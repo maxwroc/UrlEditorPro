@@ -40,7 +40,7 @@ module UrlEditor.ParamOptions {
         // move menu to proper position
         let pos = pressedButton.getBoundingClientRect();
         // pos doesn't contain scroll value so we need to add it
-        let posTop = pos.top + doc.body.scrollTop - 8 - 2; // 8px body margin; 2px border
+        let posTop = pos.top + window.scrollY - 8 - 2; // 8px body margin; 2px border
         menuElem.style.top = posTop + "px";
         let posRight = pos.right - menuElem.parentElement.offsetWidth + 2; // 2px for border
         menuElem.style.right = posRight + "px";
