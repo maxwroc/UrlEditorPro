@@ -9,6 +9,8 @@ module Tests.Canvas {
     let page: HTMLIFrameElement;
     let backgroundPage: HTMLIFrameElement;
 
+    let scrollBarWidth = 0;
+
     export var ready: boolean;
 
     export function create(createBackgroundPage = false) {
@@ -217,8 +219,10 @@ module Tests.Canvas {
      * Resizes page window to fit entire content when scrollbar appears.
      */
     export function adjustPageWidth() {
-        if (getWindow().document.body.scrollHeight > page.offsetHeight) {
-            page.style.width = (getWindow().document.body.scrollWidth + 33) + "px";
+        const body = getWindow().document.body;
+        if (body.scrollHeight > page.offsetHeight) {
+            page.style.width = (body.scrollWidth + 16 + scrollBarWidth + 1) + "px";
+            console.log("########## page.width: " + page.style.width);
         }
     }
 
@@ -266,4 +270,18 @@ module Tests.Canvas {
 
         return ext;
     }
+
+    // measure scrollbar width
+    $(() => {
+        var scrollDiv = document.createElement("div");
+        scrollDiv.setAttribute("style", "width: 100px; overflow: scroll; position: absolute; top: -200px");
+        document.body.appendChild(scrollDiv);
+
+        // give some time to render
+        setTimeout(() => {
+            scrollBarWidth = scrollDiv.offsetWidth - scrollDiv.clientWidth;
+            console.log("###### Scrollbar size " + scrollBarWidth);
+            document.body.removeChild(scrollDiv);
+        });
+    });
 }
