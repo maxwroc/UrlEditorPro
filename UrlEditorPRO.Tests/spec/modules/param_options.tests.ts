@@ -13,6 +13,7 @@ module Tests.Autosuggest  {
 
         allAsync("position of param-menu is correct when pane scrolled", [[4, 2], [100, 2]], (done, numberOfParams, buttonIndex) => {
             const url = "https://httpbin.org/get?" + [...Array(numberOfParams).keys()].map(i => `${i}=${i}`).join("&");
+            const menuMargin = 2;
 
             loadPopupAndWaitUntilInitialized(url)
                 .then(() => {
@@ -32,8 +33,9 @@ module Tests.Autosuggest  {
                     const menuCoords = Canvas.getElementBySelector("#paramMenu").getBoundingClientRect();
                     const buttonCoords = button.getBoundingClientRect();
 
-                    expect(menuCoords.top).toEqual(buttonCoords.top + 2);
-                    expect(menuCoords.right).toEqual(buttonCoords.right - 2);
+                    expect(menuCoords.top).toEqual(buttonCoords.top + menuMargin);
+                    // Measuring scrollbar is not perfect - allowing 1px diff
+                    expect(Math.abs(menuCoords.right - buttonCoords.right + menuMargin)).toBeLessThanOrEqual(1);
 
                     done();
                 });

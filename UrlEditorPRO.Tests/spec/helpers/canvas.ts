@@ -222,7 +222,6 @@ module Tests.Canvas {
         const body = getWindow().document.body;
         if (body.scrollHeight > page.offsetHeight) {
             page.style.width = (body.scrollWidth + 16 + scrollBarWidth + 1) + "px";
-            console.log("########## page.width: " + page.style.width);
         }
     }
 
@@ -280,7 +279,6 @@ module Tests.Canvas {
         // give some time to render
         setTimeout(() => {
             scrollBarWidth = scrollDiv.offsetWidth - scrollDiv.clientWidth;
-            console.log("###### Scrollbar size " + scrollBarWidth);
             document.body.removeChild(scrollDiv);
         });
     });
