@@ -1,3 +1,4 @@
+var fs =            require('fs');
 var gulp =          require('gulp');
 var concat =        require('gulp-concat');
 var html2string =   require('gulp-html2string');
@@ -5,9 +6,8 @@ var typescript =    require('gulp-typescript');
 var zip =           require('gulp-zip');
 var KarmaServer =   require('karma').Server;
 
-var fs =            require('fs');
-
-gulp.task('build-root', function () {
+//#region build commands
+gulp.task('build-popup', function () {
     let tsProject = typescript.createProject('tsconfig.json', { outFile: 'popup.js' });
     return gulp.src(['UrlEditorPRO/app/popup.ts'])
         .pipe(tsProject())
@@ -28,18 +28,15 @@ gulp.task('build-background', function () {
         .pipe(gulp.dest('UrlEditorPRO/app/'));
 })
 
-gulp.task('build', ['build-root', 'build-options', 'build-background'], function () {
+gulp.task('build', ['build-popup', 'build-options', 'build-background'], function () {
     let tsProject = typescript.createProject('tsconfig.json', { outFile: 'app.js' });
     return gulp.src(['UrlEditorPRO/app/modules/**/*.ts', 'UrlEditorPRO/app/shared/**/*.ts'])
         .pipe(tsProject())
         .pipe(gulp.dest('UrlEditorPRO/app/'));
 });
+//#endregion
 
-gulp.task('watch', ['build'], function () {
-    gulp.watch('UrlEditorPRO/app/**/*.ts', ['build']);
-});
-
-
+//#region build and run tests
 gulp.task('build-test-internal', function () {
     let tsProject = typescript.createProject('tsconfig.json', { outFile: 'aggregate.tests.js' });
     return gulp.src('UrlEditorPRO.Tests/spec/**/*.ts')
@@ -89,6 +86,7 @@ gulp.task('test-ci-debug', ['build', 'build-test'], function(done) {
         singleRun: false
     }, done).start();
 });
+//#endregion
 
 gulp.task('release', function() {
     var manifest = require('./UrlEditorPRO/app/manifest.json');
@@ -107,6 +105,10 @@ gulp.task('release', function() {
     return gulp.src(['UrlEditorPRO/app/**/*', '!UrlEditorPRO/app/**/*.ts'])
     .pipe(zip(zipName))
     .pipe(gulp.dest('release'));
+});
+
+gulp.task('watch', ['build'], function () {
+    gulp.watch('UrlEditorPRO/app/**/*.ts', ['build']);
 });
 
 gulp.task('watch-test', function () {
