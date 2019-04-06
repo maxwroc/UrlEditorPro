@@ -168,7 +168,7 @@ module UrlEditor.ParamOptions {
         return selectedOptionIndex != undefined ? options[selectedOptionIndex]: undefined;
     }
 
-    function getSelectedOptionIndex(options: NodeListOf<HTMLLIElement>, defaultIndex = 0): number {
+    function getSelectedOptionIndex(options: HTMLCollectionOf<HTMLLIElement>, defaultIndex = 0): number {
         options = options || menuElem.getElementsByTagName("li");
 
         let activeOptionIndex = defaultIndex;
