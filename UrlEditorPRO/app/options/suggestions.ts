@@ -57,9 +57,10 @@ module UrlEditor.Options.Suggestions {
         if (elem.tagName == "INPUT") {
             switch (elem.name) {
                 case "saveBinding":
-                    saveBinding();
-                    domainsElem.selectedIndex = 0;
-                    handleSelect(domainsElem);
+                    if (saveBinding()) {
+                        domainsElem.selectedIndex = 0;
+                        handleSelect(domainsElem);
+                    }
                     break;
 
                 case "delete":
@@ -228,7 +229,8 @@ module UrlEditor.Options.Suggestions {
         let unbinding = false;
 
         if (subjectPage.startsWith("-- ") || targetPage.startsWith("-- ")) {
-            throw new Error("Bind subject must be a valid, existing page")
+            console.warn("Bind subject must be a valid, existing page");
+            return false;
         }
 
         if (targetPage.startsWith(UNBIND)) {
@@ -247,6 +249,8 @@ module UrlEditor.Options.Suggestions {
 
             autoSuggestData.save();
         }
+
+        return true;
     }
 
     function exportSuggestionsData() {
