@@ -53,7 +53,10 @@ module Tests.Canvas {
             });
     }
 
-    export function init(storage: IMap<any> = { trackingEnabled: false }) {
+    export function init(storage: IMap<any> = null) {
+        storage = storage || {};
+        storage.trackingEnabled = false;
+
         // first we initialize background page if exists
         if (backgroundPage) {
             raiseEvent(backgroundPage.contentWindow.document, "init", { "storage": storage });
