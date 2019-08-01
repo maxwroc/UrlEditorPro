@@ -1,9 +1,11 @@
+
 addons:
   chrome: stable
 before_script:
   - npm install
   - npm install -g gulp-cli
   - "export CHROME_BIN=chromium-browser"
+dist: xenial
 services:
   - xvfb
 script: gulp test-ci
