@@ -22,6 +22,8 @@ module UrlEditor {
     converters.base64Encode = (val) => Helpers.b64EncodeUnicode(val);
     converters.base64Decode = (val) => Helpers.b64DecodeUnicode(val);
 
+    const ContextMenuGroupName = "Redirections";
+
     /**
      * Redirection rule definition
      */
@@ -185,7 +187,7 @@ module UrlEditor {
         private onKeyboardShortcut(command: string) {
             if (command == Command.RedirectUseFirstRule) {
                 Helpers.getActiveTab(tab => {
-                    let contextMenuItems = this.background.getActiveActionContextMenuItems(tab, "Redirections");
+                    let contextMenuItems = this.background.getActiveActionContextMenuItems(tab, ContextMenuGroupName);
                     if (contextMenuItems[0]) {
                         Tracking.trackEvent(Tracking.Category.Redirect, "keyboard", "first_rule");
                         contextMenuItems[0].onclick(null, tab);
@@ -208,7 +210,7 @@ module UrlEditor {
             this.activeRules = [];
 
             // remove old context menus
-            this.background.removeActionContextMenuItem("Redirection");
+            this.background.removeActionContextMenuItem(ContextMenuGroupName);
 
             this.redirMgr = new RedirectionManager(new Settings(localStorage));
 
@@ -265,7 +267,7 @@ module UrlEditor {
                         chrome.tabs.update(tab.id, { url: newUrl });
                     }
                 },
-                group: "Redirections",
+                group: ContextMenuGroupName,
                 label: "Redirect: " + data.name,
                 isEnabled: tab => rule.isUrlSupported(tab.url)
             });
