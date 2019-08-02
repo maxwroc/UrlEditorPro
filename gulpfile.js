@@ -28,12 +28,12 @@ gulp.task('build-background', function () {
         .pipe(gulp.dest('UrlEditorPRO/app/'));
 })
 
-gulp.task('build', ['build-popup', 'build-options', 'build-background'], function () {
+gulp.task('build', gulp.series(gulp.parallel('build-popup', 'build-options', 'build-background'), function () {
     let tsProject = typescript.createProject('tsconfig.json', { outFile: 'app.js' });
     return gulp.src(['UrlEditorPRO/app/modules/**/*.ts', 'UrlEditorPRO/app/shared/**/*.ts'])
         .pipe(tsProject())
         .pipe(gulp.dest('UrlEditorPRO/app/'));
-});
+}));
 //#endregion
 
 //#region build and run tests
@@ -57,7 +57,7 @@ gulp.task('templates-html2js', function () {
         .pipe(gulp.dest('UrlEditorPRO.Tests/spec/')); //Output folder
 });
 
-gulp.task('build-test', ['templates-html2js', 'build-test-internal']);
+gulp.task('build-test', gulp.parallel('templates-html2js', 'build-test-internal'));
 
 gulp.task('run-tests', function (done) {
     new KarmaServer({
@@ -66,26 +66,26 @@ gulp.task('run-tests', function (done) {
     }, done).start();
 });
 
-gulp.task('test', ['build-test'], function(done) {
+gulp.task('test', gulp.series('build-test', function(done) {
     new KarmaServer({
         configFile: __dirname + '/karma.conf.js',
         singleRun: true
       }, done).start();
-});
+}));
 
-gulp.task('test-ci', ['build', 'build-test'], function(done) {
+gulp.task('test-ci', gulp.series('build', 'build-test', function(done) {
     new KarmaServer({
         configFile: __dirname + '/karma.conf.js',
         singleRun: true
     }, done).start();
-});
+}));
 
-gulp.task('test-ci-debug', ['build', 'build-test'], function(done) {
+gulp.task('test-ci-debug', gulp.series('build', 'build-test', function(done) {
     new KarmaServer({
         configFile: __dirname + '/karma.conf.js',
         singleRun: false
     }, done).start();
-});
+}));
 //#endregion
 
 gulp.task('release', function() {
@@ -107,9 +107,9 @@ gulp.task('release', function() {
     .pipe(gulp.dest('release'));
 });
 
-gulp.task('watch', ['build'], function () {
+gulp.task('watch', gulp.series('build', function () {
     gulp.watch('UrlEditorPRO/app/**/*.ts', ['build']);
-});
+}));
 
 gulp.task('watch-test', function () {
     gulp.watch('UrlEditorPRO/app/**/*.ts', ['build']);
