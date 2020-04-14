@@ -15,9 +15,6 @@ module UrlEditor.Options.Redirection {
         addRule: <HTMLInputElement>null
     }
 
-    let edit_testUrlElem: HTMLTextAreaElement;
-    let edit_filterElem: HTMLInputElement;
-
     export function init(setts: Settings) {
         settings = setts;
         editElems.redirectionsModule = Helpers.ge("redirectionsModule");
@@ -50,7 +47,13 @@ module UrlEditor.Options.Redirection {
         let data = redirManager.getData();
         editElems.rulesList.innerHTML = "";
         Object.keys(data).forEach(name => {
+            let ruleData = data[name];
+
             let li = document.createElement("li");
+
+            if (ruleData.disabledReason) {
+                li.setAttribute("class", "disabled");
+            }
 
             let nameElem = document.createElement("div");
             nameElem.textContent = name;
@@ -58,7 +61,7 @@ module UrlEditor.Options.Redirection {
             li.appendChild(nameElem);
 
             let filterElem = document.createElement("div");
-            filterElem.textContent = data[name].urlFilter;
+            filterElem.textContent = ruleData.urlFilter;
             filterElem.title = filterElem.textContent;
             li.appendChild(filterElem);
 
@@ -66,14 +69,10 @@ module UrlEditor.Options.Redirection {
                 // prevent from calling the regular handler
                 evt.stopPropagation();
 
-                ruleEditor.open(data[name]);
+                ruleEditor.open(ruleData);
             })
 
             editElems.rulesList.appendChild(li);
         });
     }
-
-
-
-
 }

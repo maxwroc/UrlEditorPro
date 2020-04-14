@@ -202,6 +202,9 @@
             cursor: pointer;
             color: white;
         }
+        #rules_list > .disabled {
+            background-color: #ff8888;
+        }
 
         .truncate,
         #rules_list > * > * {
@@ -397,6 +400,9 @@
                     <div class="section">
                         <a href="https://github.com/maxwroc/UrlEditorPro/issues/new" track="GitHubIssue" target="_blank">https://github.com/maxwroc/UrlEditorPro/issues/new</a>
                     </div>
+                    <div class="section">
+                        <a href="javascript:void(0)" id="showlogs">Show logs</a>
+                    </div>
                 </div>
             </div>
             <div class="setting">
@@ -423,6 +429,10 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <div class="content" id="logs" style="display: none; margin-top: 20px">
+            <pre></pre>
         </div>
     </div>
 </body>

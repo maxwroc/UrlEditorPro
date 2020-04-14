@@ -55,8 +55,9 @@ interface IGroupReplaceValue {
 interface IRuleData {
     name: string,
     urlFilter: string,
-    isAutomatic?: boolean;
-    hotKey?: string
+    isAutomatic?: boolean,
+    hotKey?: string,
+    disabledReason?: string
 }
 
 interface IBackgroundPageEventMap {
