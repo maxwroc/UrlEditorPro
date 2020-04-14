@@ -1,7 +1,6 @@
 ﻿/// <reference path="modules/settings.ts" />
 /// <reference path="modules/autosuggest.ts" />
 /// <reference path="modules/tracking.ts" />
-/// <reference path="modules/logstorage.ts" />
 /// <reference path="options/suggestions.ts" />
 /// <reference path="options/redirection.ts" />
 
@@ -20,8 +19,6 @@ module UrlEditor.Options {
      */
     function initialize(storage: Storage) {
 
-        LogStorage.configure({ type: LogType.Options });
-
         let version = chrome.runtime.getManifest().version;
         settings = new Settings(storage);
 
@@ -32,14 +29,6 @@ module UrlEditor.Options {
 
         document.body.addEventListener("change", evt => onChangeHandler(evt));
         document.body.addEventListener("click", evt => onClickHandler(evt));
-        Helpers.ge("showlogs").addEventListener("click", () => {
-            const container = Helpers.ge("logs");
-            container.style.display = "block";
-            container.firstElementChild.textContent = LogStorage.getAll().map(l => {
-                let count = l.count ? `[${l.count}]` : "";
-                return `[${new Date(l.time).toISOString().slice(0, 19).replace("T", " ")}][${LogType[l.type]}]${count} ${l.msg}`;
-            }).join("\n");
-        });
 
         var inputs = document.getElementsByTagName("INPUT");
         for (var i = 0, input: HTMLInputElement; input = <HTMLInputElement>inputs[i]; i++) {
