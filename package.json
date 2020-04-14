@@ -7,7 +7,8 @@
     "postinstall": "node_modules/.bin/typings install",
     "test": "node_modules/.bin/gulp test",
     "build": "node_modules/.bin/gulp build",
-    "work": "node_modules/.bin/gulp watch"
+    "work": "node_modules/.bin/gulp watch",
+    "release": "node_modules/.bin/gulp release --bump"
   },
   "repository": {
     "type": "git",
