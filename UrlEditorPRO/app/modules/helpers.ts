@@ -76,6 +76,13 @@ module UrlEditor.Helpers {
     }
 
     /**
+     * Wrapper for querySelectorAll
+     */
+    export function find<T extends HTMLElement>(selector: string, root: HTMLElement | Document = document): NodeListOf<T> {
+        return <NodeListOf<T>>root.querySelectorAll(selector);
+    }
+
+    /**
      * Encodes given string with Base64 algorythm
      */
     export function b64EncodeUnicode(str) {
