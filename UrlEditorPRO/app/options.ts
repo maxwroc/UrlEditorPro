@@ -57,10 +57,17 @@ module UrlEditor.Options {
         chrome.commands.getAll(commands => {
             commands.forEach(command => {
                 if (commandToElemIDMap[command.name]) {
-                    document.getElementById(commandToElemIDMap[command.name]).innerText = command.shortcut;
+                    let shortcut = command.shortcut;
+
+                    if (shortcut) {
+                        let elem = Helpers.ge(commandToElemIDMap[command.name]);
+                        elem.innerHTML = ""; // removing default link to settings
+                        elem.innerText = command.shortcut;
+                    }
                 }
             });
         });
+        Helpers.find("[data-link]").forEach(elem => elem.addEventListener("click", () => chrome.tabs.update({ url: elem.getAttribute("data-link") })));
 
         Suggestions.init(settings);
         Redirection.init(settings);
