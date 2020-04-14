@@ -166,6 +166,10 @@ module UrlEditor.Options.Redirection {
             let regExpRuleAlias = ruleData as IRegExpRuleData;
             let redirRuleAlias = ruleData as IRedirectionRuleData;
 
+            if (ruleData.disabledReason) {
+                elems.errorMessages.textContent = this.ruleData.disabledReason;
+            }
+
             let fieldsToPopulate = simpleRuleFields.concat(commonFileds);
 
             if (this.isAdvanced) {
