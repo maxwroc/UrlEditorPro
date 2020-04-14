@@ -5,10 +5,9 @@
   "main": "popup.html",
   "scripts": {
     "postinstall": "node_modules/.bin/typings install",
-    "pretest": "node_modules/.bin/tsc -p ./UrlEditorPRO.Tests/",
     "test": "node_modules/.bin/gulp test",
-    "build": "node_modules/.bin/tsc -p ./UrlEditorPRO/",
-    "work": "node_modules/.bin/tsc -p ./UrlEditorPRO/ -w"
+    "build": "node_modules/.bin/gulp build",
+    "work": "node_modules/.bin/gulp watch"
   },
   "repository": {
     "type": "git",
@@ -21,18 +20,18 @@
   },
   "homepage": "https://github.com/maxwroc/UrlEditorPro#readme",
   "devDependencies": {
-    "gulp": "~4.0.2",
-    "gulp-concat": "~2.6.1",
-    "gulp-html2string": "~0.1.1",
+    "gulp": "^4.0.2",
+    "gulp-concat": "^2.6.1",
+    "gulp-html2string": "^0.1.1",
     "gulp-typescript": "^5.0.1",
-    "gulp-zip": "~5.0.0",
-    "jasmine": "~3.4.0",
-    "jasmine-core": "^3.4.0",
-    "karma": "^4.2.0",
-    "karma-chrome-launcher": "^3.0.0",
+    "gulp-zip": "^5.0.1",
+    "jasmine": "^3.5.0",
+    "jasmine-core": "^3.5.0",
+    "karma": "^4.4.1",
+    "karma-chrome-launcher": "^3.1.0",
     "karma-jasmine": "^2.0.1",
-    "typescript": "^3.5.3",
-    "typings": "2.1.1"
+    "typescript": "^3.8.3",
+    "typings": "^2.1.1"
   },
   "dependencies": {}
 }
