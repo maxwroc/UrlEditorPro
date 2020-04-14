@@ -273,8 +273,11 @@ module UrlEditor {
 
                     // prevent from redirection loop
                     if (this.redirMgr.isUrlSupportedByAnyAutoRule(newUrl)) {
+
                         rule.disable("Potential redirection loop detected. Produced url cannot be matched by any redirection rule.");
                         this.redirMgr.save(rule.getData());
+
+                        Tracking.trackEvent(Tracking.Category.Redirect, "blocked");
                         return null;
                     }
 

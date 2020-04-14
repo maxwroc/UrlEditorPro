@@ -18,7 +18,6 @@ module UrlEditor.Options {
      * Automatically populates input fields if their name matches setting name.
      */
     function initialize(storage: Storage) {
-
         let version = chrome.runtime.getManifest().version;
         settings = new Settings(storage);
 
