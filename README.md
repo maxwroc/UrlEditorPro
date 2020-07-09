@@ -1,5 +1,6 @@
 [![Build Status](https://travis-ci.org/maxwroc/UrlEditorPro.svg?branch=master)](https://travis-ci.org/maxwroc/UrlEditorPro)
 [![Chrome store version](https://img.shields.io/chrome-web-store/v/maoigfcibanjdgnepaiiadjhgmejclea.svg)](https://chrome.google.com/webstore/detail/url-editor-pro/maoigfcibanjdgnepaiiadjhgmejclea)
+![Chrome Web Store users](https://img.shields.io/chrome-web-store/users/maoigfcibanjdgnepaiiadjhgmejclea?color=yellow)
 
 # UrlEditor PRO - Browser extension
 
