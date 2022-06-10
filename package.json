@@ -26,7 +26,7 @@
     "gulp-html2string": "^0.1.1",
     "gulp-typescript": "^5.0.1",
     "gulp-zip": "^5.1.0",
-    "jasmine": "^3.7.0",
+    "jasmine": "^4.2.0",
     "jasmine-core": "^3.7.1",
     "karma": "^6.3.2",
     "karma-chrome-launcher": "^3.1.0",
